@@ -1,13 +1,41 @@
 import hashlib
 import secrets
 from datetime import datetime, timedelta
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, Numeric
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, Numeric, Table
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.exc import IntegrityError
 
 Base = declarative_base()
 
+
+# Association tables (must be defined first before they are referenced in classes)
+temporary_station_bands = Table(
+    'temporary_station_bands',
+    Base.metadata,
+    Column('temporary_station_id', Integer, ForeignKey('temporary_stations.id'), primary_key=True),
+    Column('band_id', Integer, ForeignKey('bands.id'), primary_key=True)
+)
+temporary_station_modes = Table(
+    'temporary_station_modes',
+    Base.metadata,
+    Column('temporary_station_id', Integer, ForeignKey('temporary_stations.id'), primary_key=True),
+    Column('mode_id', Integer, ForeignKey('modes.id'), primary_key=True)
+)
+event_bands = Table(
+    'event_bands',
+    Base.metadata,
+    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
+    Column('band_id', Integer, ForeignKey('bands.id'), primary_key=True)
+)
+event_modes = Table(
+    'event_modes',
+    Base.metadata,
+    Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
+    Column('mode_id', Integer, ForeignKey('modes.id'), primary_key=True)
+)
+
+# SQLAlchemy Classes
 
 class User(Base):
     """User model"""
@@ -70,6 +98,9 @@ class Band(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
 
+    events = relationship('Event', secondary=event_bands, back_populates='bands')
+    temporary_stations = relationship('TemporaryStation', secondary=temporary_station_bands, back_populates='bands')
+
     default_data = ["2200m", "600m", "160m", "80m", "60m", "40m", "30m", "20m", "17m", "15m", "12m", "11m", "10m", "6m", "5m", "4m", "2m", "1.25m", "70cm", "23cm", "13cm", "5.8GHz", "10GHz", "24GHz", "47GHz", "76GHz"]
 
     @classmethod
@@ -89,6 +120,9 @@ class Mode(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
+
+    events = relationship('Event', secondary=event_modes, back_populates='modes')
+    temporary_stations = relationship('TemporaryStation', secondary=temporary_station_modes, back_populates='modes')
 
     default_data = ["CW", "Phone", "Data"]
 
@@ -111,7 +145,6 @@ class Event(Base):
     name = Column(String, unique=True, nullable=False)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
-    # TODO Bands, Modes
     icon = Column(String, nullable=False)
     color = Column(String, nullable=False)
     notes_template = Column(String, nullable=False)
@@ -120,6 +153,8 @@ class Event(Base):
     rsgb_event = Column(Boolean, nullable=False)
 
     stations = relationship('TemporaryStation', back_populates='event')
+    bands = relationship('Band', secondary=event_bands, back_populates='events')
+    modes = relationship('Mode', secondary=event_modes, back_populates='events')
 
 
 class TemporaryStation(Base):
@@ -132,7 +167,6 @@ class TemporaryStation(Base):
     event_id = Column(Integer, ForeignKey('events.id'), nullable=True)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
-    # TODO Bands, Modes
     latitude_degrees = Column(Numeric, nullable=False)
     longitude_degrees = Column(Numeric, nullable=False)
     notes = Column(String, nullable=False)
@@ -144,6 +178,8 @@ class TemporaryStation(Base):
     rsgb_attending = Column(Boolean, nullable=False)
 
     event = relationship('Event', back_populates='stations')
+    bands = relationship('Band', secondary=temporary_station_bands, back_populates='temporary_stations')
+    modes = relationship('Mode', secondary=temporary_station_modes, back_populates='temporary_stations')
 
 
 class PermanentStation(Base):
@@ -285,5 +321,54 @@ class Database:
             ).first()
 
             return user_session.user_id if user_session else None
+        finally:
+            session.close()
+
+
+    def add_event(self, name, start_time, end_time, icon, color, notes_template, bands, modes,
+                  url_slug=None, public=True, rsgb_event=False):
+        """Create a new event"""
+
+        session = self.SessionLocal()
+        try:
+            event = Event(
+                name=name,
+                start_time=start_time,
+                end_time=end_time,
+                icon=icon,
+                color=color,
+                notes_template=notes_template,
+                url_slug=url_slug,
+                public=public,
+                rsgb_event=rsgb_event
+            )
+            event.bands.extend(bands)
+            event.modes.extend(modes)
+            session.add(event)
+            session.commit()
+            return event.id
+        except IntegrityError:
+            session.rollback()
+            return None
+        finally:
+            session.close()
+
+
+    def get_bands_by_name(self, band_names):
+        """Converts a list of string band names into Band objects to use with the database."""
+
+        session = self.SessionLocal()
+        try:
+            return [session.query(Band).filter_by(name=b).first() for b in band_names]
+        finally:
+            session.close()
+
+
+    def get_modes_by_name(self, mode_names):
+        """Converts a list of string mode names into Mode objects to use with the database."""
+
+        session = self.SessionLocal()
+        try:
+            return [session.query(Mode).filter_by(name=b).first() for b in mode_names]
         finally:
             session.close()
