@@ -1,54 +1,67 @@
 import hashlib
 import secrets
-import sqlite3
 from datetime import datetime, timedelta
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.exc import IntegrityError
+
+Base = declarative_base()
+
+
+class User(Base):
+    """User model"""
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    username = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    salt = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.now)
+
+    sessions = relationship('Session', back_populates='user')
+
+
+class Session(Base):
+    """Session model"""
+    __tablename__ = 'sessions'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_token = Column(String, unique=True, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    created_at = Column(DateTime, default=datetime.now())
+    expires_at = Column(DateTime, default=datetime.now() + timedelta(hours=24))
+
+    user = relationship('User', back_populates='sessions')
 
 
 class Database:
     """Data Access Object for the database"""
 
     def __init__(self, db_path='data/database.db'):
-        self.db_path = db_path
+        self.engine = create_engine(f'sqlite:///{db_path}')
+        self.SessionLocal = sessionmaker(bind=self.engine)
         self.init_db()
-
-    def get_connection(self):
-        """Get a connection to the database"""
-
-        conn = sqlite3.connect(self.db_path)
-        conn.row_factory = sqlite3.Row
-        return conn
+        self.ensure_default_user()
 
     def init_db(self):
         """Initialize database with required tables."""
-        conn = self.get_connection()
-        cursor = conn.cursor()
+        Base.metadata.create_all(self.engine)
 
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS admins (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                salt TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
+    def ensure_default_user(self):
+        """Check if users table is empty and create a default admin user if needed"""
 
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS sessions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                session_token TEXT UNIQUE NOT NULL,
-                admin_id INTEGER NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                expires_at TIMESTAMP NOT NULL,
-                FOREIGN KEY (admin_id) REFERENCES admins (id)
-            )
-        ''')
+        session = self.SessionLocal()
+        try:
+            admin_count = session.query(User).count()
 
-        conn.commit()
-        conn.close()
+            if admin_count == 0:
+                self.add_user("admin", "password")
+        finally:
+            session.close()
 
-    def add_admin(self, username, password):
-        """Create a new admin user"""
+    def add_user(self, username, password):
+        """Create a new user"""
 
         salt = secrets.token_hex(32)
         password_hash = hashlib.pbkdf2_hmac(
@@ -58,81 +71,74 @@ class Database:
             100000
         ).hex()
 
-        conn = self.get_connection()
-        cursor = conn.cursor()
-
+        session = self.SessionLocal()
         try:
-            cursor.execute(
-                'INSERT INTO admins (username, password_hash, salt) VALUES (?, ?, ?)',
-                (username, password_hash, salt)
+            user = User(
+                username=username,
+                password_hash=password_hash,
+                salt=salt
             )
-            conn.commit()
+            session.add(user)
+            session.commit()
             return True
-        except sqlite3.IntegrityError:
+        except IntegrityError:
+            session.rollback()
             return False
         finally:
-            conn.close()
+            session.close()
 
-    def verify_admin(self, username, password):
-        """Verify admin credentials"""
+    def verify_user(self, username, password):
+        """Verify user credentials. If successful, the user ID is returned. Otherwise, None is returned."""
 
-        conn = self.get_connection()
-        cursor = conn.cursor()
+        session = self.SessionLocal()
+        try:
+            user = session.query(User).filter_by(username=username).first()
 
-        cursor.execute(
-            'SELECT id, password_hash, salt FROM admins WHERE username = ?',
-            (username,)
-        )
-        result = cursor.fetchone()
-        conn.close()
+            if not user:
+                return None
 
-        if not result:
+            password_hash = hashlib.pbkdf2_hmac(
+                'sha256',
+                password.encode('utf-8'),
+                user.salt.encode('utf-8'),
+                100000
+            ).hex()
+
+            if password_hash == user.password_hash:
+                return user.id
             return None
+        finally:
+            session.close()
 
-        stored_hash = result['password_hash']
-        salt = result['salt']
+    def create_user_session(self, user_id):
+        """Create a session token for a user. This can then be provided back and verified to ensure they are logged in."""
 
-        password_hash = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            salt.encode('utf-8'),
-            100000
-        ).hex()
+        user_session_token = secrets.token_urlsafe(32)
+        session = self.SessionLocal()
+        try:
+            new_session = Session(
+                session_token=user_session_token,
+                user_id=user_id
+            )
+            session.add(new_session)
+            session.commit()
+            return user_session_token
+        except IntegrityError:
+            session.rollback()
+            return None
+        finally:
+            session.close()
 
-        if password_hash == stored_hash:
-            return result['id']
-        return None
-
-    def create_session(self, admin_id, duration_hours=24):
-        """Create a session token for an administrator"""
-
-        session_token = secrets.token_urlsafe(32)
-        expires_at = datetime.now() + timedelta(hours=duration_hours)
-
-        conn = self.get_connection()
-        cursor = conn.cursor()
-
-        cursor.execute(
-            'INSERT INTO sessions (session_token, admin_id, expires_at) VALUES (?, ?, ?)',
-            (session_token, admin_id, expires_at)
-        )
-
-        conn.commit()
-        conn.close()
-
-        return session_token
-
-    def verify_session(self, session_token):
+    def verify_user_session_token(self, session_token):
         """Verify session token is valid and not expired"""
 
-        conn = self.get_connection()
-        cursor = conn.cursor()
+        session = self.SessionLocal()
+        try:
+            user_session = session.query(Session).filter(
+                Session.session_token == session_token,
+                Session.expires_at > datetime.now()
+            ).first()
 
-        cursor.execute(
-            'SELECT admin_id FROM sessions WHERE session_token = ? AND expires_at > ?',
-            (session_token, datetime.now())
-        )
-        result = cursor.fetchone()
-        conn.close()
-
-        return result['admin_id'] if result else None
+            return user_session.user_id if user_session else None
+        finally:
+            session.close()

@@ -26,10 +26,10 @@ class LoginHandler(BaseHandler):
         username = self.get_argument("username")
         password = self.get_argument("password")
 
-        admin_id = self.application.db.verify_admin(username, password)
+        user_id = self.application.db.verify_user(username, password)
 
-        if admin_id:
-            session_token = self.application.db.create_session(admin_id)
+        if user_id:
+            session_token = self.application.db.create_user_session(user_id)
             self.set_secure_cookie("session_token", session_token)
             self.redirect("/admin")
         else:
