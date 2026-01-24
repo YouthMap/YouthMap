@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 Base = declarative_base()
 
 # Association tables (must be defined first before they are referenced in classes)
+
 temporary_station_bands = Table(
     'temporary_station_bands',
     Base.metadata,
@@ -51,7 +52,7 @@ class User(Base):
     sessions = relationship('Session', back_populates='user')
 
 
-class Session(Base):
+class UserSession(Base):
     """Session model"""
     __tablename__ = 'sessions'
 
@@ -236,9 +237,7 @@ class Database:
 
         session = self.SessionLocal()
         try:
-            admin_count = session.query(User).count()
-
-            if admin_count == 0:
+            if session.query(User).count() == 0:
                 self.add_user("admin", "password")
         finally:
             session.close()
@@ -296,14 +295,17 @@ class Database:
     def create_user_session(self, user_id):
         """Create a session token for a user. This can then be provided back and verified to ensure they are logged in."""
 
+        # Before we create a new session, clear up any expired ones to keep the database from filling up
+        self.cleanup_expired_sessions()
+
         user_session_token = secrets.token_urlsafe(32)
         session = self.SessionLocal()
         try:
-            new_session = Session(
+            new_user_session = UserSession(
                 session_token=user_session_token,
                 user_id=user_id
             )
-            session.add(new_session)
+            session.add(new_user_session)
             session.commit()
             return user_session_token
         except IntegrityError:
@@ -317,12 +319,27 @@ class Database:
 
         session = self.SessionLocal()
         try:
-            user_session = session.query(Session).filter(
-                Session.session_token == session_token,
-                Session.expires_at > datetime.now()
+            user_session = session.query(UserSession).filter(
+                UserSession.session_token == session_token,
+                UserSession.expires_at > datetime.now()
             ).first()
 
             return user_session.user_id if user_session else None
+        finally:
+            session.close()
+
+    def cleanup_expired_sessions(self):
+        """Housekeeping method to delete all expired sessions from the database. Returns True if successful, False otherwise."""
+
+        session = self.SessionLocal()
+        try:
+            for user_session in session.query(UserSession).filter(UserSession.expires_at <= datetime.now()).all():
+                session.delete(user_session)
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
         finally:
             session.close()
 
