@@ -40,20 +40,25 @@ event_modes = Table(
 # SQLAlchemy Classes
 
 class User(Base):
-    """User model"""
+    """User model. Stores their username, encrypted password, email address, super-admin status etc."""
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, unique=True, nullable=False)
+    email = Column(String, nullable=False)
     password_hash = Column(String, nullable=False)
     salt = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
+    super_admin = Column(Boolean, nullable=False)
 
-    sessions = relationship('Session', back_populates='user')
+    # Link the users with the sessions, so we can find all sessions relating to the user. We supply 'delete-orphan' to
+    # the 'cascade' parameter here so that if we delete a user, all orphaned sessions that were linked to that user will
+    # be deleted too.
+    sessions = relationship('Session', back_populates='user', cascade='all, delete-orphan')
 
 
 class UserSession(Base):
-    """Session model"""
+    """User session model. Stores a token generated to authenticate the user."""
     __tablename__ = 'sessions'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -62,11 +67,12 @@ class UserSession(Base):
     created_at = Column(DateTime, default=datetime.now())
     expires_at = Column(DateTime, default=datetime.now() + timedelta(hours=24))
 
+    # Link the sessions with the users, so we can find the user that owns this session.
     user = relationship('User', back_populates='sessions')
 
 
 class PermanentStationType(Base):
-    """Permanent station type model"""
+    """Permanent station type model. Stores information on the School, University and Cadet types of permanent station."""
     __tablename__ = 'permanent_station_types'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -74,6 +80,7 @@ class PermanentStationType(Base):
     icon = Column(String, nullable=False)
     color = Column(String, nullable=False)
 
+    # Link the type with the permanent stations, so we can get a list of the permanent stations that have this type.
     stations = relationship('PermanentStation', back_populates='type')
 
     default_data = [
@@ -94,12 +101,14 @@ class PermanentStationType(Base):
 
 
 class Band(Base):
-    """Amateur Radio band model"""
+    """Amateur Radio band model. Stores the bands we can assign to events and stations."""
     __tablename__ = 'bands'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
 
+    # Link the band with the events and temporary stations, so we can get a list of the events and temporary stations
+    # that use this band.
     events = relationship('Event', secondary=event_bands, back_populates='bands')
     temporary_stations = relationship('TemporaryStation', secondary=temporary_station_bands, back_populates='bands')
 
@@ -118,12 +127,14 @@ class Band(Base):
 
 
 class Mode(Base):
-    """Amateur Radio mode model"""
+    """Amateur Radio mode model. Stores the modes we can assign to events and stations."""
     __tablename__ = 'modes'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, unique=True, nullable=False)
 
+    # Link the mode with the events and temporary stations, so we can get a list of the events and temporary stations
+    # that use this mode.
     events = relationship('Event', secondary=event_modes, back_populates='modes')
     temporary_stations = relationship('TemporaryStation', secondary=temporary_station_modes, back_populates='modes')
 
@@ -141,7 +152,7 @@ class Mode(Base):
 
 
 class Event(Base):
-    """Event model"""
+    """Event model. An event represents something like 'JOTA' or 'Field Day' to which temporary stations can be assigned."""
     __tablename__ = 'events'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -151,17 +162,22 @@ class Event(Base):
     icon = Column(String, nullable=False)
     color = Column(String, nullable=False)
     notes_template = Column(String, nullable=False)
-    url_slug = Column(String, nullable=True)
+    url_slug = Column(String, unique=True, nullable=True)
     public = Column(Boolean, nullable=False)
     rsgb_event = Column(Boolean, nullable=False)
 
-    stations = relationship('TemporaryStation', back_populates='event')
+    # Link the event to the temporary stations that use it, so we can fetch them.  We supply 'delete-orphan' to the
+    # 'cascade' parameter here so that if we delete an event, all orphaned temporary stations that were linked to that
+    # event will be deleted too.
+    stations = relationship('TemporaryStation', back_populates='event', cascade='all, delete-orphan')
+    # Link the event to the bands and modes it will use, via an association table.
     bands = relationship('Band', secondary=event_bands, back_populates='events')
     modes = relationship('Mode', secondary=event_modes, back_populates='events')
 
 
 class TemporaryStation(Base):
-    """Temporary Station model"""
+    """Temporary Station model. A temporary station represents an amateur ratio station that is taking part in event,
+    or, if no event is assigned, then it is a generic Special Event Station for an event that is not known to the system."""
     __tablename__ = 'temporary_stations'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -180,13 +196,16 @@ class TemporaryStation(Base):
     social_media_url = Column(String, nullable=True)
     rsgb_attending = Column(Boolean, nullable=False)
 
+    # Link the temporary station to the event it is for.
     event = relationship('Event', back_populates='stations')
+    # Link the temporary station to the bands and modes it will use, via an association table.
     bands = relationship('Band', secondary=temporary_station_bands, back_populates='temporary_stations')
     modes = relationship('Mode', secondary=temporary_station_modes, back_populates='temporary_stations')
 
 
 class PermanentStation(Base):
-    """Permanent Station model"""
+    """Permanent Station model. This represents an amateur radio station permanently based at a school, university or
+    cadet base."""
     __tablename__ = 'permanent_stations'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -204,16 +223,22 @@ class PermanentStation(Base):
     qrz_url = Column(String, nullable=True)
     social_media_url = Column(String, nullable=True)
 
+    # Link the permanent station to its type.
     type = relationship('PermanentStationType', back_populates='stations')
 
 
 class Database:
     """Data Access Object for the database"""
 
-    def __init__(self, db_path='data/database.db'):
-        self.engine = create_engine(f'sqlite:///{db_path}')
+    def __init__(self):
+        # Create DB and session factory
+        self.engine = create_engine(f'sqlite:///data/database.db')
         self.SessionLocal = sessionmaker(bind=self.engine)
+
+        # Initialise the database
         self.init_db()
+
+        # Populate with default content
         self.ensure_default_content()
         self.ensure_default_user()
 
@@ -222,7 +247,8 @@ class Database:
         Base.metadata.create_all(self.engine)
 
     def ensure_default_content(self):
-        """Ensure all default content exists in the database"""
+        """Ensure all default content exists in the database. This sets up the enum-like tables such as bands, modes
+        and permanent station types."""
 
         session = self.SessionLocal()
         try:
@@ -233,18 +259,20 @@ class Database:
             session.close()
 
     def ensure_default_user(self):
-        """Check if users table is empty and create a default admin user if needed"""
+        """Check if users table is empty and create a default admin user if so. This provides something that the user
+        can log in with on first run, before they create proper accounts."""
 
         session = self.SessionLocal()
         try:
             if session.query(User).count() == 0:
-                self.add_user("admin", "password")
+                self.add_user("admin", "password", None, True)
         finally:
             session.close()
 
-    def add_user(self, username, password):
+    def add_user(self, username, password, email, super_admin):
         """Create a new user"""
 
+        # Create salt and hash password so we have something safe to store
         salt = secrets.token_hex(32)
         password_hash = hashlib.pbkdf2_hmac(
             'sha256',
@@ -255,12 +283,37 @@ class Database:
 
         session = self.SessionLocal()
         try:
+            # Store the new user info in the database.
             user = User(
                 username=username,
                 password_hash=password_hash,
-                salt=salt
+                salt=salt,
+                email=email,
+                super_admin=super_admin
             )
             session.add(user)
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def delete_user(self, user_id):
+        """Delete a user and all associated sessions. Returns True if successful."""
+
+        session = self.SessionLocal()
+        try:
+            # Find the user
+            user = session.query(User).filter_by(id=user_id).first()
+            if not user:
+                return False
+
+            # Delete the user. Our use of "cascade='delete-orphan'" when linking the session and user tables together
+            # ensures that any sessions belonging to the user will automatically be deleted.
+            session.delete(user)
+
             session.commit()
             return True
         except IntegrityError:
@@ -274,11 +327,12 @@ class Database:
 
         session = self.SessionLocal()
         try:
+            # Find the user matching the username (if there is one)
             user = session.query(User).filter_by(username=username).first()
-
             if not user:
                 return None
 
+            # Get the salt, and hash the provided password with it
             password_hash = hashlib.pbkdf2_hmac(
                 'sha256',
                 password.encode('utf-8'),
@@ -286,6 +340,7 @@ class Database:
                 100000
             ).hex()
 
+            # If the hashes match, the password was correct and we can log in
             if password_hash == user.password_hash:
                 return user.id
             return None
@@ -298,7 +353,10 @@ class Database:
         # Before we create a new session, clear up any expired ones to keep the database from filling up
         self.cleanup_expired_sessions()
 
+        # Generate a token
         user_session_token = secrets.token_urlsafe(32)
+
+        # Store the token in the database so we can later verify against it
         session = self.SessionLocal()
         try:
             new_user_session = UserSession(
@@ -362,6 +420,7 @@ class Database:
             )
             event.bands.extend(bands)
             event.modes.extend(modes)
+
             session.add(event)
             session.commit()
             return event.id
