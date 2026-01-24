@@ -1,4 +1,3 @@
-import hashlib
 import logging
 import secrets
 from datetime import datetime, timedelta
@@ -7,6 +6,8 @@ from sqlalchemy import create_engine, Column, Integer, String, DateTime, Foreign
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+
+from database.utils import hash_password
 
 Base = declarative_base()
 
@@ -275,7 +276,7 @@ class Database:
 
         # Create a new salt and hash the password with it so we have something safe to store
         salt = secrets.token_hex(32)
-        password_hash = self.hash_password(password, salt)
+        password_hash = hash_password(password, salt)
 
         session = self.SessionLocal()
         try:
@@ -330,7 +331,7 @@ class Database:
                 # Create a new salt and hash the password
                 salt = secrets.token_hex(32)
                 user.salt = salt
-                user.password_hash = self.hash_password(password, salt)
+                user.password_hash = hash_password(password, salt)
             if email is not None:
                 user.email = email
             if super_admin is not None:
@@ -379,7 +380,7 @@ class Database:
                 return None
 
             # Get the stored salt for the user, and hash the provided password with it
-            password_hash = self.hash_password(password, user.salt)
+            password_hash = hash_password(password, user.salt)
 
             # If the hashes match, the password was correct and we can log in
             if password_hash == user.password_hash:
@@ -874,13 +875,3 @@ class Database:
             return [session.query(Mode).filter_by(name=b).first() for b in mode_names]
         finally:
             session.close()
-
-    def hash_password(self, password, salt):
-        """Hash the given password with the given salt. A hex version of the hash will be returned."""
-
-        return hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            salt.encode('utf-8'),
-            100000
-        ).hex()
