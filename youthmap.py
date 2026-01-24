@@ -8,6 +8,7 @@ import tornado.web
 
 from database.database import Database
 from requesthandlers.admin import AdminHandler
+from requesthandlers.changepassword import ChangePasswordHandler
 from requesthandlers.login import LoginHandler
 from requesthandlers.logout import LogoutHandler
 from requesthandlers.map import MapHandler
@@ -35,6 +36,7 @@ class YouthMap(tornado.web.Application):
             (r"/login", LoginHandler),
             (r"/admin", AdminHandler),
             (r"/logout", LogoutHandler),
+            (r"/changepassword", ChangePasswordHandler),
         ]
 
         settings = {

@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import secrets
 from datetime import datetime, timedelta
 
@@ -45,7 +46,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, unique=True, nullable=False)
-    email = Column(String, nullable=False)
+    email = Column(String, nullable=True)
     password_hash = Column(String, nullable=False)
     salt = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.now)
@@ -54,7 +55,7 @@ class User(Base):
     # Link the users with the sessions, so we can find all sessions relating to the user. We supply 'delete-orphan' to
     # the 'cascade' parameter here so that if we delete a user, all orphaned sessions that were linked to that user will
     # be deleted too.
-    sessions = relationship('Session', back_populates='user', cascade='all, delete-orphan')
+    sessions = relationship('UserSession', back_populates='user', cascade='all, delete-orphan')
 
 
 class UserSession(Base):
@@ -289,7 +290,8 @@ class Database:
             session.add(user)
             session.commit()
             return True
-        except IntegrityError:
+        except IntegrityError as e:
+            logging.error("Error when adding user", e)
             session.rollback()
             return False
         finally:
@@ -318,7 +320,8 @@ class Database:
             user.email = email
             session.commit()
             return True
-        except IntegrityError:
+        except IntegrityError as e:
+            logging.error("Error when setting user email", e)
             session.rollback()
             return False
         finally:
@@ -340,7 +343,8 @@ class Database:
             user.password_hash = self.hash_password(password, salt)
             session.commit()
             return True
-        except IntegrityError:
+        except IntegrityError as e:
+            logging.error("Error when setting user password", e)
             session.rollback()
             return False
         finally:
@@ -360,7 +364,8 @@ class Database:
             user.super_admin = super_admin
             session.commit()
             return True
-        except IntegrityError:
+        except IntegrityError as e:
+            logging.error("Error when setting user super-admin status", e)
             session.rollback()
             return False
         finally:
@@ -382,7 +387,8 @@ class Database:
 
             session.commit()
             return True
-        except IntegrityError:
+        except IntegrityError as e:
+            logging.error("Error when deleting user", e)
             session.rollback()
             return False
         finally:
@@ -427,7 +433,8 @@ class Database:
             session.add(new_user_session)
             session.commit()
             return user_session_token
-        except IntegrityError:
+        except IntegrityError as e:
+            logging.error("Error when creating session", e)
             session.rollback()
             return None
         finally:
@@ -456,7 +463,8 @@ class Database:
                 session.delete(user_session)
             session.commit()
             return True
-        except IntegrityError:
+        except IntegrityError as e:
+            logging.error("Error when clearing up expired sessions", e)
             session.rollback()
             return False
         finally:
@@ -485,7 +493,8 @@ class Database:
             session.add(event)
             session.commit()
             return event.id
-        except IntegrityError:
+        except IntegrityError as e:
+            logging.error("Error when adding event", e)
             session.rollback()
             return None
         finally:
