@@ -6,7 +6,7 @@ import sys
 import tornado.ioloop
 import tornado.web
 
-from database.database import Database
+from database import Database
 from requesthandlers.admin import AdminHandler
 from requesthandlers.changepassword import ChangePasswordHandler
 from requesthandlers.login import LoginHandler

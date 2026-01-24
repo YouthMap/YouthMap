@@ -13,7 +13,7 @@ class ChangePasswordHandler(BaseHandler):
             return
         username = self.application.db.get_user(self.current_user).username
 
-        self.write('''
+        self.write(f'''
             <html>
             <body>
                 <h1>Change password</h1>
@@ -44,5 +44,5 @@ class ChangePasswordHandler(BaseHandler):
             return
 
         # OK to proceed
-        self.application.db.set_user_password(self.current_user, new_password)
+        self.application.db.update_user(self.current_user, password=new_password)
         self.write("Password changed")
