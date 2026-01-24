@@ -1,7 +1,7 @@
 import hashlib
 import secrets
 from datetime import datetime, timedelta
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.exc import IntegrityError
@@ -35,6 +35,139 @@ class Session(Base):
     user = relationship('User', back_populates='sessions')
 
 
+class PermanentStationType(Base):
+    """Permanent station type model"""
+    __tablename__ = 'permanent_station_types'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True, nullable=False)
+    icon = Column(String, nullable=False)
+    color = Column(String, nullable=False)
+
+    stations = relationship('PermanentStation', back_populates='type')
+
+    default_data = [
+        {"name": "School", "icon": "book", "color": "yellow"},
+        {"name": "University", "icon": "grad-hat", "color": "yellow"},
+        {"name": "Cadet", "icon": "beret", "color": "light-blue"}
+    ]
+
+    @classmethod
+    def initialize(cls, session):
+        """Initialize the database with the station types if they don't exist"""
+
+        for station_type in cls.default_data:
+            existing = session.query(cls).filter_by(name=station_type["name"]).first()
+            if not existing:
+                session.add(cls(name=station_type["name"], icon=station_type["icon"], color=station_type["color"]))
+        session.commit()
+
+
+class Band(Base):
+    """Amateur Radio band model"""
+    __tablename__ = 'bands'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True, nullable=False)
+
+    default_data = ["2200m", "600m", "160m", "80m", "60m", "40m", "30m", "20m", "17m", "15m", "12m", "11m", "10m", "6m", "5m", "4m", "2m", "1.25m", "70cm", "23cm", "13cm", "5.8GHz", "10GHz", "24GHz", "47GHz", "76GHz"]
+
+    @classmethod
+    def initialize(cls, session):
+        """Initialize the database with the band names if they don't exist"""
+
+        for band in cls.default_data:
+            existing = session.query(cls).filter_by(name=band).first()
+            if not existing:
+                session.add(cls(name=band))
+        session.commit()
+
+
+class Mode(Base):
+    """Amateur Radio mode model"""
+    __tablename__ = 'modes'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True, nullable=False)
+
+    default_data = ["CW", "Phone", "Data"]
+
+    @classmethod
+    def initialize(cls, session):
+        """Initialize the database with the mode names if they don't exist"""
+
+        for mode in cls.default_data:
+            existing = session.query(cls).filter_by(name=mode).first()
+            if not existing:
+                session.add(cls(name=mode))
+        session.commit()
+
+
+class Event(Base):
+    """Event model"""
+    __tablename__ = 'events'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True, nullable=False)
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)
+    # TODO Bands, Modes
+    icon = Column(String, nullable=False)
+    color = Column(String, nullable=False)
+    notes_template = Column(String, nullable=False)
+    url_slug = Column(String, nullable=True)
+    public = Column(Boolean, nullable=False)
+    rsgb_event = Column(Boolean, nullable=False)
+
+    stations = relationship('TemporaryStation', back_populates='event')
+
+
+class TemporaryStation(Base):
+    """Temporary Station model"""
+    __tablename__ = 'temporary_stations'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    callsign = Column(String, nullable=False)
+    club_name = Column(String, nullable=False)
+    event_id = Column(Integer, ForeignKey('events.id'), nullable=True)
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)
+    # TODO Bands, Modes
+    latitude_degrees = Column(Numeric, nullable=False)
+    longitude_degrees = Column(Numeric, nullable=False)
+    notes = Column(String, nullable=False)
+    website_url = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    phone_number = Column(String, nullable=True)
+    qrz_url = Column(String, nullable=True)
+    social_media_url = Column(String, nullable=True)
+    rsgb_attending = Column(Boolean, nullable=False)
+
+    event = relationship('Event', back_populates='stations')
+
+
+class PermanentStation(Base):
+    """Permanent Station model"""
+    __tablename__ = 'permanent_stations'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    callsign = Column(String, nullable=False)
+    club_name = Column(String, nullable=False)
+    type_id = Column(Integer, ForeignKey('permanent_station_types.id'), nullable=True)
+    latitude_degrees = Column(Numeric, nullable=False)
+    longitude_degrees = Column(Numeric, nullable=False)
+    meeting_when = Column(String, nullable=False)
+    meeting_where = Column(String, nullable=False)
+    notes = Column(String, nullable=False)
+    website_url = Column(String, nullable=True)
+    email = Column(String, nullable=True)
+    phone_number = Column(String, nullable=True)
+    qrz_url = Column(String, nullable=True)
+    social_media_url = Column(String, nullable=True)
+
+    type = relationship('PermanentStationType', back_populates='stations')
+
+
 class Database:
     """Data Access Object for the database"""
 
@@ -42,11 +175,23 @@ class Database:
         self.engine = create_engine(f'sqlite:///{db_path}')
         self.SessionLocal = sessionmaker(bind=self.engine)
         self.init_db()
+        self.ensure_default_content()
         self.ensure_default_user()
 
     def init_db(self):
         """Initialize database with required tables."""
         Base.metadata.create_all(self.engine)
+
+    def ensure_default_content(self):
+        """Ensure all default content exists in the database"""
+
+        session = self.SessionLocal()
+        try:
+            PermanentStationType.initialize(session)
+            Band.initialize(session)
+            Mode.initialize(session)
+        finally:
+            session.close()
 
     def ensure_default_user(self):
         """Check if users table is empty and create a default admin user if needed"""
