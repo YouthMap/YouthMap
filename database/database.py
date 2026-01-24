@@ -300,6 +300,33 @@ class Database:
         finally:
             session.close()
 
+    def get_user(self, user_id):
+        """Get a user by ID. Returns the User object if found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(User).filter_by(id=user_id).first()
+        finally:
+            session.close()
+
+    def set_user_super_admin(self, user_id, super_admin):
+        """Set the super_admin status for a user. Returns True if successful, False otherwise."""
+
+        session = self.SessionLocal()
+        try:
+            user = session.query(User).filter_by(id=user_id).first()
+            if not user:
+                return False
+
+            user.super_admin = super_admin
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
     def delete_user(self, user_id):
         """Delete a user and all associated sessions. Returns True if successful."""
 
