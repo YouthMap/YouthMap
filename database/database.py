@@ -272,14 +272,9 @@ class Database:
     def add_user(self, username, password, email, super_admin):
         """Create a new user"""
 
-        # Create salt and hash password so we have something safe to store
+        # Create a new salt and hash the password with it so we have something safe to store
         salt = secrets.token_hex(32)
-        password_hash = hashlib.pbkdf2_hmac(
-            'sha256',
-            password.encode('utf-8'),
-            salt.encode('utf-8'),
-            100000
-        ).hex()
+        password_hash = self.hash_password(password, salt)
 
         session = self.SessionLocal()
         try:
@@ -309,15 +304,59 @@ class Database:
         finally:
             session.close()
 
+    def set_user_email(self, user_id, email):
+        """Set the email address for a user. Returns True if successful, False otherwise."""
+
+        session = self.SessionLocal()
+        try:
+            # First check the user exists
+            user = session.query(User).filter_by(id=user_id).first()
+            if not user:
+                return False
+
+            # Set their email address
+            user.email = email
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def set_user_password(self, user_id, password):
+        """Set the password for a user. Returns True if successful, False otherwise."""
+
+        session = self.SessionLocal()
+        try:
+            # First check the user exists
+            user = session.query(User).filter_by(id=user_id).first()
+            if not user:
+                return False
+
+            # Create a new salt and hash the password with it so we have something safe to store
+            salt = secrets.token_hex(32)
+            user.salt = salt
+            user.password_hash = self.hash_password(password, salt)
+            session.commit()
+            return True
+        except IntegrityError:
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
     def set_user_super_admin(self, user_id, super_admin):
         """Set the super_admin status for a user. Returns True if successful, False otherwise."""
 
         session = self.SessionLocal()
         try:
+            # First check the user exists
             user = session.query(User).filter_by(id=user_id).first()
             if not user:
                 return False
 
+            # Set their super admin status
             user.super_admin = super_admin
             session.commit()
             return True
@@ -359,13 +398,8 @@ class Database:
             if not user:
                 return None
 
-            # Get the salt, and hash the provided password with it
-            password_hash = hashlib.pbkdf2_hmac(
-                'sha256',
-                password.encode('utf-8'),
-                user.salt.encode('utf-8'),
-                100000
-            ).hex()
+            # Get the stored salt for the user, and hash the provided password with it
+            password_hash = self.hash_password(password, user.salt)
 
             # If the hashes match, the password was correct and we can log in
             if password_hash == user.password_hash:
@@ -474,3 +508,13 @@ class Database:
             return [session.query(Mode).filter_by(name=b).first() for b in mode_names]
         finally:
             session.close()
+
+    def hash_password(self, password, salt):
+        """Hash the given password with the given salt. A hex version of the hash will be returned."""
+
+        return hashlib.pbkdf2_hmac(
+            'sha256',
+            password.encode('utf-8'),
+            salt.encode('utf-8'),
+            100000
+        ).hex()
