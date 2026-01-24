@@ -306,66 +306,40 @@ class Database:
         finally:
             session.close()
 
-    def set_user_email(self, user_id, email):
-        """Set the email address for a user. Returns True if successful, False otherwise."""
+    def get_all_users(self):
+        """Get all users. Returns a list of User objects."""
 
         session = self.SessionLocal()
         try:
-            # First check the user exists
-            user = session.query(User).filter_by(id=user_id).first()
-            if not user:
-                return False
-
-            # Set their email address
-            user.email = email
-            session.commit()
-            return True
-        except IntegrityError as e:
-            logging.error("Error when setting user email", e)
-            session.rollback()
-            return False
+            return session.query(User).all()
         finally:
             session.close()
 
-    def set_user_password(self, user_id, password):
-        """Set the password for a user. Returns True if successful, False otherwise."""
+    def update_user(self, user_id, username=None, password=None, email=None, super_admin=None):
+        """Update an existing user. Only provided fields will be updated. Returns True if successful."""
 
         session = self.SessionLocal()
         try:
-            # First check the user exists
             user = session.query(User).filter_by(id=user_id).first()
             if not user:
                 return False
 
-            # Create a new salt and hash the password with it so we have something safe to store
-            salt = secrets.token_hex(32)
-            user.salt = salt
-            user.password_hash = self.hash_password(password, salt)
+            if username is not None:
+                user.username = username
+            if password is not None:
+                # Create a new salt and hash the password
+                salt = secrets.token_hex(32)
+                user.salt = salt
+                user.password_hash = self.hash_password(password, salt)
+            if email is not None:
+                user.email = email
+            if super_admin is not None:
+                user.super_admin = super_admin
+
             session.commit()
             return True
         except IntegrityError as e:
-            logging.error("Error when setting user password", e)
-            session.rollback()
-            return False
-        finally:
-            session.close()
-
-    def set_user_super_admin(self, user_id, super_admin):
-        """Set the super_admin status for a user. Returns True if successful, False otherwise."""
-
-        session = self.SessionLocal()
-        try:
-            # First check the user exists
-            user = session.query(User).filter_by(id=user_id).first()
-            if not user:
-                return False
-
-            # Set their super admin status
-            user.super_admin = super_admin
-            session.commit()
-            return True
-        except IntegrityError as e:
-            logging.error("Error when setting user super-admin status", e)
+            logging.error("Error when updating user", e)
             session.rollback()
             return False
         finally:
@@ -497,6 +471,389 @@ class Database:
             logging.error("Error when adding event", e)
             session.rollback()
             return None
+        finally:
+            session.close()
+
+    def get_event(self, event_id):
+        """Get an event by ID. Returns the Event object if found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(Event).filter_by(id=event_id).first()
+        finally:
+            session.close()
+
+    def get_all_events(self):
+        """Get all events. Returns a list of Event objects."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(Event).all()
+        finally:
+            session.close()
+
+    def update_event(self, event_id, name=None, start_time=None, end_time=None, icon=None,
+                     color=None, notes_template=None, bands=None, modes=None, url_slug=None,
+                     public=None, rsgb_event=None):
+        """Update an existing event. Only provided fields will be updated. Returns True if successful."""
+
+        session = self.SessionLocal()
+        try:
+            event = session.query(Event).filter_by(id=event_id).first()
+            if not event:
+                return False
+
+            if name is not None:
+                event.name = name
+            if start_time is not None:
+                event.start_time = start_time
+            if end_time is not None:
+                event.end_time = end_time
+            if icon is not None:
+                event.icon = icon
+            if color is not None:
+                event.color = color
+            if notes_template is not None:
+                event.notes_template = notes_template
+            if url_slug is not None:
+                event.url_slug = url_slug
+            if public is not None:
+                event.public = public
+            if rsgb_event is not None:
+                event.rsgb_event = rsgb_event
+            if bands is not None:
+                event.bands = bands
+            if modes is not None:
+                event.modes = modes
+
+            session.commit()
+            return True
+        except IntegrityError as e:
+            logging.error("Error when updating event", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def delete_event(self, event_id):
+        """Delete an event and all associated temporary stations. Returns True if successful."""
+
+        session = self.SessionLocal()
+        try:
+            event = session.query(Event).filter_by(id=event_id).first()
+            if not event:
+                return False
+
+            # Delete the event. The cascade='delete-orphan' option provided at creation of the schema ensures temporary
+            # stations are deleted alongside it.
+            session.delete(event)
+            session.commit()
+            return True
+        except IntegrityError as e:
+            logging.error("Error when deleting event", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def add_temporary_station(self, callsign, club_name, start_time, end_time,
+                              latitude_degrees, longitude_degrees, notes, bands, modes,
+                              event_id=None, website_url=None, email=None, phone_number=None,
+                              qrz_url=None, social_media_url=None, rsgb_attending=False):
+        """Create a new temporary station. Returns the station ID if creation was successful, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            station = TemporaryStation(
+                callsign=callsign,
+                club_name=club_name,
+                event_id=event_id,
+                start_time=start_time,
+                end_time=end_time,
+                latitude_degrees=latitude_degrees,
+                longitude_degrees=longitude_degrees,
+                notes=notes,
+                website_url=website_url,
+                email=email,
+                phone_number=phone_number,
+                qrz_url=qrz_url,
+                social_media_url=social_media_url,
+                rsgb_attending=rsgb_attending
+            )
+            station.bands.extend(bands)
+            station.modes.extend(modes)
+
+            session.add(station)
+            session.commit()
+            return station.id
+        except IntegrityError as e:
+            logging.error("Error when adding temporary station", e)
+            session.rollback()
+            return None
+        finally:
+            session.close()
+
+    def get_temporary_station(self, station_id):
+        """Get a temporary station by ID. Returns the TemporaryStation object if found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(TemporaryStation).filter_by(id=station_id).first()
+        finally:
+            session.close()
+
+    def get_all_temporary_stations(self):
+        """Get all temporary stations. Returns a list of TemporaryStation objects."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(TemporaryStation).all()
+        finally:
+            session.close()
+
+    def get_temporary_stations_by_event(self, event_id):
+        """Get all temporary stations for a specific event. Returns a list of TemporaryStation objects."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(TemporaryStation).filter_by(event_id=event_id).all()
+        finally:
+            session.close()
+
+    def update_temporary_station(self, station_id, callsign=None, club_name=None, event_id=None,
+                                 start_time=None, end_time=None, latitude_degrees=None,
+                                 longitude_degrees=None, notes=None, bands=None, modes=None,
+                                 website_url=None, email=None, phone_number=None, qrz_url=None,
+                                 social_media_url=None, rsgb_attending=None):
+        """Update an existing temporary station. Only provided fields will be updated. Returns True if successful."""
+
+        session = self.SessionLocal()
+        try:
+            station = session.query(TemporaryStation).filter_by(id=station_id).first()
+            if not station:
+                return False
+
+            if callsign is not None:
+                station.callsign = callsign
+            if club_name is not None:
+                station.club_name = club_name
+            if event_id is not None:
+                station.event_id = event_id
+            if start_time is not None:
+                station.start_time = start_time
+            if end_time is not None:
+                station.end_time = end_time
+            if latitude_degrees is not None:
+                station.latitude_degrees = latitude_degrees
+            if longitude_degrees is not None:
+                station.longitude_degrees = longitude_degrees
+            if notes is not None:
+                station.notes = notes
+            if website_url is not None:
+                station.website_url = website_url
+            if email is not None:
+                station.email = email
+            if phone_number is not None:
+                station.phone_number = phone_number
+            if qrz_url is not None:
+                station.qrz_url = qrz_url
+            if social_media_url is not None:
+                station.social_media_url = social_media_url
+            if rsgb_attending is not None:
+                station.rsgb_attending = rsgb_attending
+            if bands is not None:
+                station.bands = bands
+            if modes is not None:
+                station.modes = modes
+
+            session.commit()
+            return True
+        except IntegrityError as e:
+            logging.error("Error when updating temporary station", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def delete_temporary_station(self, station_id):
+        """Delete a temporary station. Returns True if successful."""
+
+        session = self.SessionLocal()
+        try:
+            station = session.query(TemporaryStation).filter_by(id=station_id).first()
+            if not station:
+                return False
+
+            session.delete(station)
+            session.commit()
+            return True
+        except IntegrityError as e:
+            logging.error("Error when deleting temporary station", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def add_permanent_station(self, callsign, club_name, latitude_degrees, longitude_degrees,
+                              meeting_when, meeting_where, notes, type_id=None, website_url=None,
+                              email=None, phone_number=None, qrz_url=None, social_media_url=None):
+        """Create a new permanent station. Returns the station ID if creation was successful, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            station = PermanentStation(
+                callsign=callsign,
+                club_name=club_name,
+                type_id=type_id,
+                latitude_degrees=latitude_degrees,
+                longitude_degrees=longitude_degrees,
+                meeting_when=meeting_when,
+                meeting_where=meeting_where,
+                notes=notes,
+                website_url=website_url,
+                email=email,
+                phone_number=phone_number,
+                qrz_url=qrz_url,
+                social_media_url=social_media_url
+            )
+
+            session.add(station)
+            session.commit()
+            return station.id
+        except IntegrityError as e:
+            logging.error("Error when adding permanent station", e)
+            session.rollback()
+            return None
+        finally:
+            session.close()
+
+    def get_permanent_station(self, station_id):
+        """Get a permanent station by ID. Returns the PermanentStation object if found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(PermanentStation).filter_by(id=station_id).first()
+        finally:
+            session.close()
+
+    def get_all_permanent_stations(self):
+        """Get all permanent stations. Returns a list of PermanentStation objects."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(PermanentStation).all()
+        finally:
+            session.close()
+
+    def get_permanent_stations_by_type(self, type_id):
+        """Get all permanent stations of a specific type. Returns a list of PermanentStation objects."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(PermanentStation).filter_by(type_id=type_id).all()
+        finally:
+            session.close()
+
+    def update_permanent_station(self, station_id, callsign=None, club_name=None, type_id=None,
+                                 latitude_degrees=None, longitude_degrees=None, meeting_when=None,
+                                 meeting_where=None, notes=None, website_url=None, email=None,
+                                 phone_number=None, qrz_url=None, social_media_url=None):
+        """Update an existing permanent station. Only provided fields will be updated. Returns True if successful."""
+
+        session = self.SessionLocal()
+        try:
+            station = session.query(PermanentStation).filter_by(id=station_id).first()
+            if not station:
+                return False
+
+            if callsign is not None:
+                station.callsign = callsign
+            if club_name is not None:
+                station.club_name = club_name
+            if type_id is not None:
+                station.type_id = type_id
+            if latitude_degrees is not None:
+                station.latitude_degrees = latitude_degrees
+            if longitude_degrees is not None:
+                station.longitude_degrees = longitude_degrees
+            if meeting_when is not None:
+                station.meeting_when = meeting_when
+            if meeting_where is not None:
+                station.meeting_where = meeting_where
+            if notes is not None:
+                station.notes = notes
+            if website_url is not None:
+                station.website_url = website_url
+            if email is not None:
+                station.email = email
+            if phone_number is not None:
+                station.phone_number = phone_number
+            if qrz_url is not None:
+                station.qrz_url = qrz_url
+            if social_media_url is not None:
+                station.social_media_url = social_media_url
+
+            session.commit()
+            return True
+        except IntegrityError as e:
+            logging.error("Error when updating permanent station", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def delete_permanent_station(self, station_id):
+        """Delete a permanent station. Returns True if successful."""
+
+        session = self.SessionLocal()
+        try:
+            station = session.query(PermanentStation).filter_by(id=station_id).first()
+            if not station:
+                return False
+
+            session.delete(station)
+            session.commit()
+            return True
+        except IntegrityError as e:
+            logging.error("Error when deleting permanent station", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
+    def get_permanent_station_type_by_name(self, type_name):
+        """Get a permanent station type by name. Returns the PermanentStationType object if found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(PermanentStationType).filter_by(name=type_name).first()
+        finally:
+            session.close()
+
+    def get_all_permanent_station_types(self):
+        """Get all permanent station types. Returns a list of PermanentStationType objects."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(PermanentStationType).all()
+        finally:
+            session.close()
+
+    def get_all_bands(self):
+        """Get all bands. Returns a list of Band objects."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(Band).all()
+        finally:
+            session.close()
+
+    def get_all_modes(self):
+        """Get all modes. Returns a list of Mode objects."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(Mode).all()
         finally:
             session.close()
 
