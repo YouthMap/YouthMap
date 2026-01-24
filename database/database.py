@@ -1,13 +1,13 @@
 import hashlib
 import secrets
 from datetime import datetime, timedelta
+
 from sqlalchemy import create_engine, Column, Integer, String, DateTime, ForeignKey, Boolean, Numeric, Table
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
-from sqlalchemy.exc import IntegrityError
 
 Base = declarative_base()
-
 
 # Association tables (must be defined first before they are referenced in classes)
 temporary_station_bands = Table(
@@ -34,6 +34,7 @@ event_modes = Table(
     Column('event_id', Integer, ForeignKey('events.id'), primary_key=True),
     Column('mode_id', Integer, ForeignKey('modes.id'), primary_key=True)
 )
+
 
 # SQLAlchemy Classes
 
@@ -101,7 +102,8 @@ class Band(Base):
     events = relationship('Event', secondary=event_bands, back_populates='bands')
     temporary_stations = relationship('TemporaryStation', secondary=temporary_station_bands, back_populates='bands')
 
-    default_data = ["2200m", "600m", "160m", "80m", "60m", "40m", "30m", "20m", "17m", "15m", "12m", "11m", "10m", "6m", "5m", "4m", "2m", "1.25m", "70cm", "23cm", "13cm", "5.8GHz", "10GHz", "24GHz", "47GHz", "76GHz"]
+    default_data = ["2200m", "600m", "160m", "80m", "60m", "40m", "30m", "20m", "17m", "15m", "12m", "11m", "10m", "6m",
+                    "5m", "4m", "2m", "1.25m", "70cm", "23cm", "13cm", "5.8GHz", "10GHz", "24GHz", "47GHz", "76GHz"]
 
     @classmethod
     def initialize(cls, session):
@@ -311,7 +313,7 @@ class Database:
             session.close()
 
     def verify_user_session_token(self, session_token):
-        """Verify session token is valid and not expired"""
+        """Verify session token is valid and not expired. Return the session ID if one exists, otherwise None."""
 
         session = self.SessionLocal()
         try:
@@ -324,10 +326,9 @@ class Database:
         finally:
             session.close()
 
-
     def add_event(self, name, start_time, end_time, icon, color, notes_template, bands, modes,
                   url_slug=None, public=True, rsgb_event=False):
-        """Create a new event"""
+        """Create a new event. Returns the event ID if one was created."""
 
         session = self.SessionLocal()
         try:
@@ -353,7 +354,6 @@ class Database:
         finally:
             session.close()
 
-
     def get_bands_by_name(self, band_names):
         """Converts a list of string band names into Band objects to use with the database."""
 
@@ -362,7 +362,6 @@ class Database:
             return [session.query(Band).filter_by(name=b).first() for b in band_names]
         finally:
             session.close()
-
 
     def get_modes_by_name(self, mode_names):
         """Converts a list of string mode names into Mode objects to use with the database."""
