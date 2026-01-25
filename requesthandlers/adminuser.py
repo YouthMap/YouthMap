@@ -10,9 +10,8 @@ class AdminUserHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self, slug=None):
-        """The slug here is the user ID, so e.g. the URL can be /admin/user/1 to edit user 1. If no slug is provided,
-        the user ID of the current user is used. A special slug of 'new' is also allowed, which sets up the form to
-        create a user rather than to edit one."""
+        """The slug here is the user ID, so e.g. the URL can be /admin/user/1 to edit user 1. A special slug of 'new' is
+         also allowed, which sets up the form to create a user rather than to edit one."""
 
         user_id = int(slug) if slug != "new" else self.current_user
         creating_new = (slug == "new")
@@ -36,7 +35,7 @@ class AdminUserHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self, slug):
-        """Handles POST requests for user management page. This supports three 'actions' depending on whether the Update
+        """Handles POST requests for user editing page. This supports three 'actions' depending on whether the Update
         or Delete button was clicked for an existing user, or the Create button was clicked for a new user, and provides
         the updated data to insert back into the database. This requires the current user to have super-admin permission.
         The slug here is the user ID, so e.g. the URL can be /admin/user/1 to edit user 1. A special slug of 'new' is

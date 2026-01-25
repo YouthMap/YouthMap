@@ -4,7 +4,7 @@ from requesthandlers.base import BaseHandler
 
 
 class AdminUsersHandler(BaseHandler):
-    """Handler for admin user management page"""
+    """Handler for admin user list page"""
 
     @tornado.web.authenticated
     def get(self):

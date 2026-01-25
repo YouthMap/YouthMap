@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
+<h1>{{ "Create" if creating_new else "Update" }} Event</h1>
+{% if creating_new %}
+    <p>Please enter the details for the new event.</p>
+{% else %}
+    <p>Updating details for {{ event.name }}.</p>
+{% end %}
+
+<form method="post">
+    <label for="name">Name:</label> <input type="text" id="name" name="name" value="{{ '' if creating_new else event.name }}" required/><br/>
+    <label for="start_time">Start Time:</label> TODO Date/Time Picker<br/>
+    <label for="end_time">End Time:</label> TODO Date/Time Picker<br/>
+    <label for="bands">Bands:</label> TODO Bands Multiselect<br/>
+    <label for="modes">Modes:</label> TODO Modes Multiselect<br/>
+    <label for="icon">Icon:</label> TODO Icon Picker<br/>
+    <label for="color">Color:</label> <input type="text" id="color" name="color" value="{{ '' if creating_new else event.color }}" required/><br/>
+    <label for="notes_template">Notes Template (optional):</label> <textarea id="notes_template" name="notes_template" rows="5">{{ '' if creating_new else event.notes_template }}</textarea><br/>
+    <label for="url_slug">URL Slug (optional):</label> <input type="text" id="url_slug" name="url_slug" value="{{ '' if creating_new else event.url_slug }}" /><br/>
+    <input type="checkbox" id="public" name="public" value="true"
+               {% if not creating_new and user.public %}checked{% end %}>
+        <label for="public">Public</label><br/>
+    <input type="checkbox" id="rsgb_event" name="rsgb_event" value="true"
+               {% if not creating_new and user.rsgb_event %}checked{% end %}>
+        <label for="rsgb_event">RSGB Event</label><br/>
+
+    {% if creating_new %}
+        <input type="submit" name="action" value="Create">
+    {% else %}
+        <input type="submit" name="action" value="Update"> <input type="submit" name="action" value="Delete">
+    {% end %}
+</form>
+
+<p><a href="/admin">Back to dashboard</a></p>
+
+{% end %}
