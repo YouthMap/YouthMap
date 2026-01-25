@@ -1,0 +1,12 @@
+# Port on which to run the web server. This should not run directly on port 80 and does not itself support SSL. You
+# should instead use a reverse proxy server such as nginx to provide the initial server and SSL support, then proxy
+# requests out to YouthMap itself.
+http-port: 8080
+
+# Path to the directory which will contain the SQLite database file (database.db). If this does not exist on startup, it
+# will be created.
+database-dir: data
+
+# Path to the area where uploaded files will be stored. If this does not exist on startup, it will be created. The user
+# that runs YouthMap requires write access to this directory.
+upload-dir: data/upload

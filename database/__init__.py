@@ -1,6 +1,9 @@
+from pathlib import Path
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from core.config import DATABASE_DIR
 from .base import Base
 from .models import User, UserSession, Event, TemporaryStation, PermanentStation, Band, Mode, PermanentStationType
 from .operations import DatabaseOperations
@@ -10,8 +13,11 @@ class Database(DatabaseOperations):
     """Data Access Object for the database"""
 
     def __init__(self):
+        # Create database directory if it doesn't already exist
+        Path(DATABASE_DIR).mkdir(parents=True, exist_ok=True)
+
         # Create DB and session factory
-        self.engine = create_engine('sqlite:///data/database.db')
+        self.engine = create_engine('sqlite:///' + DATABASE_DIR + "/database.db")
         self.SessionLocal = sessionmaker(bind=self.engine)
 
         # Initialize parent class with session factory

@@ -6,6 +6,7 @@ import sys
 import tornado.ioloop
 import tornado.web
 
+from core.config import HTTP_PORT
 from database import Database
 from requesthandlers.admin import AdminHandler
 from requesthandlers.changepassword import ChangePasswordHandler
@@ -49,8 +50,8 @@ class YouthMap(tornado.web.Application):
 
 def main():
     app = YouthMap()
-    app.listen(8080)
-    logging.info("Listening on port 8080.")
+    app.listen(HTTP_PORT)
+    logging.info("Listening on port " + str(HTTP_PORT) + ".")
     tornado.ioloop.IOLoop.current().start()
 
 

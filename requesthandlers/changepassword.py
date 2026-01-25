@@ -22,7 +22,7 @@ class ChangePasswordHandler(BaseHandler):
                     <input type="password" name="old_password" placeholder="Old Password" required><br>
                     <input type="password" name="new_password" placeholder="New Password" required><br>
                     <input type="password" name="new_password_2" placeholder="New Password (again)" required><br>
-                    <input type="submit" value="Login">
+                    <input type="submit" value="Change password">
                 </form>
             </body>
             </html>
