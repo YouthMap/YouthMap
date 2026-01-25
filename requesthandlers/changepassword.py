@@ -8,27 +8,22 @@ class ChangePasswordHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self):
+        # Redirect to login page if we don't have a current user. (The @tornado.web.authenticated annotation should do
+        # this for us, I think?)
         if not self.current_user:
             self.redirect("/login")
             return
+
+        # Get values we need to include in the template
         username = self.application.db.get_user(self.current_user).username
 
-        self.write(f'''
-            <html>
-            <body>
-                <h1>Change password</h1>
-                <p>Changing password for {username}</p>
-                <form method="post">
-                    <input type="password" name="old_password" placeholder="Old Password" required><br>
-                    <input type="password" name="new_password" placeholder="New Password" required><br>
-                    <input type="password" name="new_password_2" placeholder="New Password (again)" required><br>
-                    <input type="submit" value="Change password">
-                </form>
-            </body>
-            </html>
-        ''')
+        # Render the template
+        self.render("changepassword.html", username=username)
 
     def post(self):
+        """POST request handler, takes user-submitted form data and sets their password if possible."""
+
+        # Get request arguments
         old_password = self.get_argument("old_password")
         new_password = self.get_argument("new_password")
         new_password_2 = self.get_argument("new_password_2")
@@ -43,6 +38,6 @@ class ChangePasswordHandler(BaseHandler):
             self.write("Old password was incorrect")
             return
 
-        # OK to proceed
+        # OK to proceed, set the password in the database
         self.application.db.update_user(self.current_user, password=new_password)
         self.write("Password changed")

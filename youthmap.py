@@ -41,6 +41,7 @@ class YouthMap(tornado.web.Application):
         ]
 
         settings = {
+            "template_path": "templates",
             "cookie_secret": os.environ.get("COOKIE_SECRET", secrets.token_hex(32)),
             "login_url": "/login",
         }

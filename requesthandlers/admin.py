@@ -8,16 +8,8 @@ class AdminHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self):
+        # Get values we need to include in the template
         username = self.application.db.get_user(self.current_user).username
 
-        self.write(f'''
-            <html>
-            <body>
-                <h1>Admin Dashboard</h1>
-                <p>Hello {username}</p>
-                <p>Admin controls here</p>
-                <p><a href="/changepassword">Change password</a></p>
-                <p><a href="/logout">Logout</a></p>
-            </body>
-            </html>
-        ''')
+        # Render the template
+        self.render("admin.html", username=username)
