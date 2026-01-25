@@ -5,14 +5,16 @@ class LoginHandler(BaseHandler):
     """Handler for login page, includes POSTing username and password as well as rendering the HTML"""
 
     def get(self):
-        # Redirect to login page if we don't have a current user. (The @tornado.web.authenticated annotation should do
-        # this for us, I think?)
+        # Redirect to the admin page if we are already logged in, as we can just skip this one
         if self.current_user:
             self.redirect("/admin")
             return
 
+        # Get data we need to include in the template
+        insecure_user_present = self.application.db.is_insecure_user_present()
+
         # Render the template
-        self.render("login.html")
+        self.render("login.html", insecure_user_present=insecure_user_present)
 
     def post(self):
         """Handles POST requests for login page. If successful a session token will be created, stored in a cookie, and

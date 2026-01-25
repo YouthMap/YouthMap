@@ -2,6 +2,11 @@
 {% block content %}
 
 <h1>Admin Login</h1>
+
+{% if insecure_user_present %}
+    <p><strong>The default login is username "admin", password "password". Please ensure this user is renamed or replaced before this site goes live.</strong></p>
+{% end %}
+
 <form method="post">
     <input type="text" name="username" placeholder="Username" required autofocus><br>
     <input type="password" name="password" placeholder="Password" required><br>

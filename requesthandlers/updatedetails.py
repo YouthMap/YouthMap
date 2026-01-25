@@ -8,12 +8,6 @@ class UpdateDetailsHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self):
-        # Redirect to login page if we don't have a current user. (The @tornado.web.authenticated annotation should do
-        # this for us, I think?)
-        if not self.current_user:
-            self.redirect("/login")
-            return
-
         # Get data we need to include in the template
         user = self.application.db.get_user(self.current_user)
 
