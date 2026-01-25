@@ -11,6 +11,9 @@ from database import Database
 from requesthandlers.admin import AdminHandler
 from requesthandlers.adminevent import AdminEventHandler
 from requesthandlers.adminevents import AdminEventsHandler
+from requesthandlers.adminstationperm import AdminStationPermHandler
+from requesthandlers.adminstations import AdminStationsHandler
+from requesthandlers.adminstationtemp import AdminStationTempHandler
 from requesthandlers.adminuser import AdminUserHandler
 from requesthandlers.adminusers import AdminUsersHandler
 from requesthandlers.login import LoginHandler
@@ -43,7 +46,10 @@ class YouthMap(tornado.web.Application):
             (r"/admin/users", AdminUsersHandler),
             (r"/admin/user/([^/]+)", AdminUserHandler),
             (r"/admin/events", AdminEventsHandler),
-            (r"/admin/event/([^/]+)", AdminEventHandler)
+            (r"/admin/event/([^/]+)", AdminEventHandler),
+            (r"/admin/stations", AdminStationsHandler),
+            (r"/admin/station/temp/([^/]+)", AdminStationTempHandler),
+            (r"/admin/station/perm/([^/]+)", AdminStationPermHandler)
         ]
 
         settings = {

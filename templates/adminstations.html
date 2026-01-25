@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownTarget -->
+<h1>Manage Stations</h1>
+
+<p>Click on a station to update or delete it.</p>
+
+<h2>Temporary/Special Event Stations</h2>
+
+<ul>
+    {% for station in temp_stations %}
+        <li><a href="/admin/station/temp/{{ event.id }}">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{ station.event.name }}{% else %} (SES){% end %}</a></li>
+    {% end %}
+</ul>
+
+<p><a href="/admin/station/temp/new">Create new temporary station</a></p>
+
+<h2>Permanent/Club Stations</h2>
+
+<ul>
+    {% for station in perm_stations %}
+        <li><a href="/admin/station/perm/{{ event.id }}">{{ station.callsign }} {{ station.club_name }}</a></li>
+    {% end %}
+</ul>
+
+<p><a href="/admin/station/perm/new">Create new permanent station</a></p>
+
+<p><a href="/admin">Back to dashboard</a></p>
+
+{% end %}

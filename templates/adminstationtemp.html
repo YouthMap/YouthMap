@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
+<h1>{{ "Create" if creating_new else "Update" }} Temporary/SES Station</h1>
+{% if creating_new %}
+<p>Please enter the details for the new station.</p>
+{% else %}
+<p>Updating details for {{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{ station.event.name
+    }}{% else %} (SES){% end %}.</p>
+{% end %}
+
+<form method="post">
+    <label for="callsign">Callsign:</label> <input type="text" id="callsign" name="callsign"
+                                                   value="{{ '' if creating_new else station.callsign }}"
+                                                   required/><br/>
+    <label for="club_name">Club name:</label> <input type="text" id="club_name" name="club_name"
+                                                     value="{{ '' if creating_new else station.club_name }}"
+                                                     required/><br/>
+    <label for="event">Event (Optional):</label> TODO Event Picker<br/>
+    <label for="start_time">Start Time:</label> TODO Date/Time Picker<br/>
+    <label for="end_time">End Time:</label> TODO Date/Time Picker<br/>
+    <label for="latitude_degrees">Latitude:</label> <input type="number" id="latitude_degrees" name="latitude_degrees"
+                                                           step="any" min="-90"
+                                                           max="90"
+                                                           value="{{ '' if creating_new else station.latitude }}"
+                                                           required/><br/>
+    <label for="longitude_degrees">Longitude:</label> <input type="number" id="longitude_degrees"
+                                                             name="longitude_degrees" step="any" min="-180"
+                                                             max="180"
+                                                             value="{{ '' if creating_new else station.longitude_degrees }}"
+                                                             required/><br/>
+    <label for="bands">Bands:</label> TODO Bands Multiselect<br/>
+    <label for="modes">Modes:</label> TODO Modes Multiselect<br/>
+    <label for="notes">Notes (optional):</label> <textarea id="notes" name="notes"
+                                                          rows="5">{{ '' if creating_new else station.notes }}</textarea><br/>
+    <label for="website_url">Website (optional):</label> <input type="text" id="website_url" name="website_url"
+                                                                value="{{ '' if creating_new else station.website_url }}"/><br/>
+    <label for="qrz_url">QRZ page (optional):</label> <input type="text" id="qrz_url" name="qrz_url"
+                                                             value="{{ '' if creating_new else station.qrz_url }}"/><br/>
+    <label for="social_media_url">Social media (optional):</label> <input type="text" id="social_media_url"
+                                                                          name="social_media_url"
+                                                                          value="{{ '' if creating_new else station.social_media_url }}"/><br/>
+    <label for="email">Email (optional):</label> <input type="text" id="email" name="email"
+                                                        value="{{ '' if creating_new else station.email }}"/><br/>
+    <label for="phone_number">Phone number (optional):</label> <input type="text" id="phone_number" name="phone_number"
+                                                                      value="{{ '' if creating_new else station.phone_number }}"/><br/>
+    <input type="checkbox" id="rsgb_attending" name="rsgb_attending" value="true"
+           {% if not creating_new and user.rsgb_attending %}checked{% end %}>
+    <label for="rsgb_attending">RSGB attending</label><br/>
+    <input type="checkbox" id="approved" name="approved" value="true"
+           {% if not creating_new and user.approved %}checked{% end %}>
+    <label for="approved">Approved</label><br/>
+    <label for="edit_password">User edit password:</label> <input type="text" id="edit_password" name="edit_password"
+                                                                  value="{{ '' if creating_new else station.edit_password }}"/><br/>
+
+    {% if creating_new %}
+    <input type="submit" name="action" value="Create">
+    {% else %}
+    <input type="submit" name="action" value="Update"> <input type="submit" name="action" value="Delete">
+    {% end %}
+</form>
+
+{% if not creating_new and station.event %}
+<h2>Linked event:</h2>
+<p><a href="/admin/event/{{ station.event.id }}">{{ station.event.name }}</a></p>
+{% end %}
+
+<p><a href="/admin">Back to dashboard</a></p>
+
+{% end %}
