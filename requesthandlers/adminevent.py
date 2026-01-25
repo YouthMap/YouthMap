@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import tornado
 
 from core.utils import get_all_icons
@@ -16,13 +18,18 @@ class AdminEventHandler(BaseHandler):
         creating_new = (slug == "new")
 
         # Get data we need to include in the template
-        event = self.application.db.get_user(event_id) if not creating_new else None
+        event = self.application.db.get_event(event_id) if not creating_new else None
+        event_bands = self.application.db.get_event_bands(event_id) if event else None
+        event_modes = self.application.db.get_event_modes(event_id) if event else None
+        event_stations = self.application.db.get_event_stations(event_id) if event else None
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_icons = get_all_icons()
 
         # Render the template
-        self.render("adminevent.html", event=event, creating_new=creating_new, all_bands=all_bands, all_modes=all_modes, all_icons=all_icons)
+        self.render("adminevent.html", event=event, event_bands=event_bands, event_modes=event_modes,
+                    event_stations=event_stations, creating_new=creating_new, all_bands=all_bands, all_modes=all_modes,
+                    all_icons=all_icons)
 
     @tornado.web.authenticated
     def post(self, slug):
@@ -49,17 +56,54 @@ class AdminEventHandler(BaseHandler):
 
         # Check for Update action
         elif action == "Update":
-            # Get request arguments. For an update we need......
-            # TODO
+            # Get request arguments
+            name = self.get_argument("name")
+            start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
+            end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
+            bands = self.application.db.get_bands_by_id([int(b) for b in self.get_argument("bands[]")])
+            modes = self.application.db.get_modes_by_id([int(b) for b in self.get_argument("modes[]")])
+            icon = self.get_argument("icon")
+            color = self.get_argument("color")
+            notes_template = self.get_argument("notes_template", None)
+            public = True if self.get_argument("public", None) else False
+            rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
-            self.write("not implemented yet")
+            # Process the update
+            ok = self.application.db.update_event(event_id, name=name, start_time=start_time, end_time=end_time,
+                                                  bands=bands, modes=modes, icon=icon, color=color,
+                                                  notes_template=notes_template, public=public, rsgb_event=rsgb_event)
+            if ok:
+                # Update OK, just reload the page which will have the new data in it
+                self.redirect("/admin/event/" + slug)
+            else:
+                self.write("Failed to update event")
+                return
 
         # Check for Create action
         elif action == "Create":
-            # Get request arguments. For a create we need......
-            # TODO
+            # Get request arguments.
+            name = self.get_argument("name")
+            start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
+            end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
+            bands = self.application.db.get_bands_by_id([int(b) for b in self.get_argument("bands[]")])
+            modes = self.application.db.get_modes_by_id([int(b) for b in self.get_argument("modes[]")])
+            icon = self.get_argument("icon")
+            color = self.get_argument("color")
+            notes_template = self.get_argument("notes_template", None)
+            public = True if self.get_argument("public", None) else False
+            rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
-            self.write("not implemented yet")
+            # Process the create action
+            new_event_id = self.application.db.add_event(name=name, start_time=start_time, end_time=end_time,
+                                                         bands=bands, modes=modes, icon=icon, color=color,
+                                                         notes_template=notes_template, public=public,
+                                                         rsgb_event=rsgb_event)
+            if new_event_id:
+                # Create OK, just reload the page which will have the new data in it
+                self.redirect("/admin/event/" + str(new_event_id))
+            else:
+                self.write("Failed to update event")
+                return
 
         else:
             self.write("Invalid action '" + action + "'")

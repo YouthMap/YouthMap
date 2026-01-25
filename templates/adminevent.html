@@ -13,25 +13,25 @@
     <label for="name">Name:</label> <input type="text" id="name" name="name"
                                            value="{{ '' if creating_new else event.name }}" required/><br/>
     <label for="start_time">Start Time (UTC):</label> <input id="start_time" name="start_time" type="datetime-local"
-                                                             value="{{ (datetime.datetime.now() if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
+                                                             value="{{ (datetime.datetime.now() if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
     <label for="end_time">End Time (UTC):</label> <input id="end_time" name="end_time" type="datetime-local"
-                                                         value="{{ (datetime.datetime.now() if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
+                                                         value="{{ (datetime.datetime.now() if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
     Bands:
     {% for band in all_bands %}
     <input type="checkbox" id="band-{{ band.id }}" name="bands[]" value="{{ band.id }}"
-           {% if creating_new or band in event.bands %}checked{% end %}/>
+           {% if creating_new or band in event_bands %}checked{% end %}/>
     <label for="band-{{ band.id }}">{{ band.name }}</label>
     {% end %}
     <br/>
     Modes:
     {% for mode in all_modes %}
     <input type="checkbox" id="mode-{{ mode.id }}" name="modes[]" value="{{ mode.id }}"
-           {% if creating_new or mode in event.modes %}checked{% end %}/>
+           {% if creating_new or mode in event_modes %}checked{% end %}/>
     <label for="mode-{{ mode.id }}">{{ mode.name }}</label>
     {% end %}
     <br/>
     <label for="icon">Icon:</label>
-    <select name="icon" id="icon">
+    <select name="icon" id="icon" required>
         {% for icon in all_icons %}
         <option value="{{ icon }}">{{ icon }}</option>
         {% end %}
@@ -44,10 +44,10 @@
     <label for="url_slug">URL Slug (optional):</label> <input type="text" id="url_slug" name="url_slug"
                                                               value="{{ '' if creating_new else event.url_slug }}"/><br/>
     <input type="checkbox" id="public" name="public" value="true"
-           {% if not creating_new and user.public %}checked{% end %}>
+           {% if not creating_new and event.public %}checked{% end %}>
     <label for="public">Public</label><br/>
     <input type="checkbox" id="rsgb_event" name="rsgb_event" value="true"
-           {% if not creating_new and user.rsgb_event %}checked{% end %}>
+           {% if not creating_new and event.rsgb_event %}checked{% end %}>
     <label for="rsgb_event">RSGB Event</label><br/>
 
     {% if creating_new %}
@@ -59,9 +59,9 @@
 
 {% if not creating_new %}
 <h2>Stations at this event:</h2>
-{% if len(event.stations) > 0 %}
+{% if len(event_stations) > 0 %}
 <ul>
-    {% for station in event.stations %}
+    {% for station in event_stations %}
     <li><a href="/admin/station/temp/{{ station.id }}">{{ station.callsign }} {{ station.club_name }}</a></li>
     {% end %}
 </ul>

@@ -19,7 +19,7 @@
     <label for="type">Type:</label>
     <select name="type" id="type">
         {% for type in all_perm_station_types %}
-        <option value="{{ type.id }}">{{ type.name }}</option>
+        <option value="{{ type.id }}" {% if not creating_new and station.type_id == type.id %}selected{% end %}>{{ type.name }}</option>
         {% end %}
     </select><br/>
     <label for="latitude_degrees">Latitude (degrees):</label> <input type="number" id="latitude_degrees"
@@ -51,7 +51,7 @@
     <label for="phone_number">Phone number (optional):</label> <input type="text" id="phone_number" name="phone_number"
                                                                       value="{{ '' if creating_new else station.phone_number }}"/><br/>
     <input type="checkbox" id="approved" name="approved" value="true"
-           {% if not creating_new and user.approved %}checked{% end %}>
+           {% if not creating_new and station.approved %}checked{% end %}>
     <label for="approved">Approved</label><br/>
     <label for="edit_password">User edit password:</label> <input type="text" id="edit_password" name="edit_password"
                                                                   value="{{ '' if creating_new else station.edit_password }}"/><br/>

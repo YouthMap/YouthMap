@@ -109,12 +109,12 @@ class AdminUserHandler(BaseHandler):
             email = self.get_argument("email")
             super_admin = True if self.get_argument("super_admin", None) else False
 
-            # Process the update
-            ok = self.application.db.add_user(username=username, password=password, email=email,
+            # Process the create action
+            new_user_id = self.application.db.add_user(username=username, password=password, email=email,
                                               super_admin=super_admin)
-            if ok:
-                # Update OK, go back to the user management page which will have the new data in it
-                self.redirect("/admin/users")
+            if new_user_id:
+                # Create OK, go back to the user management page which will have the new data in it
+                self.redirect("/admin/user/" + str(new_user_id))
             else:
                 self.write("Failed to add user")
                 return

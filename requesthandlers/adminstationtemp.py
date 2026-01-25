@@ -17,12 +17,15 @@ class AdminStationTempHandler(BaseHandler):
 
         # Get data we need to include in the template
         station = self.application.db.get_temporary_station(station_id) if not creating_new else None
+        station_bands = self.application.db.get_event_bands(station_id) if station else None
+        station_modes = self.application.db.get_event_modes(station_id) if station else None
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_events = self.application.db.get_all_events()
 
         # Render the template
-        self.render("adminstationtemp.html", station=station, creating_new=creating_new, all_events=all_events, all_bands=all_bands, all_modes=all_modes)
+        self.render("adminstationtemp.html", station=station, station_bands=station_bands, station_modes=station_modes,
+                    creating_new=creating_new, all_events=all_events, all_bands=all_bands, all_modes=all_modes)
 
     @tornado.web.authenticated
     def post(self, slug):

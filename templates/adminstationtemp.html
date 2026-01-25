@@ -21,13 +21,13 @@
     <select name="event" id="event">
         <option value=""></option>
         {% for event in all_events %}
-        <option value="{{ event.id }}">{{ event.name }}</option>
+        <option value="{{ event.id }}" {% if not creating_new and station.event_id == event.id %}selected{% end %}>{{ event.name }}</option>
         {% end %}
     </select><br/>
     <label for="start_time">Start Time (UTC):</label> <input id="start_time" name="start_time" type="datetime-local"
-                                                             value="{{ (datetime.datetime.now() if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
+                                                             value="{{ (datetime.datetime.now() if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
     <label for="end_time">End Time (UTC):</label> <input id="end_time" name="end_time" type="datetime-local"
-                                                         value="{{ (datetime.datetime.now() if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
+                                                         value="{{ (datetime.datetime.now() if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
     <label for="latitude_degrees">Latitude (degrees):</label> <input type="number" id="latitude_degrees"
                                                                      name="latitude_degrees"
                                                                      step="any" min="-90"
@@ -42,14 +42,14 @@
     Bands:
     {% for band in all_bands %}
     <input type="checkbox" id="band-{{ band.id }}" name="bands[]" value="{{ band.id }}"
-           {% if creating_new or band in event.bands %}checked{% end %}/>
+           {% if creating_new or band in station_bands %}checked{% end %}/>
     <label for="band-{{ band.id }}">{{ band.name }}</label>
     {% end %}
     <br/>
     Modes:
     {% for mode in all_modes %}
     <input type="checkbox" id="mode-{{ mode.id }}" name="modes[]" value="{{ mode.id }}"
-           {% if creating_new or mode in event.modes %}checked{% end %}/>
+           {% if creating_new or mode in station_modes %}checked{% end %}/>
     <label for="mode-{{ mode.id }}">{{ mode.name }}</label>
     {% end %}
     <br/>
@@ -67,10 +67,10 @@
     <label for="phone_number">Phone number (optional):</label> <input type="text" id="phone_number" name="phone_number"
                                                                       value="{{ '' if creating_new else station.phone_number }}"/><br/>
     <input type="checkbox" id="rsgb_attending" name="rsgb_attending" value="true"
-           {% if not creating_new and user.rsgb_attending %}checked{% end %}>
+           {% if not creating_new and station.rsgb_attending %}checked{% end %}>
     <label for="rsgb_attending">RSGB attending</label><br/>
     <input type="checkbox" id="approved" name="approved" value="true"
-           {% if not creating_new and user.approved %}checked{% end %}>
+           {% if not creating_new and station.approved %}checked{% end %}>
     <label for="approved">Approved</label><br/>
     <label for="edit_password">User edit password:</label> <input type="text" id="edit_password" name="edit_password"
                                                                   value="{{ '' if creating_new else station.edit_password }}"/><br/>

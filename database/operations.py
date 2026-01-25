@@ -240,6 +240,39 @@ class DatabaseOperations:
         finally:
             session.close()
 
+    def get_event_bands(self, event_id):
+        """Get the bands associated with an event by the ID of that event. Returns the Band objects if
+        found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            event = session.query(Event).filter_by(id=event_id).first()
+            return event.bands if event else None
+        finally:
+            session.close()
+
+    def get_event_modes(self, event_id):
+        """Get the modes associated with an event by the ID of that event. Returns the Mode objects if
+        found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            event = session.query(Event).filter_by(id=event_id).first()
+            return event.modes if event else None
+        finally:
+            session.close()
+
+    def get_event_stations(self, event_id):
+        """Get the temporary stations associated with an event by the ID of that station. Returns the TemporaryStation
+        objects if found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            event = session.query(Event).filter_by(id=event_id).first()
+            return event.stations if event else None
+        finally:
+            session.close()
+
     def get_all_events(self):
         """Get all events. Returns a list of Event objects."""
 
@@ -385,6 +418,28 @@ class DatabaseOperations:
         session = self.SessionLocal()
         try:
             return session.query(TemporaryStation).filter_by(id=station_id).first()
+        finally:
+            session.close()
+
+    def get_temporary_station_bands(self, station_id):
+        """Get the bands associated with a temporary station by the ID of that station. Returns the Band objects if
+        found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            station = session.query(TemporaryStation).filter_by(id=station_id).first()
+            return station.bands if station else None
+        finally:
+            session.close()
+
+    def get_temporary_station_modes(self, station_id):
+        """Get the modes associated with a temporary station by the ID of that station. Returns the Mode objects if
+        found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            station = session.query(TemporaryStation).filter_by(id=station_id).first()
+            return station.modes if station else None
         finally:
             session.close()
 
@@ -683,7 +738,16 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return [session.query(Band).filter_by(name=b).first() for b in band_names]
+            return [session.query(Band).filter_by(name=n).first() for n in band_names]
+        finally:
+            session.close()
+
+    def get_bands_by_id(self, band_ids):
+        """Converts a list of numeric band IDs into Band objects to use with the database."""
+
+        session = self.SessionLocal()
+        try:
+            return [session.query(Band).filter_by(id=id).first() for id in band_ids]
         finally:
             session.close()
 
@@ -692,6 +756,15 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return [session.query(Mode).filter_by(name=b).first() for b in mode_names]
+            return [session.query(Mode).filter_by(name=n).first() for n in mode_names]
+        finally:
+            session.close()
+
+    def get_modes_by_id(self, mode_ids):
+        """Converts a list of numeric mode IDs into Mode objects to use with the database."""
+
+        session = self.SessionLocal()
+        try:
+            return [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
         finally:
             session.close()
