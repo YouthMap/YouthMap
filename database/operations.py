@@ -9,7 +9,7 @@ from .models import (
     TemporaryStation, PermanentStation,
     Band, Mode, PermanentStationType
 )
-from .utils import hash_password
+from .utils import hash_password, generate_password
 
 
 class DatabaseOperations:
@@ -209,6 +209,9 @@ class DatabaseOperations:
                 public=public,
                 rsgb_event=rsgb_event
             )
+
+            # Add selected bands and modes to the station. Because these are lists of bands and modes, and stored in an
+            # association table, we can't just set them at object creation time using SQLalchemy, so we add them here.
             event.bands.extend(bands)
             event.modes.extend(modes)
 
@@ -304,11 +307,32 @@ class DatabaseOperations:
         finally:
             session.close()
 
+    def cleanup_expired_events(self):
+        """Delete all expired events from the database. Any orphaned Temporary Stations will also be deleted. Returns
+        True if successful, False otherwise."""
+
+        session = self.SessionLocal()
+        try:
+            for event in session.query(Event).filter(Event.end_time <= datetime.now()).all():
+                session.delete(event)
+            session.commit()
+            return True
+        except IntegrityError as e:
+            logging.error("Error when clearing up expired events", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
     def add_temporary_station(self, callsign, club_name, start_time, end_time,
                               latitude_degrees, longitude_degrees, notes, bands, modes,
                               event_id=None, website_url=None, email=None, phone_number=None,
-                              qrz_url=None, social_media_url=None, rsgb_attending=False):
-        """Create a new temporary station. Returns the station ID if creation was successful, otherwise None."""
+                              qrz_url=None, social_media_url=None, rsgb_attending=False, approved=False):
+        """Create a new temporary station. Returns the station ID if creation was successful, otherwise None. If
+        creation was successful, the new object contains an automatically generated edit_password which should be
+        provided to the visitor to allow editing it in future without being logged in. Stations can be created with the
+        approved flag set either true or false, this should be true if a logged-in user created it or false if a visitor
+        created it, at which point it is not displayed until a proper user logs in and sets it to approved."""
 
         session = self.SessionLocal()
         try:
@@ -326,10 +350,18 @@ class DatabaseOperations:
                 phone_number=phone_number,
                 qrz_url=qrz_url,
                 social_media_url=social_media_url,
-                rsgb_attending=rsgb_attending
+                rsgb_attending=rsgb_attending,
+                approved=approved
             )
+
+            # Add selected bands and modes to the station. Because these are lists of bands and modes, and stored in an
+            # association table, we can't just set them at object creation time using SQLalchemy, so we add them here.
             station.bands.extend(bands)
             station.modes.extend(modes)
+
+            # Generate an "edit password" to allow a visitor to update the station they created without having to be a
+            # logged-in user
+            station.edit_password = generate_password()
 
             session.add(station)
             session.commit()
@@ -372,7 +404,7 @@ class DatabaseOperations:
                                  start_time=None, end_time=None, latitude_degrees=None,
                                  longitude_degrees=None, notes=None, bands=None, modes=None,
                                  website_url=None, email=None, phone_number=None, qrz_url=None,
-                                 social_media_url=None, rsgb_attending=None):
+                                 social_media_url=None, rsgb_attending=None, approved=None, edit_password=None):
         """Update an existing temporary station. Only provided fields will be updated. Returns True if successful."""
 
         session = self.SessionLocal()
@@ -413,6 +445,10 @@ class DatabaseOperations:
                 station.bands = bands
             if modes is not None:
                 station.modes = modes
+            if approved is not None:
+                station.approved = approved
+            if edit_password is not None:
+                station.edit_password = edit_password
 
             session.commit()
             return True
@@ -442,10 +478,31 @@ class DatabaseOperations:
         finally:
             session.close()
 
+    def cleanup_expired_temporary_stations(self):
+        """Delete all expired temporary stations from the database. This will not delete any Events they were
+        associated with, even if those events have also expired. Returns True if successful, False otherwise."""
+
+        session = self.SessionLocal()
+        try:
+            for ts in session.query(TemporaryStation).filter(TemporaryStation.end_time <= datetime.now()).all():
+                session.delete(ts)
+            session.commit()
+            return True
+        except IntegrityError as e:
+            logging.error("Error when clearing up expired temporary stations", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
+
     def add_permanent_station(self, callsign, club_name, latitude_degrees, longitude_degrees,
                               meeting_when, meeting_where, notes, type_id=None, website_url=None,
-                              email=None, phone_number=None, qrz_url=None, social_media_url=None):
-        """Create a new permanent station. Returns the station ID if creation was successful, otherwise None."""
+                              email=None, phone_number=None, qrz_url=None, social_media_url=None, approved=False):
+        """Create a new permanent station. Returns the station ID if creation was successful, otherwise None. If
+        creation was successful, the new object contains an automatically generated edit_password which should be
+        provided to the visitor to allow editing it in future without being logged in. Stations can be created with the
+        approved flag set either true or false, this should be true if a logged-in user created it or false if a visitor
+        created it, at which point it is not displayed until a proper user logs in and sets it to approved."""
 
         session = self.SessionLocal()
         try:
@@ -462,8 +519,13 @@ class DatabaseOperations:
                 email=email,
                 phone_number=phone_number,
                 qrz_url=qrz_url,
-                social_media_url=social_media_url
+                social_media_url=social_media_url,
+                approved=approved
             )
+
+            # Generate an "edit password" to allow a visitor to update the station they created without having to be a
+            # logged-in user
+            station.edit_password = generate_password()
 
             session.add(station)
             session.commit()
@@ -505,7 +567,8 @@ class DatabaseOperations:
     def update_permanent_station(self, station_id, callsign=None, club_name=None, type_id=None,
                                  latitude_degrees=None, longitude_degrees=None, meeting_when=None,
                                  meeting_where=None, notes=None, website_url=None, email=None,
-                                 phone_number=None, qrz_url=None, social_media_url=None):
+                                 phone_number=None, qrz_url=None, social_media_url=None, approved=None,
+                                 edit_password=None):
         """Update an existing permanent station. Only provided fields will be updated. Returns True if successful."""
 
         session = self.SessionLocal()
@@ -540,6 +603,10 @@ class DatabaseOperations:
                 station.qrz_url = qrz_url
             if social_media_url is not None:
                 station.social_media_url = social_media_url
+            if approved is not None:
+                station.approved = approved
+            if edit_password is not None:
+                station.edit_password = edit_password
 
             session.commit()
             return True
@@ -569,15 +636,6 @@ class DatabaseOperations:
         finally:
             session.close()
 
-    def get_permanent_station_type_by_name(self, type_name):
-        """Get a permanent station type by name. Returns the PermanentStationType object if found, otherwise None."""
-
-        session = self.SessionLocal()
-        try:
-            return session.query(PermanentStationType).filter_by(name=type_name).first()
-        finally:
-            session.close()
-
     def get_all_permanent_station_types(self):
         """Get all permanent station types. Returns a list of PermanentStationType objects."""
 
@@ -602,6 +660,15 @@ class DatabaseOperations:
         session = self.SessionLocal()
         try:
             return session.query(Mode).all()
+        finally:
+            session.close()
+
+    def get_permanent_station_type_by_name(self, type_name):
+        """Get a permanent station type by name. Returns the PermanentStationType object if found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(PermanentStationType).filter_by(name=type_name).first()
         finally:
             session.close()
 

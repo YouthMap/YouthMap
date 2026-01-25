@@ -169,6 +169,8 @@ class TemporaryStation(Base):
     qrz_url = Column(String, nullable=True)
     social_media_url = Column(String, nullable=True)
     rsgb_attending = Column(Boolean, nullable=False)
+    approved = Column(Boolean, nullable=False)
+    edit_password = Column(String, nullable=False)
 
     # Link the temporary station to the event it is for.
     event = relationship('Event', back_populates='stations')
@@ -197,6 +199,8 @@ class PermanentStation(Base):
     phone_number = Column(String, nullable=True)
     qrz_url = Column(String, nullable=True)
     social_media_url = Column(String, nullable=True)
+    approved = Column(Boolean, nullable=False)
+    edit_password = Column(String, nullable=False)
 
     # Link the permanent station to its type.
     type = relationship('PermanentStationType', back_populates='stations')
