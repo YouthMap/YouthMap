@@ -53,9 +53,9 @@ class PermanentStationType(Base):
     stations = relationship('PermanentStation', back_populates='type')
 
     default_data = [
-        {"name": "School", "icon": "book", "color": "yellow"},
-        {"name": "University", "icon": "grad-hat", "color": "yellow"},
-        {"name": "Cadet", "icon": "beret", "color": "light-blue"}
+        {"name": "School", "icon": "school.png", "color": "yellow"},
+        {"name": "University", "icon": "uni.png", "color": "orange"},
+        {"name": "Cadet", "icon": "cadets.png", "color": "light-blue"}
     ]
 
     @classmethod

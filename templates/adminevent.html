@@ -30,7 +30,13 @@
     <label for="mode-{{ mode.replace('.', '_') }}">{{ mode }}</label>
     {% end %}
     <br/>
-    <label for="icon">Icon:</label> TODO Icon Picker<br/>
+    <label for="icon">Icon:</label>
+    <select name="icon" id="icon">
+        {% for icon in all_icons %}
+        <option value="{{ icon }}">{{ icon }}</option>
+        {% end %}
+    </select>
+    <br/>
     <label for="color">Color:</label> <input type="text" id="color" name="color"
                                              value="{{ '' if creating_new else event.color }}" required/><br/>
     <label for="notes_template">Notes Template (optional):</label> <textarea id="notes_template" name="notes_template"
