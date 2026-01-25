@@ -16,7 +16,12 @@
     <label for="club_name">Club name:</label> <input type="text" id="club_name" name="club_name"
                                                      value="{{ '' if creating_new else station.club_name }}"
                                                      required/><br/>
-    <label for="type">Type:</label> TODO Type Picker<br/>
+    <label for="type">Type:</label>
+    <select name="type" id="type">
+        {% for type in all_perm_station_types %}
+        <option value="{{ type.id }}">{{ type.name }}</option>
+        {% end %}
+    </select><br/>
     <label for="latitude_degrees">Latitude (degrees):</label> <input type="number" id="latitude_degrees"
                                                                      name="latitude_degrees"
                                                                      step="any" min="-90"

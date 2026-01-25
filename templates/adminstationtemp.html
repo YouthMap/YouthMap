@@ -17,7 +17,13 @@
     <label for="club_name">Club name:</label> <input type="text" id="club_name" name="club_name"
                                                      value="{{ '' if creating_new else station.club_name }}"
                                                      required/><br/>
-    <label for="event">Event (Optional):</label> TODO Event Picker<br/>
+    <label for="event">Event (Optional):</label>
+    <select name="event" id="event">
+        <option value=""></option>
+        {% for event in all_events %}
+        <option value="{{ event.id }}">{{ event.name }}</option>
+        {% end %}
+    </select><br/>
     <label for="start_time">Start Time (UTC):</label> <input id="start_time" name="start_time" type="datetime-local"
                                                              value="{{ (datetime.datetime.now() if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
     <label for="end_time">End Time (UTC):</label> <input id="end_time" name="end_time" type="datetime-local"
@@ -34,17 +40,17 @@
                                                                        value="{{ '' if creating_new else station.longitude_degrees }}"
                                                                        required/><br/>
     Bands:
-    {% for band in all_band_names %}
-    <input type="checkbox" id="band-{{ band.replace('.', '_') }}" name="band_names[]" value="{{ band }}"
-           {% if creating_new or [b.name for b in event.bands] %}checked{% end %}/>
-    <label for="band-{{ band.replace('.', '_') }}">{{ band }}</label>
+    {% for band in all_bands %}
+    <input type="checkbox" id="band-{{ band.id }}" name="bands[]" value="{{ band.id }}"
+           {% if creating_new or band in event.bands %}checked{% end %}/>
+    <label for="band-{{ band.id }}">{{ band.name }}</label>
     {% end %}
     <br/>
     Modes:
-    {% for mode in all_mode_names %}
-    <input type="checkbox" id="mode-{{ mode.replace('.', '_') }}" name="mode_names[]" value="{{ mode }}"
-           {% if creating_new or [m.name for m in event.modes] %}checked{% end %}/>
-    <label for="mode-{{ mode.replace('.', '_') }}">{{ mode }}</label>
+    {% for mode in all_modes %}
+    <input type="checkbox" id="mode-{{ mode.id }}" name="modes[]" value="{{ mode.id }}"
+           {% if creating_new or mode in event.modes %}checked{% end %}/>
+    <label for="mode-{{ mode.id }}">{{ mode.name }}</label>
     {% end %}
     <br/>
     <label for="notes">Notes (optional):</label> <textarea id="notes" name="notes"

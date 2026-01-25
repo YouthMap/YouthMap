@@ -17,9 +17,10 @@ class AdminStationPermHandler(BaseHandler):
 
         # Get data we need to include in the template
         station = self.application.db.get_permanent_station(station_id) if not creating_new else None
+        all_perm_station_types = self.application.db.get_all_permanent_station_types()
 
         # Render the template
-        self.render("adminstationperm.html", station=station, creating_new=creating_new)
+        self.render("adminstationperm.html", station=station, creating_new=creating_new, all_perm_station_types=all_perm_station_types)
 
     @tornado.web.authenticated
     def post(self, slug):
