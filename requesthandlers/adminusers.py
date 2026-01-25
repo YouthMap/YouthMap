@@ -20,6 +20,7 @@ class AdminUsersHandler(BaseHandler):
         # Render the template
         self.render("adminusers.html", users=users, current_user=user)
 
+    @tornado.web.authenticated
     def post(self):
         """Handles POST requests for user management page. This supports three 'actions' depending on whether the Update
         or Delete button was clicked for an existing user, or the Create button was clicked for a new user, and provides

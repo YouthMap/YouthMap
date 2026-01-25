@@ -9,6 +9,7 @@ import tornado.web
 from core.config import HTTP_PORT
 from database import Database
 from requesthandlers.admin import AdminHandler
+from requesthandlers.adminevents import AdminEventsHandler
 from requesthandlers.adminusers import AdminUsersHandler
 from requesthandlers.login import LoginHandler
 from requesthandlers.logout import LogoutHandler
@@ -40,6 +41,7 @@ class YouthMap(tornado.web.Application):
             (r"/updatedetails", UpdateDetailsHandler),
             (r"/admin", AdminHandler),
             (r"/admin/users", AdminUsersHandler),
+            (r"/admin/events", AdminEventsHandler)
         ]
 
         settings = {

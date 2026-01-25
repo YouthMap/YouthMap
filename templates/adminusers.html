@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-<!--suppress HtmlUnknownAttribute -->
+<!--suppress HtmlUnknownAttribute, HtmlFormInputWithoutLabel -->
 <h1>Manage Users</h1>
 
 <table>
@@ -10,8 +10,7 @@
         <th>Username</th>
         <th>Password</th>
         <th>Email Address</th>
-        <th>Super-Admin?</th>
-        <th>Created</th>
+        <th>Flags</th>
         <th>Controls</th>
         <th></th>
     </tr>
@@ -25,10 +24,11 @@
         <td><input form="form{{ user.id }}" type="password" name="password" placeholder="(leave blank if no change)"/>
         </td>
         <td><input form="form{{ user.id }}" type="text" name="email" value="{{ user.email }}" required/></td>
-        <td><input form="form{{ user.id }}" type="checkbox" name="super_admin" value="true"
+        <td><input form="form{{ user.id }}" type="checkbox" id="super-admin-{{ user.id }}" name="super_admin" value="true"
                    {% if user.super_admin %}checked{% end %}
-                   {% if user.username== current_user.username %}disabled{% end %}></td>
-        <td>{{ user.created_at.strftime("%d %B %Y") }}</td>
+                   {% if user.username== current_user.username %}disabled{% end %}>
+            <label for="super-admin-{{ user.id }}">Super-Admin</label>
+        </td>
         <td>
             <form id="form{{ user.id }}" method="post">
                 <input type="submit" name="action" value="Update"/>
@@ -37,14 +37,14 @@
                 {% end %}
             </form>
         </td>
-        <td>{% if user.username == current_user.username %}&nbsp;&larr;you{% end %}</td>
+        <td>{% if user.username == current_user.username %}&larr; you{% end %}</td>
     </tr>
     {% end %}
     <tr>
-        <td colspan=7>&nbsp;</td>
+        <td colspan=6>&nbsp;</td>
     </tr>
     <tr>
-        <th colspan=7>
+        <th colspan=6>
             <strong>New User</strong>
         </th>
     </tr>
@@ -52,8 +52,7 @@
         <th>Username</th>
         <th>Password</th>
         <th>Email Address</th>
-        <th>Super-Admin?</th>
-        <th></th>
+        <th>Flags</th>
         <th></th>
         <th></th>
     </tr>
@@ -61,8 +60,9 @@
         <td><input form="form-new" type="text" name="username" placeholder="Username" required/></td>
         <td><input form="form-new" type="password" name="password" placeholder="Password" required/></td>
         <td><input form="form-new" type="text" name="email" placeholder="Email Address" required/></td>
-        <td><input form="form-new" type="checkbox" name="super_admin" value="true"></td>
-        <td></td>
+        <td><input form="form-new" type="checkbox" id="super-admin-new" name="super_admin" value="true">
+            <label for="super-admin-new">Super-Admin</label>
+        </td>
         <td>
             <form id="form-new" method="post">
                 <input type="submit" name="action" value="Create"/>

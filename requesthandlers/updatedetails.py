@@ -15,6 +15,7 @@ class UpdateDetailsHandler(BaseHandler):
         # Render the template
         self.render("updatedetails.html", user=user)
 
+    @tornado.web.authenticated
     def post(self):
         """POST request handler, takes user-submitted form data and sets their details (including password if possible)."""
 

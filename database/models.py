@@ -16,7 +16,6 @@ class User(Base):
     email = Column(String, nullable=True)
     password_hash = Column(String, nullable=False)
     salt = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.now)
     super_admin = Column(Boolean, nullable=False)
 
     # Link the users with the sessions, so we can find all sessions relating to the user. We supply 'delete-orphan' to

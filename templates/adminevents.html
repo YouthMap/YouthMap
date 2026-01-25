@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownAttribute, HtmlFormInputWithoutLabel -->
+<h1>Manage Events</h1>
+
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Bands</th>
+        <th>Modes</th>
+        <th>Icon</th>
+        <th>Colour</th>
+        <th>Notes Template</th>
+        <th>URL Slug</th>
+        <th>Flags</th>
+        <th>Associated Stations</th>
+        <th>Controls</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for event in events %}
+    <tr>
+        <td><input form="form{{ event.id }}" type="hidden" name="id" value="{{ event.id }}" required/>
+            <input form="form{{ event.id }}" type="text" name="name" value="{{ event.name }}" required/>
+        </td>
+        <td>TODO Datetime Picker</td>
+        <td>TODO Datetime Picker</td>
+        <td>TODO Bands Multiselect</td>
+        <td>TODO Modes Multiselect</td>
+        <td>TODO Icon select</td>
+        <td><input form="form{{ event.id }}" type="text" name="color" value="{{ event.color }}" required /></td>
+        <td><textarea form="form{{ event.id }}" name="notes_template" rows="3">{{ event.notes_template }}</textarea></td>
+        <td><input form="form{{ event.id }}" type="text" name="url_slug" value="{{ event.url_slug }}" /></td>
+        <td>
+            <input form="form{{ event.id }}" type="checkbox" id="public-{{ user.id }}" name="public" value="true"
+                   {% if event.public %}checked{% end %}>
+                <label for="public-{{ user.id }}">Public</label><br/>
+            <input form="form{{ event.id }}" type="checkbox" id="rsgb_event-{{ user.id }}" name="rsgb_event" value="true"
+                   {% if event.rsgb_event %}checked{% end %}>
+                <label for="rsgb_event-{{ user.id }}">RSGB Event</label>
+        </td>
+        <td>{{ len(event.stations) }} - TODO Detail</td>
+        <td>
+            <form id="form{{ event.id }}" method="post">
+                <input type="submit" name="action" value="Update"/>
+                <input type="submit" name="action" value="Delete"/>
+            </form>
+        </td>
+    </tr>
+    {% end %}
+    <tr>
+        <td colspan=12>&nbsp;</td>
+    </tr>
+    <tr>
+        <th colspan=12>
+            <strong>New event</strong>
+        </th>
+    </tr>
+    <tr>
+        <th>Name</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+        <th>Bands</th>
+        <th>Modes</th>
+        <th>Icon</th>
+        <th>Colour</th>
+        <th>Notes Template</th>
+        <th>URL Slug</th>
+        <th>Flags</th>
+        <th></th>
+        <th>Controls</th>
+    </tr>
+    <tr>
+        <td><input form="form-new" type="text" name="name" placeholder="name" required/></td>
+        <td>TODO Datetime Picker</td>
+        <td>TODO Datetime Picker</td>
+        <td>TODO Bands Multiselect</td>
+        <td>TODO Modes Multiselect</td>
+        <td>TODO Icon select</td>
+        <td><input form="form-new" type="text" name="color" required /></td>
+        <td><textarea form="form-new" name="notes_template" rows="3"></textarea></td>
+        <td><input form="form-new" type="text" name="url_slug" /></td>
+        <td>
+            <input form="form-new" type="checkbox" id="public-new" name="public" value="true">
+                <label for="public-new">Public</label><br/>
+            <input form="form-new" type="checkbox" id="rsgb_event-new" name="rsgb_event" value="true">
+            <label for="rsgb_event-new">RSGB Event</label>
+        </td>
+        <td></td>
+        <td>
+            <form id="form-new" method="post">
+                <input type="submit" name="action" value="Create"/>
+            </form>
+        </td>
+        <td></td>
+    </tr>
+    </tbody>
+</table>
+
+<p><a href="/admin">Back to dashboard</a></p>
+
+{% end %}
