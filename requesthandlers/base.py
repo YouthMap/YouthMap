@@ -9,5 +9,4 @@ class BaseHandler(tornado.web.RequestHandler):
         if not session_token:
             return None
 
-        admin_id = self.application.db.verify_user_session_token(session_token.decode('utf-8'))
-        return admin_id
+        return self.application.db.verify_user_session_token(session_token.decode('utf-8'))

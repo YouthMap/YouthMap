@@ -93,7 +93,7 @@ class AdminUsersHandler(BaseHandler):
 
             # Process the update
             ok = self.application.db.add_user(username=username, password=password, email=email,
-                                                 super_admin=super_admin)
+                                              super_admin=super_admin)
             if ok:
                 # Update OK, just reload the page which will have the new data in it
                 self.redirect("/admin/users")
