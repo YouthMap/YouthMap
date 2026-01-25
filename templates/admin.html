@@ -1,12 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 
+<!--suppress HtmlUnknownTarget -->
 <h1>Admin Dashboard</h1>
 
 {% if insecure_user_present %}
 {% if user.username == "admin" %}
 <p><strong>Warning: Your account has username "admin" and password "password". This is not secure. Please <a
-        href="/updatedetails">fix this</a> as soon as possible by setting a different username, setting and secure
+        href="/admin/user">fix this</a> as soon as possible by setting a different username, setting and secure
     password, and providing a valid email address.</strong></p>
 {% else %}
 <p><strong>Warning: This site has a user with username "admin" and password "password". This is not secure. Please fix
@@ -17,7 +18,7 @@
 <p>Hello {{ user.username }}</p>
 
 <h2>Your Account</h2>
-<p><a href="/updatedetails">Update details</a></p>
+<p><a href="/admin/user/{{ user.id }}">Update details</a></p>
 <p><a href="/logout">Logout</a></p>
 
 <h2>Admin Controls</h2>

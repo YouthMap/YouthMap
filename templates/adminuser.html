@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
+<h1>{{ "Create" if creating_new else "Update" }} User</h1>
+{% if creating_new %}
+    <p>Please enter the details for the new user.</p>
+{% else %}
+    <p>Updating details for {{ user.username }}.</p>
+    <p>Updating the password is optional. Leave the fields blank if you do not wish to change the password.</p>
+{% end %}
+
+<form method="post">
+    <label for="username">Username:</label> <input type="text" id="username" name="username" value="{{ '' if creating_new else user.username }}" required><br>
+    <label for="password">Password:</label> <input type="password" id="password" name="password" {% if creating_new %}required{% end %}><br>
+    <label for="email">Email Address:</label> <input type="text" id="email" name="email" value="{{ user.email if (not creating_new and user.email != 'None') else '' }}" required><br>
+
+    {% if current_user.super_admin %}
+        <input type="checkbox" id="super-admin" name="super_admin" value="true"
+                   {% if not creating_new and user.super_admin %}checked{% end %}>
+            <label for="super-admin">Super-Admin</label><br/>
+    {% end %}
+
+    {% if creating_new %}
+        <input type="submit" name="action" value="Create">
+    {% else %}
+        <input type="submit" name="action" value="Update"> <input type="submit" name="action" value="Delete">
+    {% end %}
+</form>
+
+<p><a href="/admin">Back to dashboard</a></p>
+
+{% end %}

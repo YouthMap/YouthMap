@@ -10,11 +10,11 @@ from core.config import HTTP_PORT
 from database import Database
 from requesthandlers.admin import AdminHandler
 from requesthandlers.adminevents import AdminEventsHandler
+from requesthandlers.adminuser import AdminUserHandler
 from requesthandlers.adminusers import AdminUsersHandler
 from requesthandlers.login import LoginHandler
 from requesthandlers.logout import LogoutHandler
 from requesthandlers.map import MapHandler
-from requesthandlers.updatedetails import UpdateDetailsHandler
 
 
 class YouthMap(tornado.web.Application):
@@ -38,9 +38,9 @@ class YouthMap(tornado.web.Application):
             (r"/", MapHandler),
             (r"/login", LoginHandler),
             (r"/logout", LogoutHandler),
-            (r"/updatedetails", UpdateDetailsHandler),
             (r"/admin", AdminHandler),
             (r"/admin/users", AdminUsersHandler),
+            (r"/admin/user/([^/]+)", AdminUserHandler),
             (r"/admin/events", AdminEventsHandler)
         ]
 
