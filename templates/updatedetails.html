@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>Update Details</h1>
+<p>Updating details for {{ user.username }}</p>
+<form method="post">
+    <h2>Username</h2>
+    <input type="text" name="username" value="{{ user.username }}" placeholder="username" required><br>
+
+    <h2>Password</h2>
+    <p>Updating your password is optional. Leave the fields blank if you do not wish to change your password.</p>
+    <input type="password" name="old_password" placeholder="Old Password"><br>
+    <input type="password" name="new_password" placeholder="New Password"><br>
+    <input type="password" name="new_password_2" placeholder="New Password (again)"><br>
+
+    <h2>Email Address</h2>
+    <input type="text" name="email" value="{{ user.email if user.email != 'None' else '' }}" placeholder="me@example.com" required><br>
+
+    <p></p>
+    <input type="submit" value="Update">
+</form>
+
+{% end %}

@@ -2,9 +2,27 @@
 {% block content %}
 
 <h1>Admin Dashboard</h1>
-<p>Hello {{username}}</p>
-<p>Admin controls here</p>
-<p><a href="/changepassword">Change password</a></p>
+
+{% if insecure_user_present %}
+    {% if user.username == "admin" %}
+        <p><strong>Warning: Your account has username "admin" and password "password". This is not secure. Please <a href="/updatedetails">fix this</a> as soon as possible by setting a different username, setting and secure password, and providing a valid email address.</strong></p>
+    {% else %}
+        <p><strong>Warning: This site has a user with username "admin" and password "password". This is not secure. Please fix this as soon as possible by deleting the "admin" user.</strong></p>
+    {% end %}
+{% end %}
+
+<p>Hello {{ user.username }}</p>
+
+<h2>Your Account</h2>
+<p><a href="/updatedetails">Update details</a></p>
 <p><a href="/logout">Logout</a></p>
+
+<h2>Admin Controls</h2>
+<p>...</p>
+
+{% if user.super_admin %}
+    <h2>Super-Admin Controls</h2>
+    <p><a href="/users">View/edit users</a></p>
+{% end %}
 
 {% end %}

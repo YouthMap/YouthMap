@@ -136,6 +136,11 @@ class DatabaseOperations:
         finally:
             session.close()
 
+    def is_insecure_user_present(self):
+        """Returns true if the users table contains an entry with username 'admin' and password 'password'. Used to
+        show a warning in the UI."""
+        return self.verify_user('admin', 'password') is not None
+
     def create_user_session(self, user_id):
         """Create a session token for a user. This can then be provided back and verified to ensure they are logged in."""
 
