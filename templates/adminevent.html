@@ -12,8 +12,10 @@
 <form method="post">
     <label for="name">Name:</label> <input type="text" id="name" name="name"
                                            value="{{ '' if creating_new else event.name }}" required/><br/>
-    <label for="start_time">Start Time:</label> TODO Date/Time Picker<br/>
-    <label for="end_time">End Time:</label> TODO Date/Time Picker<br/>
+    <label for="start_time">Start Time (UTC):</label> <input id="start_time" name="start_time" type="datetime-local"
+                                                             value="{{ (datetime.datetime.now() if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
+    <label for="end_time">End Time (UTC):</label> <input id="end_time" name="end_time" type="datetime-local"
+                                                             value="{{ (datetime.datetime.now() if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
     <label for="bands">Bands:</label> TODO Bands Multiselect<br/>
     <label for="modes">Modes:</label> TODO Modes Multiselect<br/>
     <label for="icon">Icon:</label> TODO Icon Picker<br/>
@@ -38,16 +40,16 @@
 </form>
 
 {% if not creating_new %}
-    <h2>Stations at this event:</h2>
-    {% if len(event.stations) > 0 %}
-        <ul>
-            {% for station in event.stations %}
-            <li><a href="/admin/station/temp/{{ station.id }}">{{ station.callsign }} {{ station.club_name }}</a></li>
-            {% end %}
-        </ul>
-    {% else %}
-        <p>None</p>
+<h2>Stations at this event:</h2>
+{% if len(event.stations) > 0 %}
+<ul>
+    {% for station in event.stations %}
+    <li><a href="/admin/station/temp/{{ station.id }}">{{ station.callsign }} {{ station.club_name }}</a></li>
     {% end %}
+</ul>
+{% else %}
+<p>None</p>
+{% end %}
 {% end %}
 
 <p><a href="/admin">Back to dashboard</a></p>
