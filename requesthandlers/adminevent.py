@@ -16,9 +16,11 @@ class AdminEventHandler(BaseHandler):
 
         # Get data we need to include in the template
         event = self.application.db.get_user(event_id) if not creating_new else None
+        all_band_names = [b.name for b in self.application.db.get_all_bands()]
+        all_mode_names = [m.name for m in self.application.db.get_all_modes()]
 
         # Render the template
-        self.render("adminevent.html", event=event, creating_new=creating_new)
+        self.render("adminevent.html", event=event, creating_new=creating_new, all_band_names=all_band_names, all_mode_names=all_mode_names)
 
     @tornado.web.authenticated
     def post(self, slug):

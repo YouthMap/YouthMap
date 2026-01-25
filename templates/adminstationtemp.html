@@ -21,21 +21,34 @@
     <label for="start_time">Start Time (UTC):</label> <input id="start_time" name="start_time" type="datetime-local"
                                                              value="{{ (datetime.datetime.now() if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
     <label for="end_time">End Time (UTC):</label> <input id="end_time" name="end_time" type="datetime-local"
-                                                             value="{{ (datetime.datetime.now() if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
-    <label for="latitude_degrees">Latitude:</label> <input type="number" id="latitude_degrees" name="latitude_degrees"
-                                                           step="any" min="-90"
-                                                           max="90"
-                                                           value="{{ '' if creating_new else station.latitude }}"
-                                                           required/><br/>
-    <label for="longitude_degrees">Longitude:</label> <input type="number" id="longitude_degrees"
-                                                             name="longitude_degrees" step="any" min="-180"
-                                                             max="180"
-                                                             value="{{ '' if creating_new else station.longitude_degrees }}"
-                                                             required/><br/>
-    <label for="bands">Bands:</label> TODO Bands Multiselect<br/>
-    <label for="modes">Modes:</label> TODO Modes Multiselect<br/>
+                                                         value="{{ (datetime.datetime.now() if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}"/><br/>
+    <label for="latitude_degrees">Latitude (degrees):</label> <input type="number" id="latitude_degrees"
+                                                                     name="latitude_degrees"
+                                                                     step="any" min="-90"
+                                                                     max="90"
+                                                                     value="{{ '' if creating_new else station.latitude }}"
+                                                                     required/><br/>
+    <label for="longitude_degrees">Longitude (degrees):</label> <input type="number" id="longitude_degrees"
+                                                                       name="longitude_degrees" step="any" min="-180"
+                                                                       max="180"
+                                                                       value="{{ '' if creating_new else station.longitude_degrees }}"
+                                                                       required/><br/>
+    Bands:
+    {% for band in all_band_names %}
+    <input type="checkbox" id="band-{{ band.replace('.', '_') }}" name="band_names[]" value="{{ band }}"
+           {% if creating_new or [b.name for b in event.bands] %}checked{% end %}/>
+    <label for="band-{{ band.replace('.', '_') }}">{{ band }}</label>
+    {% end %}
+    <br/>
+    Modes:
+    {% for mode in all_mode_names %}
+    <input type="checkbox" id="mode-{{ mode.replace('.', '_') }}" name="mode_names[]" value="{{ mode }}"
+           {% if creating_new or [m.name for m in event.modes] %}checked{% end %}/>
+    <label for="mode-{{ mode.replace('.', '_') }}">{{ mode }}</label>
+    {% end %}
+    <br/>
     <label for="notes">Notes (optional):</label> <textarea id="notes" name="notes"
-                                                          rows="5">{{ '' if creating_new else station.notes }}</textarea><br/>
+                                                           rows="5">{{ '' if creating_new else station.notes }}</textarea><br/>
     <label for="website_url">Website (optional):</label> <input type="text" id="website_url" name="website_url"
                                                                 value="{{ '' if creating_new else station.website_url }}"/><br/>
     <label for="qrz_url">QRZ page (optional):</label> <input type="text" id="qrz_url" name="qrz_url"
