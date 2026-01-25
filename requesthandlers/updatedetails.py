@@ -4,7 +4,8 @@ from requesthandlers.base import BaseHandler
 
 
 class UpdateDetailsHandler(BaseHandler):
-    """Handler for update details page, includes POSTing the new details as well as rendering the HTML"""
+    """Handler for update details page, includes POSTing the new details as well as rendering the HTML. This is for the
+    self-service version only, and allows updating details strictly for the logged-in user."""
 
     @tornado.web.authenticated
     def get(self):
