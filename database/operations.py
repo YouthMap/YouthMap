@@ -198,7 +198,7 @@ class DatabaseOperations:
         finally:
             session.close()
 
-    def add_event(self, name, start_time, end_time, icon, color, notes_template, bands, modes,
+    def add_event(self, name, start_time, end_time, icon, color, notes_template, band_ids, mode_ids,
                   url_slug=None, public=True, rsgb_event=False):
         """Create a new event. Returns the event ID if one was created."""
 
@@ -218,6 +218,8 @@ class DatabaseOperations:
 
             # Add selected bands and modes to the station. Because these are lists of bands and modes, and stored in an
             # association table, we can't just set them at object creation time using SQLalchemy, so we add them here.
+            bands = [session.query(Band).filter_by(id=id).first() for id in band_ids]
+            modes = [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
             event.bands.extend(bands)
             event.modes.extend(modes)
 
@@ -283,7 +285,7 @@ class DatabaseOperations:
             session.close()
 
     def update_event(self, event_id, name=None, start_time=None, end_time=None, icon=None,
-                     color=None, notes_template=None, bands=None, modes=None, url_slug=None,
+                     color=None, notes_template=None, band_ids=None, mode_ids=None, url_slug=None,
                      public=None, rsgb_event=None):
         """Update an existing event. Only provided fields will be updated. Returns True if successful."""
 
@@ -311,10 +313,14 @@ class DatabaseOperations:
                 event.public = public
             if rsgb_event is not None:
                 event.rsgb_event = rsgb_event
-            if bands is not None:
-                event.bands = bands
-            if modes is not None:
-                event.modes = modes
+            if band_ids is not None:
+                bands = [session.query(Band).filter_by(id=id).first() for id in band_ids]
+                event.bands.clear()
+                event.bands.extend(bands)
+            if mode_ids is not None:
+                modes = [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
+                event.modes.clear()
+                event.modes.extend(modes)
 
             session.commit()
             return True
@@ -364,7 +370,7 @@ class DatabaseOperations:
             session.close()
 
     def add_temporary_station(self, callsign, club_name, start_time, end_time,
-                              latitude_degrees, longitude_degrees, notes, bands, modes,
+                              latitude_degrees, longitude_degrees, notes, band_ids, mode_ids,
                               event_id=None, website_url=None, email=None, phone_number=None,
                               qrz_url=None, social_media_url=None, rsgb_attending=False, approved=False):
         """Create a new temporary station. Returns the station ID if creation was successful, otherwise None. If
@@ -395,6 +401,8 @@ class DatabaseOperations:
 
             # Add selected bands and modes to the station. Because these are lists of bands and modes, and stored in an
             # association table, we can't just set them at object creation time using SQLalchemy, so we add them here.
+            bands = [session.query(Band).filter_by(id=id).first() for id in band_ids]
+            modes = [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
             station.bands.extend(bands)
             station.modes.extend(modes)
 
@@ -463,7 +471,7 @@ class DatabaseOperations:
 
     def update_temporary_station(self, station_id, callsign=None, club_name=None, event_id=None,
                                  start_time=None, end_time=None, latitude_degrees=None,
-                                 longitude_degrees=None, notes=None, bands=None, modes=None,
+                                 longitude_degrees=None, notes=None, band_ids=None, mode_ids=None,
                                  website_url=None, email=None, phone_number=None, qrz_url=None,
                                  social_media_url=None, rsgb_attending=None, approved=None, edit_password=None):
         """Update an existing temporary station. Only provided fields will be updated. Returns True if successful."""
@@ -502,10 +510,14 @@ class DatabaseOperations:
                 station.social_media_url = social_media_url
             if rsgb_attending is not None:
                 station.rsgb_attending = rsgb_attending
-            if bands is not None:
-                station.bands = bands
-            if modes is not None:
-                station.modes = modes
+            if band_ids is not None:
+                bands = [session.query(Band).filter_by(id=id).first() for id in band_ids]
+                station.bands.clear()
+                station.bands.extend(bands)
+            if mode_ids is not None:
+                modes = [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
+                station.modes.clear()
+                station.modes.extend(modes)
             if approved is not None:
                 station.approved = approved
             if edit_password is not None:
@@ -721,50 +733,5 @@ class DatabaseOperations:
         session = self.SessionLocal()
         try:
             return session.query(Mode).all()
-        finally:
-            session.close()
-
-    def get_permanent_station_type_by_name(self, type_name):
-        """Get a permanent station type by name. Returns the PermanentStationType object if found, otherwise None."""
-
-        session = self.SessionLocal()
-        try:
-            return session.query(PermanentStationType).filter_by(name=type_name).first()
-        finally:
-            session.close()
-
-    def get_bands_by_name(self, band_names):
-        """Converts a list of string band names into Band objects to use with the database."""
-
-        session = self.SessionLocal()
-        try:
-            return [session.query(Band).filter_by(name=n).first() for n in band_names]
-        finally:
-            session.close()
-
-    def get_bands_by_id(self, band_ids):
-        """Converts a list of numeric band IDs into Band objects to use with the database."""
-
-        session = self.SessionLocal()
-        try:
-            return [session.query(Band).filter_by(id=id).first() for id in band_ids]
-        finally:
-            session.close()
-
-    def get_modes_by_name(self, mode_names):
-        """Converts a list of string mode names into Mode objects to use with the database."""
-
-        session = self.SessionLocal()
-        try:
-            return [session.query(Mode).filter_by(name=n).first() for n in mode_names]
-        finally:
-            session.close()
-
-    def get_modes_by_id(self, mode_ids):
-        """Converts a list of numeric mode IDs into Mode objects to use with the database."""
-
-        session = self.SessionLocal()
-        try:
-            return [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
         finally:
             session.close()

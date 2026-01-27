@@ -60,18 +60,26 @@ class AdminEventHandler(BaseHandler):
             name = self.get_argument("name")
             start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
             end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
-            bands = self.application.db.get_bands_by_id([int(b) for b in self.get_argument("bands[]")])
-            modes = self.application.db.get_modes_by_id([int(b) for b in self.get_argument("modes[]")])
+            band_ids = []
+            if self.get_argument("bands[]", None):
+                band_ids = [int(x) for x in self.request.arguments["bands[]"]]
+            mode_ids = []
+            if self.get_argument("modes[]", None):
+                mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
             icon = self.get_argument("icon")
             color = self.get_argument("color")
             notes_template = self.get_argument("notes_template", None)
+            notes_template = notes_template if notes_template else ""
+            url_slug = self.get_argument("url_slug", None)
+            url_slug = url_slug if url_slug else ""
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
             # Process the update
             ok = self.application.db.update_event(event_id, name=name, start_time=start_time, end_time=end_time,
-                                                  bands=bands, modes=modes, icon=icon, color=color,
-                                                  notes_template=notes_template, public=public, rsgb_event=rsgb_event)
+                                                  band_ids=band_ids, mode_ids=mode_ids, icon=icon, color=color,
+                                                  notes_template=notes_template, url_slug=url_slug, public=public,
+                                                  rsgb_event=rsgb_event)
             if ok:
                 # Update OK, just reload the page which will have the new data in it
                 self.redirect("/admin/event/" + slug)
@@ -85,19 +93,26 @@ class AdminEventHandler(BaseHandler):
             name = self.get_argument("name")
             start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
             end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
-            bands = self.application.db.get_bands_by_id([int(b) for b in self.get_argument("bands[]")])
-            modes = self.application.db.get_modes_by_id([int(b) for b in self.get_argument("modes[]")])
+            band_ids = []
+            if self.get_argument("bands[]", None):
+                band_ids = [int(x) for x in self.request.arguments["bands[]"]]
+            mode_ids = []
+            if self.get_argument("modes[]", None):
+                mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
             icon = self.get_argument("icon")
             color = self.get_argument("color")
             notes_template = self.get_argument("notes_template", None)
+            notes_template = notes_template if notes_template else ""
+            url_slug = self.get_argument("url_slug", None)
+            url_slug = url_slug if url_slug else ""
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
             # Process the create action
             new_event_id = self.application.db.add_event(name=name, start_time=start_time, end_time=end_time,
-                                                         bands=bands, modes=modes, icon=icon, color=color,
-                                                         notes_template=notes_template, public=public,
-                                                         rsgb_event=rsgb_event)
+                                                         band_ids=band_ids, mode_ids=mode_ids, icon=icon, color=color,
+                                                         notes_template=notes_template, url_slug=url_slug,
+                                                         public=public, rsgb_event=rsgb_event)
             if new_event_id:
                 # Create OK, just reload the page which will have the new data in it
                 self.redirect("/admin/event/" + str(new_event_id))
