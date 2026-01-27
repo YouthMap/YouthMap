@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import tornado
 
 from requesthandlers.base import BaseHandler
@@ -45,24 +47,115 @@ class AdminStationTempHandler(BaseHandler):
             # Process the delete action
             ok = self.application.db.delete_temporary_station(station_id)
             if ok:
-                # Delete OK, just reload the page which will have the new data in it
+                # Delete OK, go back to stations list
                 self.redirect("/admin/stations")
             else:
                 self.write("Failed to delete station")
 
         # Check for Update action
         elif action == "Update":
-            # Get request arguments. For an update we need......
-            # TODO
+            # Get request arguments
+            callsign = self.get_argument("callsign")
+            club_name = self.get_argument("club_name")
+            event_id = 0
+            if self.get_argument("event", None):
+                event_id = self.get_argument("event", None)
+            start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
+            end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
+            latitude_degrees = float(self.get_argument("latitude_degrees"))
+            longitude_degrees = float(self.get_argument("longitude_degrees"))
+            band_ids = []
+            if self.get_argument("bands[]", None):
+                band_ids = [int(x) for x in self.request.arguments["bands[]"]]
+            mode_ids = []
+            if self.get_argument("modes[]", None):
+                mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
+            notes = self.get_argument("notes", None)
+            notes = notes if notes else ""
+            website_url = self.get_argument("website_url", None)
+            website_url = website_url if website_url else ""
+            qrz_url = self.get_argument("qrz_url", None)
+            qrz_url = qrz_url if qrz_url else ""
+            social_media_url = self.get_argument("social_media_url", None)
+            social_media_url = social_media_url if social_media_url else ""
+            email = self.get_argument("email", None)
+            email = email if email else ""
+            phone_number = self.get_argument("phone_number", None)
+            phone_number = phone_number if phone_number else ""
+            rsgb_attending = True if self.get_argument("rsgb_attending", None) else False
+            approved = True if self.get_argument("approved", None) else False
+            edit_password = self.get_argument("edit_password")
 
-            self.write("not implemented yet")
+            # Process the update
+            ok = self.application.db.update_temporary_station(station_id, callsign=callsign, club_name=club_name,
+                                                              event_id=event_id, start_time=start_time,
+                                                              end_time=end_time,
+                                                              latitude_degrees=latitude_degrees, longitude_degrees=longitude_degrees, band_ids=band_ids,
+                                                              mode_ids=mode_ids,
+                                                              notes=notes, website_url=website_url, qrz_url=qrz_url,
+                                                              social_media_url=social_media_url, email=email,
+                                                              phone_number=phone_number, rsgb_attending=rsgb_attending,
+                                                              approved=approved,
+                                                              edit_password=edit_password)
+            if ok:
+                # Update OK, just reload the page which will have the new data in it
+                self.redirect("/admin/station/" + slug)
+            else:
+                self.write("Failed to update station")
+                return
 
         # Check for Create action
         elif action == "Create":
-            # Get request arguments. For a create we need......
-            # TODO
+            # Get request arguments.
+            callsign = self.get_argument("callsign")
+            club_name = self.get_argument("club_name")
+            event_id = 0
+            if self.get_argument("event", None):
+                event_id = self.get_argument("event", None)
+            start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
+            end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
+            latitude_degrees = float(self.get_argument("latitude_degrees"))
+            longitude_degrees = float(self.get_argument("longitude_degrees"))
+            band_ids = []
+            if self.get_argument("bands[]", None):
+                band_ids = [int(x) for x in self.request.arguments["bands[]"]]
+            mode_ids = []
+            if self.get_argument("modes[]", None):
+                mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
+            notes = self.get_argument("notes", None)
+            notes = notes if notes else ""
+            website_url = self.get_argument("website_url", None)
+            website_url = website_url if website_url else ""
+            qrz_url = self.get_argument("qrz_url", None)
+            qrz_url = qrz_url if qrz_url else ""
+            social_media_url = self.get_argument("social_media_url", None)
+            social_media_url = social_media_url if social_media_url else ""
+            email = self.get_argument("email", None)
+            email = email if email else ""
+            phone_number = self.get_argument("phone_number", None)
+            phone_number = phone_number if phone_number else ""
+            rsgb_attending = True if self.get_argument("rsgb_attending", None) else False
+            approved = True if self.get_argument("approved", None) else False
 
-            self.write("not implemented yet")
+            # Process the create action
+            new_station_id = self.application.db.add_temporary_station(callsign=callsign, club_name=club_name,
+                                                                       event_id=event_id, start_time=start_time,
+                                                                       end_time=end_time,
+                                                                       latitude_degrees=latitude_degrees, longitude_degrees=longitude_degrees,
+                                                                       band_ids=band_ids,
+                                                                       mode_ids=mode_ids,
+                                                                       notes=notes, website_url=website_url,
+                                                                       qrz_url=qrz_url,
+                                                                       social_media_url=social_media_url, email=email,
+                                                                       phone_number=phone_number,
+                                                                       rsgb_attending=rsgb_attending,
+                                                                       approved=approved)
+            if new_station_id:
+                # Create OK, just reload the page which will have the new data in it
+                self.redirect("/admin/station/temp/" + str(new_station_id))
+            else:
+                self.write("Failed to update station")
+                return
 
         else:
             self.write("Invalid action '" + action + "'")

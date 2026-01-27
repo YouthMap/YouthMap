@@ -49,7 +49,7 @@ class AdminEventHandler(BaseHandler):
             # Process the delete action
             ok = self.application.db.delete_event(event_id)
             if ok:
-                # Delete OK, just reload the page which will have the new data in it
+                # Delete OK, go back to events list
                 self.redirect("/admin/events")
             else:
                 self.write("Failed to delete event")

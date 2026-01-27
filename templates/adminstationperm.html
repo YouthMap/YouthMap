@@ -53,8 +53,10 @@
     <input type="checkbox" id="approved" name="approved" value="true"
            {% if not creating_new and station.approved %}checked{% end %}>
     <label for="approved">Approved</label><br/>
+    {% if not creating_new %}
     <label for="edit_password">User edit password:</label> <input type="text" id="edit_password" name="edit_password"
                                                                   value="{{ '' if creating_new else station.edit_password }}"/><br/>
+    {% end %}
 
     {% if creating_new %}
     <input type="submit" name="action" value="Create">
@@ -68,6 +70,7 @@
 <p><a href="/admin/event/{{ station.event.id }}">{{ station.event.name }}</a></p>
 {% end %}
 
+<p><a href="/admin/events">Back to station list</a></p>
 <p><a href="/admin">Back to dashboard</a></p>
 
 {% end %}

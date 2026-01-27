@@ -40,7 +40,7 @@ class AdminStationPermHandler(BaseHandler):
             # Process the delete action
             ok = self.application.db.delete_permanent_station(station_id)
             if ok:
-                # Delete OK, just reload the page which will have the new data in it
+                # Delete OK, go back to stations list
                 self.redirect("/admin/stations")
             else:
                 self.write("Failed to delete station")
