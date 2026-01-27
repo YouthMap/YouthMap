@@ -6,7 +6,7 @@
 {% if creating_new %}
 <p>Please enter the details for the new station.</p>
 {% else %}
-<p>Updating details for {{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{ station.event.name
+<p>Updating details for {{ station.callsign }} {{ station.club_name }}{% if station_event %} at {{ station_event.name
     }}{% else %} (SES){% end %}.</p>
 {% end %}
 
@@ -32,7 +32,7 @@
                                                                      name="latitude_degrees"
                                                                      step="any" min="-90"
                                                                      max="90"
-                                                                     value="{{ '' if creating_new else station.latitude }}"
+                                                                     value="{{ '' if creating_new else station.latitude_degrees }}"
                                                                      required/><br/>
     <label for="longitude_degrees">Longitude (degrees):</label> <input type="number" id="longitude_degrees"
                                                                        name="longitude_degrees" step="any" min="-180"
@@ -49,7 +49,7 @@
     Modes:
     {% for mode in all_modes %}
     <input type="checkbox" id="mode-{{ mode.id }}" name="modes[]" value="{{ mode.id }}"
-           {% if creating_new or mode.id in [x.id for x in station_bands] %}checked{% end %}/>
+           {% if creating_new or mode.id in [x.id for x in station_modes] %}checked{% end %}/>
     <label for="mode-{{ mode.id }}">{{ mode.name }}</label>
     {% end %}
     <br/>
@@ -84,9 +84,9 @@
     {% end %}
 </form>
 
-{% if not creating_new and station.event %}
+{% if not creating_new and station_event %}
 <h2>Linked event:</h2>
-<p><a href="/admin/event/{{ station.event.id }}">{{ station.event.name }}</a></p>
+<p><a href="/admin/event/{{ station_event.id }}">{{ station_event.name }}</a></p>
 {% end %}
 
 <p><a href="/admin/events">Back to station list</a></p>

@@ -451,6 +451,17 @@ class DatabaseOperations:
         finally:
             session.close()
 
+    def get_temporary_station_event(self, station_id):
+        """Get the event associated with a temporary station by the ID of that station. Returns the Event object if
+        found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            station = session.query(TemporaryStation).filter_by(id=station_id).first()
+            return station.event if station else None
+        finally:
+            session.close()
+
     def get_all_temporary_stations(self):
         """Get all temporary stations. Returns a list of TemporaryStation objects."""
 
@@ -616,6 +627,17 @@ class DatabaseOperations:
         session = self.SessionLocal()
         try:
             return session.query(PermanentStation).filter_by(id=station_id).first()
+        finally:
+            session.close()
+
+    def get_permanent_station_type(self, station_id):
+        """Get the type associated with a permanent station by the ID of that station. Returns the PermanentStationType
+        object if found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            station = session.query(PermanentStation).filter_by(id=station_id).first()
+            return station.type if station else None
         finally:
             session.close()
 
