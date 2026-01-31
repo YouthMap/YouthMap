@@ -10,7 +10,7 @@
 
 <ul>
     {% for station in temp_stations %}
-        <li><a href="/admin/station/temp/{{ event.id }}">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{ station.event.name }}{% else %} (SES){% end %}</a></li>
+        <li><a href="/admin/station/temp/{{ station.id }}">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{ station.event.name }}{% else %} (SES){% end %}</a></li>
     {% end %}
 </ul>
 
@@ -20,7 +20,7 @@
 
 <ul>
     {% for station in perm_stations %}
-        <li><a href="/admin/station/perm/{{ event.id }}">{{ station.callsign }} {{ station.club_name }}</a></li>
+        <li><a href="/admin/station/perm/{{ station.id }}">{{ station.callsign }} {{ station.club_name }}</a></li>
     {% end %}
 </ul>
 
