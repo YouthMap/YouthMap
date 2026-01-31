@@ -3,6 +3,7 @@ import secrets
 from datetime import datetime
 
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload
 
 from .models import (
     User, UserSession,
@@ -52,7 +53,7 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(User).filter_by(id=user_id).first()
+            return session.query(User).options(joinedload(User.sessions)).filter_by(id=user_id).first()
         finally:
             session.close()
 
@@ -61,7 +62,7 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(User).all()
+            return session.query(User).options(joinedload(User.sessions)).all()
         finally:
             session.close()
 
@@ -238,40 +239,8 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(Event).filter_by(id=event_id).first()
-        finally:
-            session.close()
-
-    def get_event_bands(self, event_id):
-        """Get the bands associated with an event by the ID of that event. Returns the Band objects if
-        found, otherwise None."""
-
-        session = self.SessionLocal()
-        try:
-            event = session.query(Event).filter_by(id=event_id).first()
-            return event.bands if event else None
-        finally:
-            session.close()
-
-    def get_event_modes(self, event_id):
-        """Get the modes associated with an event by the ID of that event. Returns the Mode objects if
-        found, otherwise None."""
-
-        session = self.SessionLocal()
-        try:
-            event = session.query(Event).filter_by(id=event_id).first()
-            return event.modes if event else None
-        finally:
-            session.close()
-
-    def get_event_stations(self, event_id):
-        """Get the temporary stations associated with an event by the ID of that station. Returns the TemporaryStation
-        objects if found, otherwise None."""
-
-        session = self.SessionLocal()
-        try:
-            event = session.query(Event).filter_by(id=event_id).first()
-            return event.stations if event else None
+            return session.query(Event).options(joinedload(Event.stations), joinedload(Event.bands),
+                                                joinedload(Event.modes)).filter_by(id=event_id).first()
         finally:
             session.close()
 
@@ -280,7 +249,8 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(Event).all()
+            return session.query(Event).options(joinedload(Event.stations), joinedload(Event.bands),
+                                                joinedload(Event.modes)).all()
         finally:
             session.close()
 
@@ -425,40 +395,10 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(TemporaryStation).filter_by(id=station_id).first()
-        finally:
-            session.close()
-
-    def get_temporary_station_bands(self, station_id):
-        """Get the bands associated with a temporary station by the ID of that station. Returns the Band objects if
-        found, otherwise None."""
-
-        session = self.SessionLocal()
-        try:
-            station = session.query(TemporaryStation).filter_by(id=station_id).first()
-            return station.bands if station else None
-        finally:
-            session.close()
-
-    def get_temporary_station_modes(self, station_id):
-        """Get the modes associated with a temporary station by the ID of that station. Returns the Mode objects if
-        found, otherwise None."""
-
-        session = self.SessionLocal()
-        try:
-            station = session.query(TemporaryStation).filter_by(id=station_id).first()
-            return station.modes if station else None
-        finally:
-            session.close()
-
-    def get_temporary_station_event(self, station_id):
-        """Get the event associated with a temporary station by the ID of that station. Returns the Event object if
-        found, otherwise None."""
-
-        session = self.SessionLocal()
-        try:
-            station = session.query(TemporaryStation).filter_by(id=station_id).first()
-            return station.event if station else None
+            return session.query(TemporaryStation).options(joinedload(TemporaryStation.event),
+                                                           joinedload(TemporaryStation.bands),
+                                                           joinedload(TemporaryStation.modes)).filter_by(
+                id=station_id).first()
         finally:
             session.close()
 
@@ -467,7 +407,9 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(TemporaryStation).all()
+            return session.query(TemporaryStation).options(
+                joinedload(TemporaryStation.event), joinedload(TemporaryStation.bands),
+                joinedload(TemporaryStation.modes)).all()
         finally:
             session.close()
 
@@ -476,7 +418,10 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(TemporaryStation).filter_by(event_id=event_id).all()
+            return session.query(TemporaryStation).options(joinedload(TemporaryStation.event),
+                                                           joinedload(TemporaryStation.bands),
+                                                           joinedload(TemporaryStation.modes)).filter_by(
+                event_id=event_id).all()
         finally:
             session.close()
 
@@ -626,18 +571,8 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(PermanentStation).filter_by(id=station_id).first()
-        finally:
-            session.close()
-
-    def get_permanent_station_type(self, station_id):
-        """Get the type associated with a permanent station by the ID of that station. Returns the PermanentStationType
-        object if found, otherwise None."""
-
-        session = self.SessionLocal()
-        try:
-            station = session.query(PermanentStation).filter_by(id=station_id).first()
-            return station.type if station else None
+            return session.query(PermanentStation).options(joinedload(PermanentStation.type)).filter_by(
+                id=station_id).first()
         finally:
             session.close()
 
@@ -646,7 +581,7 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(PermanentStation).all()
+            return session.query(PermanentStation).options(joinedload(PermanentStation.type)).all()
         finally:
             session.close()
 
@@ -655,7 +590,8 @@ class DatabaseOperations:
 
         session = self.SessionLocal()
         try:
-            return session.query(PermanentStation).filter_by(type_id=type_id).all()
+            return session.query(PermanentStation).options(joinedload(PermanentStation.type)).filter_by(
+                type_id=type_id).all()
         finally:
             session.close()
 

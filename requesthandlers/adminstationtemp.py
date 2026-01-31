@@ -19,17 +19,13 @@ class AdminStationTempHandler(BaseHandler):
 
         # Get data we need to include in the template
         station = self.application.db.get_temporary_station(station_id) if not creating_new else None
-        station_bands = self.application.db.get_temporary_station_bands(station_id) if station else None
-        station_modes = self.application.db.get_temporary_station_modes(station_id) if station else None
-        station_event = self.application.db.get_temporary_station_event(station_id) if station else None
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_events = self.application.db.get_all_events()
 
         # Render the template
-        self.render("adminstationtemp.html", station=station, station_bands=station_bands, station_modes=station_modes,
-                    station_event=station_event, creating_new=creating_new, all_events=all_events, all_bands=all_bands,
-                    all_modes=all_modes)
+        self.render("adminstationtemp.html", station=station, creating_new=creating_new, all_events=all_events,
+                    all_bands=all_bands, all_modes=all_modes)
 
     @tornado.web.authenticated
     def post(self, slug):
@@ -92,7 +88,8 @@ class AdminStationTempHandler(BaseHandler):
             ok = self.application.db.update_temporary_station(station_id, callsign=callsign, club_name=club_name,
                                                               event_id=event_id, start_time=start_time,
                                                               end_time=end_time,
-                                                              latitude_degrees=latitude_degrees, longitude_degrees=longitude_degrees, band_ids=band_ids,
+                                                              latitude_degrees=latitude_degrees,
+                                                              longitude_degrees=longitude_degrees, band_ids=band_ids,
                                                               mode_ids=mode_ids,
                                                               notes=notes, website_url=website_url, qrz_url=qrz_url,
                                                               social_media_url=social_media_url, email=email,
@@ -143,7 +140,8 @@ class AdminStationTempHandler(BaseHandler):
             new_station_id = self.application.db.add_temporary_station(callsign=callsign, club_name=club_name,
                                                                        event_id=event_id, start_time=start_time,
                                                                        end_time=end_time,
-                                                                       latitude_degrees=latitude_degrees, longitude_degrees=longitude_degrees,
+                                                                       latitude_degrees=latitude_degrees,
+                                                                       longitude_degrees=longitude_degrees,
                                                                        band_ids=band_ids,
                                                                        mode_ids=mode_ids,
                                                                        notes=notes, website_url=website_url,

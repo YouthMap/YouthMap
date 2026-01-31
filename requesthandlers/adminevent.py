@@ -19,16 +19,12 @@ class AdminEventHandler(BaseHandler):
 
         # Get data we need to include in the template
         event = self.application.db.get_event(event_id) if not creating_new else None
-        event_bands = self.application.db.get_event_bands(event_id) if event else None
-        event_modes = self.application.db.get_event_modes(event_id) if event else None
-        event_stations = self.application.db.get_event_stations(event_id) if event else None
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_icons = get_all_icons()
 
         # Render the template
-        self.render("adminevent.html", event=event, event_bands=event_bands, event_modes=event_modes,
-                    event_stations=event_stations, creating_new=creating_new, all_bands=all_bands, all_modes=all_modes,
+        self.render("adminevent.html", event=event, creating_new=creating_new, all_bands=all_bands, all_modes=all_modes,
                     all_icons=all_icons)
 
     @tornado.web.authenticated
