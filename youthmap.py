@@ -5,6 +5,7 @@ import sys
 
 import tornado.ioloop
 import tornado.web
+from tornado.web import StaticFileHandler
 
 from core.config import HTTP_PORT
 from database import Database
@@ -49,13 +50,16 @@ class YouthMap(tornado.web.Application):
             (r"/admin/event/([^/]+)", AdminEventHandler),
             (r"/admin/stations", AdminStationsHandler),
             (r"/admin/station/temp/([^/]+)", AdminStationTempHandler),
-            (r"/admin/station/perm/([^/]+)", AdminStationPermHandler)
+            (r"/admin/station/perm/([^/]+)", AdminStationPermHandler),
+            (r"/upload/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "data/upload")}),
+            (r"/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "static")})
         ]
 
         settings = {
             "template_path": "templates",
             "cookie_secret": os.environ.get("COOKIE_SECRET", secrets.token_hex(32)),
             "login_url": "/login",
+            "debug": True  # todo set false
         }
 
         super(YouthMap, self).__init__(handlers, **settings)

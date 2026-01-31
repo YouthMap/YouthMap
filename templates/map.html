@@ -2,8 +2,21 @@
 {% block content %}
 
 <!--suppress HtmlUnknownTarget -->
-<h1>Youth Map</h1>
-<p>Map here</p>
+<div id="map"></div>
+
 <a href="/login">Admin login</a>
 
+<script type="importmap">
+{
+  "imports": {
+    "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
+    "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js"
+  }
+}
+</script>
+<script>
+    let perm_stations = {% raw json_encode(perm_stations) %};
+    let temp_stations = {% raw json_encode(temp_stations) %};
+</script>
+<script type="module" src="/js/map.js?v=1"></script>
 {% end %}
