@@ -56,6 +56,10 @@
                     <label for="band-{{ band.id }}" class="form-check-label">{{ band.name }}</label>
                     </span>
                     {% end %}
+                    <input type="button" onClick="$(':input:checkbox[name=\'bands[]\']').prop('checked', true);"
+                           value="All">
+                    <input type="button" onClick="$(':input:checkbox[name=\'bands[]\']').prop('checked', false);"
+                           value="None">
                 </div>
             </div>
             <div class="row mb-2">
@@ -80,7 +84,9 @@
                 <div class="col-sm-8">
                     <select name="icon" id="icon" class="form-control" required>
                         {% for icon in all_icons %}
-                        <option value="{{ icon }}" {% if not creating_new and icon == event.icon %}selected{% end %}>{{ icon }}</option>
+                        <option value="{{ icon }}" {% if not creating_new and icon== event.icon %}selected{% end %}>{{
+                            icon }}
+                        </option>
                         {% end %}
                     </select>
                 </div>
@@ -146,16 +152,16 @@
 
         {% if not creating_new %}
         <h5 class="mt-5">Stations at this event:</h5>
-        {% if len(event.stations) > 0 %}
         <ul class="nav flex-column">
+            {% if len(event.stations) > 0 %}
             {% for station in event.stations %}
             <li class="nav-item"><a class="nav-link" href="/admin/station/temp/{{ station.id }}">{{ station.callsign }}
                 {{ station.club_name }}</a></li>
             {% end %}
+            {% else %}
+            <li class="nav-item px-3 py-2">None</li>
+            {% end %}
         </ul>
-        {% else %}
-        <p>None</p>
-        {% end %}
         {% end %}
     </div>
     <div class="card-footer text-muted">

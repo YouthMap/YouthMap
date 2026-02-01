@@ -12,16 +12,21 @@
             <div class="card-body">
                 <p class="card-text">Click on a station to update or delete it.</p>
 
-                <h5 class="mt-2"></h5>
+                {% for type in temp_stations_by_type.keys() %}
+                <h5 class="mt-4">{{ type }} Event Stations</h5>
                 <ul class="nav flex-column">
-                    {% for station in temp_stations %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin/station/temp/{{ station.id }}">{{ station.callsign }} {{
-                            station.club_name }}{% if station.event %} at {{ station.event.name }}{% else %} (SES){% end
-                            %}</a>
-                    </li>
+                    {% if len(temp_stations_by_type[type]) > 0 %}
+                    {% for station in temp_stations_by_type[type] %}
+                    <li class="nav-item"><a class="nav-link" href="/admin/station/temp/{{ station.id }}">
+                        {{ station.callsign }} {{ station.club_name }}
+                        {% if station.event %} at {{ station.event.name }}{% else %} (SES){% end %}</a></li>
+                    {% end %}
+                    {% else %}
+                    <li class="nav-item px-3 py-2">None</li>
                     {% end %}
                 </ul>
+                {% end %}
+
                 <ul class="nav flex-column mt-5">
                     <li class="nav-item">
                         <a class="nav-link" href="/admin/station/temp/new">Create new temporary station</a>
@@ -49,14 +54,20 @@
             <div class="card-body">
                 <p class="card-text">Click on a station to update or delete it.</p>
 
+                {% for type in perm_stations_by_type.keys() %}
+                <h5 class="mt-4">{{ type }} Stations</h5>
                 <ul class="nav flex-column">
-                    {% for station in perm_stations %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin/station/perm/{{ station.id }}">{{ station.callsign }} {{
-                            station.club_name }}</a>
-                    </li>
+                    {% if len(perm_stations_by_type[type]) > 0 %}
+                    {% for station in perm_stations_by_type[type] %}
+                    <li class="nav-item"><a class="nav-link" href="/admin/station/perm/{{ station.id }}">{{
+                        station.callsign }} {{ station.club_name }}</a></li>
+                    {% end %}
+                    {% else %}
+                    <li class="nav-item px-3 py-2">None</li>
                     {% end %}
                 </ul>
+                {% end %}
+
                 <ul class="nav flex-column mt-5">
                     <li class="nav-item">
                         <a class="nav-link" href="/admin/station/perm/new">Create new permanent station</a>

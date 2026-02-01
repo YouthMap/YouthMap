@@ -8,13 +8,20 @@
     </div>
     <div class="card-body">
         <p class="card-text">Click on an event to update or delete it.</p>
+
+        {% for type in events_by_type.keys() %}
+        <h5 class="mt-4">{{ type }} Events</h5>
         <ul class="nav flex-column">
-            {% for event in events %}
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/event/{{ event.id }}">{{ event.name }}</a>
-            </li>
+            {% if len(events_by_type[type]) > 0 %}
+            {% for event in events_by_type[type] %}
+            <li class="nav-item"><a class="nav-link" href="/admin/event/{{ event.id }}">{{ event.name }}</a></li>
+            {% end %}
+            {% else %}
+            <li class="nav-item px-3 py-2">None</li>
             {% end %}
         </ul>
+        {% end %}
+
         <ul class="nav flex-column mt-5">
             <li class="nav-item">
                 <a class="nav-link" href="/admin/event/new">Create new event</a>

@@ -103,6 +103,8 @@
                     <label for="band-{{ band.id }}" class="form-check-label">{{ band.name }}</label>
                     </span>
                     {% end %}
+                    <input type="button" onClick="$(':input:checkbox[name=\'bands[]\']').prop('checked', true);" value="All">
+                    <input type="button" onClick="$(':input:checkbox[name=\'bands[]\']').prop('checked', false);" value="None">
                 </div>
             </div>
             <div class="row mb-2">
