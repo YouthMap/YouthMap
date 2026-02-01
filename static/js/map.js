@@ -1,5 +1,6 @@
 import { FeatureGroup, Map, Marker, TileLayer } from "leaflet";
 import { Icon, PinSquarePanel } from "leaflet-extra-markers";
+import { DateTime, Interval } from "luxon";
 
 
 // Set up the map
@@ -40,13 +41,13 @@ function createMarkers(markersLayer) {
               svg: PinSquarePanel,
             }),
         }).addTo(markersLayer);
+        marker.bindPopup(getPopupTextForPerm(s));
     });
     temp_stations.forEach(s => {
         // Skip temporary stations that have finished
         // TODO if a slug is provided we should show finished stations
-        const end_time = luxon.DateTime.fromISO(s.end_time);
-        alert(s.callsign + " " + s.end_time + " " + (luxon.DateTime.now() <= end_time));
-        if (luxon.DateTime.now() <= end_time) {
+        const end_time = DateTime.fromISO(s.end_time);
+        if (DateTime.now() <= end_time) {
             // Create a marker for the temporary station
             const marker = new Marker([s.latitude_degrees, s.longitude_degrees], {
                 icon: new Icon({
@@ -56,8 +57,34 @@ function createMarkers(markersLayer) {
                   svg: PinSquarePanel,
                 }),
             }).addTo(markersLayer);
+            marker.bindPopup(getPopupTextForTemp(s));
         }
     });
+}
+
+// Get popup text for a permanent station
+function getPopupTextForPerm(s) {
+    var text = "<p><b>" + s.callsign + "</b><br/>" + s.club_name + "</p>";
+    text = text + "<p style='text-align: right;'><a class='nav-link ml-auto' href='/view/station/perm/" + s.id + "'>More details &raquo;</a></p>";
+    return text;
+}
+
+// Get popup text for a temporary station
+function getPopupTextForTemp(s) {
+    var text = "<p><b>" + s.callsign + "</b><br/>" + s.club_name + "<br/>";
+    if (s.event) {
+        text = text + "at " + s.event.name + "<br/>";
+    }
+
+    // Display time range, defaulting to a simpler format if the start time is 00:00 and end time is 23:59.
+    const interval = Interval.fromDateTimes(DateTime.fromISO(s.start_time), DateTime.fromISO(s.end_time));
+    if (interval.start.hour == 0 && interval.start.minute == 0 && interval.end.hour == 23 && interval.end.minute == 59) {
+        text = text + interval.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    } else {
+        text = text + interval.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    }
+    text = text + "</p><p style='text-align: right;'><a class='nav-link ml-auto' href='/view/station/temp/" + s.id + "'>More details &raquo;</a></p>";
+    return text;
 }
 
 // Startup
