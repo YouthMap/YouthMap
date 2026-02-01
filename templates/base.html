@@ -49,26 +49,6 @@
             crossorigin="anonymous"></script>
 </head>
 <body>
-<nav id="header" class="navbar navbar-expand-lg px-3 px-sm-5 bg-light">
-    <a class="navbar-brand" href="/">Youth Map</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav" style="margin-left: auto;">
-            <li class="nav-item ps-2">
-                <button class="btn btn-primary my-2 my-sm-0" onClick="alert('TODO');">Add your station</button>
-            </li>
-            <li class="nav-item ps-4">
-                <a class="nav-link" href="/login">Admin</a>
-            </li>
-        </ul>
-    </div>
-</nav>
-<main>
-    {% block content-variant %}{% end %}
-</main>
+{% block content-variant %}{% end %}
 </body>
 </html>

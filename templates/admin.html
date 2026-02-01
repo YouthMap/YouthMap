@@ -1,4 +1,4 @@
-{% extends "base-std-container.html" %}
+{% extends "base-std.html" %}
 {% block content %}
 
 <!--suppress HtmlUnknownTarget -->
@@ -6,11 +6,11 @@
 <div class="alert alert-danger mb-5" role="alert">
     <h5 class="alert-heading">This site has not been secured</h5>
     {% if user.username == "admin" %}
-    <p class="mb-0">Warning: Your account has username "admin" and password "password". This is not secure. Please <a
+    <p class="mb-0">Your account has username "admin" and password "password". This is not secure. Please <a
             href="/admin/users" class="alert-link">fix this</a> as soon as possible by setting a different username,
         setting and secure password, and providing a valid email address.</p>
     {% else %}
-    <p class="mb-0">Warning: This site has a user with username "admin" and password "password". This is not secure.
+    <p class="mb-0">This site has a user with username "admin" and password "password". This is not secure.
         Please fix this as soon as possible by deleting the "admin" user.</p>
     {% end %}
 </div>
