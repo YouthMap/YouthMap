@@ -24,7 +24,7 @@ function setUpMap() {
 }
 
 // Create markers based on the user's current filters. Any markers that do not match the current filter will be removed.
-async function createMarkers(markersLayer) {
+function createMarkers(markersLayer) {
     // Clear existing markers
     markersLayer.clearLayers();
 
@@ -63,4 +63,7 @@ $(document).ready(function() {
 
     // Create markers
     createMarkers(markersLayer);
+
+    // Zoom to fit
+    map.fitBounds(markersLayer.getBounds().pad(0.5));
 });

@@ -33,7 +33,7 @@
     <label for="icon">Icon:</label>
     <select name="icon" id="icon" required>
         {% for icon in all_icons %}
-        <option value="{{ icon }}">{{ icon }}</option>
+        <option value="{{ icon }}" {% if icon == event.icon %}selected{% end %}>{{ icon }}</option>
         {% end %}
     </select>
     <br/>
