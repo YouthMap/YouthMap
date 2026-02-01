@@ -2,7 +2,7 @@ from datetime import datetime
 
 import tornado
 
-from core.utils import get_all_icons
+from core.utils import get_all_icons, get_default_event_start_time, get_default_event_end_time
 from requesthandlers.base import BaseHandler
 
 
@@ -22,10 +22,12 @@ class AdminEventHandler(BaseHandler):
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_icons = get_all_icons()
+        default_start = get_default_event_start_time()
+        default_end = get_default_event_end_time()
 
         # Render the template
         self.render("adminevent.html", event=event, creating_new=creating_new, all_bands=all_bands, all_modes=all_modes,
-                    all_icons=all_icons)
+                    all_icons=all_icons, default_start=default_start, default_end=default_end)
 
     @tornado.web.authenticated
     def post(self, slug):

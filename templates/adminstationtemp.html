@@ -25,9 +25,9 @@
         {% end %}
     </select><br/>
     <label for="start_time">Start Time (UTC):</label> <input id="start_time" name="start_time" type="datetime-local"
-                                                             value="{{ (datetime.datetime.now() if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
+                                                             value="{{ (default_start if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
     <label for="end_time">End Time (UTC):</label> <input id="end_time" name="end_time" type="datetime-local"
-                                                         value="{{ (datetime.datetime.now() if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
+                                                         value="{{ (default_end if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
     <label for="latitude_degrees">Latitude (degrees):</label> <input type="number" id="latitude_degrees"
                                                                      name="latitude_degrees"
                                                                      step="any" min="-90"

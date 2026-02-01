@@ -1,6 +1,9 @@
-import json
+import calendar
+from datetime import datetime, timedelta
 from os import listdir
 from os.path import isfile, join
+
+import pytz
 
 from core.config import UPLOAD_DIR
 
@@ -134,3 +137,18 @@ def serialize_everything(obj):
 def get_all_icons():
     """Get all icons (files in the upload directory)"""
     return sorted([f for f in listdir(UPLOAD_DIR) if isfile(join(UPLOAD_DIR, f))])
+
+
+def get_default_event_start_time():
+    """Returns a datetime to use as the default event/temporary station start time. This is
+    implemented as 00:00 UTC on the first day of the next month."""
+    return (datetime.now(pytz.UTC).replace(day=1) + timedelta(days=32)).replace(day=1, hour=0, minute=0, second=0,
+                                                                                tzinfo=pytz.UTC)
+
+
+def get_default_event_end_time():
+    """Returns a datetime to use as the default event/temporary station end time. This is
+    implemented as 23:59 UTC on the last day of the next month."""
+    start = datetime.now(pytz.UTC).replace(day=1) + timedelta(days=32)
+    days_in_month = calendar.monthrange(start.year, start.month)[1]
+    return start.replace(day=days_in_month, hour=23, minute=59, second=59, tzinfo=pytz.UTC)

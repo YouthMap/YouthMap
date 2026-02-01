@@ -2,6 +2,7 @@ from datetime import datetime
 
 import tornado
 
+from core.utils import get_default_event_end_time, get_default_event_start_time
 from requesthandlers.base import BaseHandler
 
 
@@ -22,10 +23,12 @@ class AdminStationTempHandler(BaseHandler):
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_events = self.application.db.get_all_events()
+        default_start = get_default_event_start_time()
+        default_end = get_default_event_end_time()
 
         # Render the template
         self.render("adminstationtemp.html", station=station, creating_new=creating_new, all_events=all_events,
-                    all_bands=all_bands, all_modes=all_modes)
+                    all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end)
 
     @tornado.web.authenticated
     def post(self, slug):
