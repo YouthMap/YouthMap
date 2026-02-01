@@ -2,75 +2,172 @@
 {% block content %}
 
 <!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
-<h1>{{ "Create" if creating_new else "Update" }} Event</h1>
-{% if creating_new %}
-<p>Please enter the details for the new event.</p>
-{% else %}
-<p>Updating details for {{ event.name }}.</p>
-{% end %}
-
-<form method="post">
-    <label for="name">Name:</label> <input type="text" id="name" name="name"
-                                           value="{{ '' if creating_new else event.name }}" required/><br/>
-    <label for="start_time">Start Time (UTC):</label> <input id="start_time" name="start_time" type="datetime-local"
-                                                             value="{{ (default_start if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
-    <label for="end_time">End Time (UTC):</label> <input id="end_time" name="end_time" type="datetime-local"
-                                                         value="{{ (default_end if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}" required /><br/>
-    Bands:
-    {% for band in all_bands %}
-    <input type="checkbox" id="band-{{ band.id }}" name="bands[]" value="{{ band.id }}"
-           {% if creating_new or band.id in [x.id for x in event.bands] %}checked{% end %}/>
-    <label for="band-{{ band.id }}">{{ band.name }}</label>
-    {% end %}
-    <br/>
-    Modes:
-    {% for mode in all_modes %}
-    <input type="checkbox" id="mode-{{ mode.id }}" name="modes[]" value="{{ mode.id }}"
-           {% if creating_new or mode.id in [x.id for x in event.modes] %}checked{% end %}/>
-    <label for="mode-{{ mode.id }}">{{ mode.name }}</label>
-    {% end %}
-    <br/>
-    <label for="icon">Icon:</label>
-    <select name="icon" id="icon" required>
-        {% for icon in all_icons %}
-        <option value="{{ icon }}" {% if icon == event.icon %}selected{% end %}>{{ icon }}</option>
+<div class="card mx-auto bg-body-tertiary" style="max-width: 40rem;">
+    <div class="card-header">
+        <h5 class="mb-0 card-title">{{ "Create" if creating_new else "Update" }} Event</h5>
+    </div>
+    <div class="card-body">
+        {% if creating_new %}
+        <p>Please enter the details for the new event.</p>
+        {% else %}
+        <p>Updating details for {{ event.name }}.</p>
         {% end %}
-    </select>
-    <br/>
-    <label for="color">Color:</label> <input type="text" id="color" name="color"
-                                             value="{{ '' if creating_new else event.color }}" required/><br/>
-    <label for="notes_template">Notes Template (optional):</label> <textarea id="notes_template" name="notes_template"
-                                                                             rows="5">{{ '' if creating_new else event.notes_template }}</textarea><br/>
-    <label for="url_slug">URL Slug (optional):</label> <input type="text" id="url_slug" name="url_slug"
-                                                              value="{{ '' if creating_new else event.url_slug }}"/><br/>
-    <input type="checkbox" id="public" name="public" value="true"
-           {% if not creating_new and event.public %}checked{% end %}>
-    <label for="public">Public</label><br/>
-    <input type="checkbox" id="rsgb_event" name="rsgb_event" value="true"
-           {% if not creating_new and event.rsgb_event %}checked{% end %}>
-    <label for="rsgb_event">RSGB Event</label><br/>
 
-    {% if creating_new %}
-    <input type="submit" name="action" value="Create">
-    {% else %}
-    <input type="submit" name="action" value="Update"> <input type="submit" name="action" value="Delete">
-    {% end %}
-</form>
+        <form method="post">
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="name" class="form-label mt-2">Name:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="name" class="form-control" name="name"
+                           value="{{ '' if creating_new else event.name }}" required/>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="start_time" class="form-label mt-2">Start time (UTC:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input id="start_time" class="form-control" name="start_time" type="datetime-local"
+                           value="{{ (default_start if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}"
+                           required/>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="end_time" class="form-label mt-2">Start time (UTC:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input id="end_time" class="form-control" name="end_time" type="datetime-local"
+                           value="{{ (default_end if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}"
+                           required/>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label class="form-label mt-2">Bands:</label>
+                </div>
+                <div class="col-sm-8">
+                    {% for band in all_bands %}
+                    <span style="display:inline-block; min-width:5em;">
+                    <input type="checkbox" id="band-{{ band.id }}" class="form-check-input" name="bands[]"
+                           value="{{ band.id }}"
+                           {% if creating_new or band.id in [x.id for x in event.bands] %}checked{% end %}/>&nbsp;
+                    <label for="band-{{ band.id }}" class="form-check-label">{{ band.name }}</label>
+                    </span>
+                    {% end %}
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label class="form-label mt-2">Modes:</label>
+                </div>
+                <div class="col-sm-8">
+                    {% for mode in all_modes %}
+                    <span style="display:inline-block; min-width:5em;">
+                    <input type="checkbox" id="mode-{{ mode.id }}" class="form-check-input" name="modes[]"
+                           value="{{ mode.id }}"
+                           {% if creating_new or mode.id in [x.id for x in event.modes] %}checked{% end %}/>&nbsp;
+                    <label for="mode-{{ mode.id }}" class="form-check-label">{{ mode.name }}</label>
+                    </span>
+                    {% end %}
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="icon" class="form-label mt-2">Icon:</label>
+                </div>
+                <div class="col-sm-8">
+                    <select name="icon" id="icon" class="form-control" required>
+                        {% for icon in all_icons %}
+                        <option value="{{ icon }}" {% if icon== event.icon %}selected{% end %}>{{ icon }}</option>
+                        {% end %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="color" class="form-label mt-2">Colour:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="color" class="form-control" name="color"
+                           value="{{ '' if creating_new else event.color }}" required/>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="notes_template" class="form-label mt-2">Notes Template (optional):</label>
+                </div>
+                <div class="col-sm-8">
+                    <textarea id="notes_template" class="form-control" name="notes_template"
+                              rows="5">{{ '' if creating_new else event.notes_template }}</textarea>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="url_slug" class="form-label mt-2">URL slug (optional):</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="url_slug" class="form-control" name="url_slug"
+                           value="{{ '' if creating_new else event.url_slug }}"/>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                </div>
+                <div class="col-sm-8">
+                    <input type="checkbox" id="public" class="form-check-input" name="public" value="true"
+                           {% if not creating_new and event.public %}checked{% end %}>
+                    <label for="public" class="form-check-label">Public event</label>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                </div>
+                <div class="col-sm-8">
+                    <input type="checkbox" id="rsgb_event" class="form-check-input" name="rsgb_event" value="true"
+                           {% if not creating_new and event.rsgb_event %}checked{% end %}>
+                    <label for="rsgb_event" class="form-check-label">RSGB Event</label>
+                </div>
+            </div>
+            <div class="row mb-2 mt-4">
+                <div class="col-sm-4">
+                </div>
+                <div class="col-sm-8">
+                    {% if creating_new %}
+                    <input type="submit" class="btn btn-primary" name="action" value="Create">
+                    {% else %}
+                    <input type="submit" class="btn btn-primary" name="action" value="Update">
+                    <input type="submit" class="btn btn-danger" name="action" value="Delete">
+                    {% end %}
+                </div>
+            </div>
+        </form>
 
-{% if not creating_new %}
-<h2>Stations at this event:</h2>
-{% if len(event.stations) > 0 %}
-<ul>
-    {% for station in event.stations %}
-    <li><a href="/admin/station/temp/{{ station.id }}">{{ station.callsign }} {{ station.club_name }}</a></li>
-    {% end %}
-</ul>
-{% else %}
-<p>None</p>
-{% end %}
-{% end %}
-
-<p><a href="/admin/events">Back to event list</a></p>
-<p><a href="/admin">Back to dashboard</a></p>
+        {% if not creating_new %}
+        <h5 class="mt-5">Stations at this event:</h5>
+        {% if len(event.stations) > 0 %}
+        <ul class="nav flex-column">
+            {% for station in event.stations %}
+            <li class="nav-item"><a class="nav-link" href="/admin/station/temp/{{ station.id }}">{{ station.callsign }}
+                {{ station.club_name }}</a></li>
+            {% end %}
+        </ul>
+        {% else %}
+        <p>None</p>
+        {% end %}
+        {% end %}
+    </div>
+    <div class="card-footer text-muted">
+        <ul class="nav flex-row">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/stations">&laquo; Back to station list</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+            </li>
+        </ul>
+    </div>
+</div>
 
 {% end %}
