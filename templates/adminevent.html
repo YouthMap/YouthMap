@@ -25,7 +25,7 @@
             </div>
             <div class="row mb-2">
                 <div class="col-sm-4">
-                    <label for="start_time" class="form-label mt-2">Start time (UTC:</label>
+                    <label for="start_time" class="form-label mt-2">Start time (UTC):</label>
                 </div>
                 <div class="col-sm-8">
                     <input id="start_time" class="form-control" name="start_time" type="datetime-local"
@@ -35,7 +35,7 @@
             </div>
             <div class="row mb-2">
                 <div class="col-sm-4">
-                    <label for="end_time" class="form-label mt-2">Start time (UTC:</label>
+                    <label for="end_time" class="form-label mt-2">Start time (UTC):</label>
                 </div>
                 <div class="col-sm-8">
                     <input id="end_time" class="form-control" name="end_time" type="datetime-local"
@@ -80,7 +80,7 @@
                 <div class="col-sm-8">
                     <select name="icon" id="icon" class="form-control" required>
                         {% for icon in all_icons %}
-                        <option value="{{ icon }}" {% if icon== event.icon %}selected{% end %}>{{ icon }}</option>
+                        <option value="{{ icon }}" {% if not creating_new and icon == event.icon %}selected{% end %}>{{ icon }}</option>
                         {% end %}
                     </select>
                 </div>
@@ -161,7 +161,7 @@
     <div class="card-footer text-muted">
         <ul class="nav flex-row">
             <li class="nav-item">
-                <a class="nav-link" href="/admin/stations">&laquo; Back to station list</a>
+                <a class="nav-link" href="/admin/events">&laquo; Back to event list</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>

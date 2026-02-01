@@ -44,8 +44,7 @@
                         <option value=""></option>
                         {% for event in all_events %}
                         <option value="{{ event.id }}" {% if not creating_new and station.event_id== event.id
-                                %}selected{% end %}>{{
-                            event.name }}
+                                %}selected{% end %}>{{ event.name }}
                         </option>
                         {% end %}
                     </select>
@@ -53,21 +52,21 @@
             </div>
             <div class="row mb-2">
                 <div class="col-sm-4">
-                    <label for="start_time" class="form-label mt-2">Start time (UTC:</label>
+                    <label for="start_time" class="form-label mt-2">Start time (UTC):</label>
                 </div>
                 <div class="col-sm-8">
                     <input id="start_time" class="form-control" name="start_time" type="datetime-local"
-                           value="{{ (default_start if creating_new else event.start_time).strftime('%Y-%m-%dT%H:%M') }}"
+                           value="{{ (default_start if creating_new else station.start_time).strftime('%Y-%m-%dT%H:%M') }}"
                            required/>
                 </div>
             </div>
             <div class="row mb-2">
                 <div class="col-sm-4">
-                    <label for="end_time" class="form-label mt-2">Start time (UTC:</label>
+                    <label for="end_time" class="form-label mt-2">Start time (UTC):</label>
                 </div>
                 <div class="col-sm-8">
                     <input id="end_time" class="form-control" name="end_time" type="datetime-local"
-                           value="{{ (default_end if creating_new else event.end_time).strftime('%Y-%m-%dT%H:%M') }}"
+                           value="{{ (default_end if creating_new else station.end_time).strftime('%Y-%m-%dT%H:%M') }}"
                            required/>
                 </div>
             </div>

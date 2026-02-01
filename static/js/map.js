@@ -31,6 +31,7 @@ function createMarkers(markersLayer) {
     // Create new ones for all permanent and temporary stations that match the filters.
     // TODO filtering
     perm_stations.forEach(s => {
+        // Create a marker for the permanent station
         const marker = new Marker([s.latitude_degrees, s.longitude_degrees], {
             icon: new Icon({
               accentColor: s.color,
@@ -41,14 +42,21 @@ function createMarkers(markersLayer) {
         }).addTo(markersLayer);
     });
     temp_stations.forEach(s => {
-        const marker = new Marker([s.latitude_degrees, s.longitude_degrees], {
-            icon: new Icon({
-              accentColor: s.color,
-              svgFillImageSrc: "/upload/" + s.icon,
-              scale: 1.5,
-              svg: PinSquarePanel,
-            }),
-        }).addTo(markersLayer);
+        // Skip temporary stations that have finished
+        // TODO if a slug is provided we should show finished stations
+        const end_time = luxon.DateTime.fromISO(s.end_time);
+        alert(s.callsign + " " + s.end_time + " " + (luxon.DateTime.now() <= end_time));
+        if (luxon.DateTime.now() <= end_time) {
+            // Create a marker for the temporary station
+            const marker = new Marker([s.latitude_degrees, s.longitude_degrees], {
+                icon: new Icon({
+                  accentColor: s.color,
+                  svgFillImageSrc: "/upload/" + s.icon,
+                  scale: 1.5,
+                  svg: PinSquarePanel,
+                }),
+            }).addTo(markersLayer);
+        }
     });
 }
 
