@@ -1,19 +1,33 @@
-{% extends "base.html" %}
+{% extends "base-std-container.html" %}
 {% block content %}
 
 <!--suppress HtmlUnknownTarget -->
-<h1>Manage Users</h1>
-
-<p>Click on a user to update or delete it.</p>
-
-<ul>
-    {% for user in users %}
-        <li><a href="/admin/user/{{ user.id }}">{{ user.username }}</a></li>
-    {% end %}
-</ul>
-
-<p><a href="/admin/user/new">Create new user</a></p>
-
-<p><a href="/admin">Back to dashboard</a></p>
+<div class="card mx-auto" style="max-width: 24rem;">
+    <div class="card-header">
+        <h5 class="mb-0">Manage Users</h5>
+    </div>
+    <div class="card-body">
+        <p class="card-text">Click on a user to update or delete it.</p>
+        <ul class="nav flex-column">
+            {% for user in users %}
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/user/{{ user.id }}">{{ user.username }}</a>
+            </li>
+            {% end %}
+        </ul>
+        <ul class="nav flex-column mt-5">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/user/new">Create new user</a>
+            </li>
+        </ul>
+    </div>
+    <div class="card-footer text-muted">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+            </li>
+        </ul>
+    </div>
+</div>
 
 {% end %}

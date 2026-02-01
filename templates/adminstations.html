@@ -1,31 +1,78 @@
-{% extends "base.html" %}
+{% extends "base-std-container.html" %}
 {% block content %}
 
 <!--suppress HtmlUnknownTarget -->
-<h1>Manage Stations</h1>
+<div class="row">
+    <div class="col-sm-6">
+        <div class="card mx-auto">
+            <div class="card-header">
+                <h5 class="mb-0">Manage Temporary/Special Event Stations</h5>
+            </div>
 
-<p>Click on a station to update or delete it.</p>
+            <div class="card-body">
+                <p class="card-text">Click on a station to update or delete it.</p>
 
-<h2>Temporary/Special Event Stations</h2>
+                <h5 class="mt-2"></h5>
+                <ul class="nav flex-column">
+                    {% for station in temp_stations %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/station/temp/{{ station.id }}">{{ station.callsign }} {{
+                            station.club_name }}{% if station.event %} at {{ station.event.name }}{% else %} (SES){% end
+                            %}</a>
+                    </li>
+                    {% end %}
+                </ul>
+                <ul class="nav flex-column mt-5">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/station/temp/new">Create new temporary station</a>
+                    </li>
+                </ul>
+            </div>
 
-<ul>
-    {% for station in temp_stations %}
-        <li><a href="/admin/station/temp/{{ station.id }}">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{ station.event.name }}{% else %} (SES){% end %}</a></li>
-    {% end %}
-</ul>
+            <div class="card-footer text-muted">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-<p><a href="/admin/station/temp/new">Create new temporary station</a></p>
 
-<h2>Permanent/Club Stations</h2>
+    <div class="col-sm-6">
+        <div class="card mx-auto">
+            <div class="card-header">
+                <h5 class="mb-0">Manage Permanent/Club Stations</h5>
+            </div>
 
-<ul>
-    {% for station in perm_stations %}
-        <li><a href="/admin/station/perm/{{ station.id }}">{{ station.callsign }} {{ station.club_name }}</a></li>
-    {% end %}
-</ul>
+            <div class="card-body">
+                <p class="card-text">Click on a station to update or delete it.</p>
 
-<p><a href="/admin/station/perm/new">Create new permanent station</a></p>
+                <ul class="nav flex-column">
+                    {% for station in perm_stations %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/station/perm/{{ station.id }}">{{ station.callsign }} {{
+                            station.club_name }}</a>
+                    </li>
+                    {% end %}
+                </ul>
+                <ul class="nav flex-column mt-5">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/station/perm/new">Create new permanent station</a>
+                    </li>
+                </ul>
+            </div>
 
-<p><a href="/admin">Back to dashboard</a></p>
+            <div class="card-footer text-muted">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% end %}

@@ -1,35 +1,75 @@
-{% extends "base.html" %}
+{% extends "base-std-container.html" %}
 {% block content %}
 
 <!--suppress HtmlUnknownTarget -->
-<h1>Admin Dashboard</h1>
-
 {% if insecure_user_present %}
-{% if user.username == "admin" %}
-<p><strong>Warning: Your account has username "admin" and password "password". This is not secure. Please <a
-        href="/admin/user">fix this</a> as soon as possible by setting a different username, setting and secure
-    password, and providing a valid email address.</strong></p>
-{% else %}
-<p><strong>Warning: This site has a user with username "admin" and password "password". This is not secure. Please fix
-    this as soon as possible by deleting the "admin" user.</strong></p>
+<div class="alert alert-danger mb-5" role="alert">
+    <h5 class="alert-heading">This site has not been secured</h5>
+    {% if user.username == "admin" %}
+    <p class="mb-0">Warning: Your account has username "admin" and password "password". This is not secure. Please <a
+            href="/admin/users" class="alert-link">fix this</a> as soon as possible by setting a different username,
+        setting and secure password, and providing a valid email address.</p>
+    {% else %}
+    <p class="mb-0">Warning: This site has a user with username "admin" and password "password". This is not secure.
+        Please fix this as soon as possible by deleting the "admin" user.</p>
+    {% end %}
+</div>
 {% end %}
-{% end %}
 
-<p>Hello {{ user.username }}</p>
+<h2 class="mb-4">Admin Dashboard</h2>
 
-<p><a href="/">Go to Map</a></p>
-
-<h2>Your Account</h2>
-<p><a href="/admin/user/{{ user.id }}">Update details</a></p>
-<p><a href="/logout">Logout</a></p>
-
-<h2>Admin Controls</h2>
-<p><a href="/admin/stations">Manage stations</a></p>
-<p><a href="/admin/events">Manage events</a></p>
-
-{% if user.super_admin %}
-<h2>Super-Admin Controls</h2>
-<p><a href="/admin/users">Manage users</a></p>
-{% end %}
+<div class="row">
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-header card-title">
+                <h5 class="mb-0">Your Account</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text mt-2">Logged in as: {{ user.username }}</p>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/user/{{ user.id }}">Update Details</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/logout">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0 card-title">Admin Controls</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/stations">Manage stations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/events">Manage events</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% if user.super_admin %}
+    <div class="col-sm-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0 card-title">Super-Admin Controls</h5>
+            </div>
+            <div class="card-body">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users">Manage users</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% end %}
+</div>
 
 {% end %}

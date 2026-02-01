@@ -1,18 +1,33 @@
-{% extends "base.html" %}
+{% extends "base-std-container.html" %}
 {% block content %}
 
-<h1>Admin Login</h1>
-
 {% if insecure_user_present %}
-<p><strong>The default login is username "admin", password "password". Please ensure this user is renamed or replaced
-    before this site goes live.</strong></p>
+<div class="alert alert-danger mb-5" role="alert">
+    <h5 class="alert-heading">This site has not been secured</h5>
+    <p class="mb-0">The default login is username "admin", password "password". Please ensure this user is renamed or replaced
+    before this site goes live.</p>
+</div>
 {% end %}
 
-<form method="post">
-    <label for="username">Username: </label> <input type="text" id="username" name="username" required autofocus><br>
-    <label for="password">Password: </label> <input type="password" id="password" name="password" required><br>
-    <input type="hidden" name="next" value="{{ next }}">
-    <input type="submit" value="Login">
-</form>
+<div class="card bg-light mx-auto" style="max-width: 24rem;">
+    <div class="card-header">
+        <h5>Admin Login</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label class="form-label" for="username">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required autofocus>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+</div>
+
 
 {% end %}
