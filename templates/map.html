@@ -13,8 +13,8 @@
 }
 </script>
 <script>
-    let perm_stations = {% raw json_encode(perm_stations) %};
-    let temp_stations = {% raw json_encode(temp_stations) %};
+    let perm_stations = JSON.parse({% raw json_encode(perm_stations) %});
+    let temp_stations = JSON.parse({% raw json_encode(temp_stations) %});
 </script>
 <script type="module" src="/js/map.js?v=1"></script>
 {% end %}
