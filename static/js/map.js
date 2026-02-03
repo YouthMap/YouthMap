@@ -1,6 +1,6 @@
 import { FeatureGroup, Map, Marker, TileLayer } from "leaflet";
 import { Icon, PinSquarePanel } from "leaflet-extra-markers";
-import { DateTime, Interval } from "luxon";
+import { DateTime } from "luxon";
 
 
 // Set up the map
@@ -75,15 +75,7 @@ function getPopupTextForTemp(s) {
     if (s.event) {
         text = text + "at " + s.event.name + "<br/>";
     }
-
-    // Display time range, defaulting to a simpler format if the start time is 00:00 and end time is 23:59.
-    const interval = Interval.fromDateTimes(DateTime.fromISO(s.start_time), DateTime.fromISO(s.end_time));
-    if (interval.start.hour == 0 && interval.start.minute == 0 && interval.end.hour == 23 && interval.end.minute == 59) {
-        text = text + interval.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
-    } else {
-        text = text + interval.toLocaleString({ weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-    }
-    text = text + "</p><p style='text-align: right;'><a class='nav-link ml-auto' href='/view/station/temp/" + s.id + "'>More details &raquo;</a></p>";
+    text = text + s.humanized_start_end + "</p><p style='text-align: right;'><a class='nav-link ml-auto' href='/view/station/temp/" + s.id + "'>More details &raquo;</a></p>";
     return text;
 }
 

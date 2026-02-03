@@ -20,6 +20,7 @@ from requesthandlers.adminusers import AdminUsersHandler
 from requesthandlers.login import LoginHandler
 from requesthandlers.logout import LogoutHandler
 from requesthandlers.map import MapHandler
+from requesthandlers.viewstation import ViewStationHandler
 
 
 class YouthMap(tornado.web.Application):
@@ -41,6 +42,7 @@ class YouthMap(tornado.web.Application):
         logging.info("Setting up web server...")
         handlers = [
             (r"/", MapHandler),
+            (r"/view/station/(perm|temp)/([^/]+)", ViewStationHandler),
             (r"/login", LoginHandler),
             (r"/logout", LogoutHandler),
             (r"/admin", AdminHandler),
