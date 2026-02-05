@@ -26,3 +26,8 @@ class ViewStationHandler(BaseHandler):
         # Render the template. Supply the real object for the template and the JSON version to load more easily into
         # the map.
         self.render("viewstation.html", type=perm_or_temp_slug, station=station, station_json=station_json)
+
+    def post(self, slug):
+        """Handle the user entering an edit password and clicking Edit or Delete"""
+
+        # TODO

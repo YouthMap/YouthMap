@@ -1,5 +1,8 @@
 /* GENERAL PAGE LAYOUT */
 
+div.container {
+    margin-bottom: 2em;
+}
 
 /* MAP */
 

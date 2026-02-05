@@ -174,6 +174,30 @@
                 </ul>
             </div>
         </div>
+
+
+        <p class="d-inline-flex gap-1 mt-4 mx-3">
+            <a data-bs-toggle="collapse" href="#editDetailsPanel" role="button"
+               class="link-underline link-underline-opacity-0"
+               aria-expanded="false" aria-controls="editDetailsPanel">
+                Is this your station?
+            </a>
+        </p>
+        <div class="collapse" id="editDetailsPanel">
+            <div class="card card-body">
+                <p>You can edit a station you previously created by entering the "edit password" you were given when
+                    the event was created. Please enter this below to edit or delete this station.</p>
+                <form method="post" class="mb-3">
+                    <input type="password" id="edit_password" class="form-control" name="edit_password"
+                           style="max-width: 12em; display:inline-block;" required/>
+                    <input type="submit" class="btn btn-primary" name="action" value="Edit"
+                           style="margin-top: -0.25em;">
+                    <input type="submit" class="btn btn-danger" name="action" value="Delete"
+                           style="margin-top: -0.25em;">
+                </form>
+                <p class="mb-0">If you have lost this password, please contact an administrator for assistance. (TODO)</p>
+            </div>
+        </div>
     </div>
 </div>
 
