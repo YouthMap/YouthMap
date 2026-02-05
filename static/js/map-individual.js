@@ -7,7 +7,7 @@ import { DateTime, Interval } from "luxon";
 function setUpMap() {
     // Create map
     const map = new Map("map", {
-        zoomControl: true,
+        zoomControl: false,
         minZoom: 2,
         maxZoom: 12
     });

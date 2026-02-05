@@ -5,18 +5,34 @@
 {% if type == "perm" %}
 <h2>{{ station.callsign }} {{ station.club_name }}</h2>
 {% else %}
-<h2>{{ station.callsign }} {{ station.club_name }}{% if station.event %} at
-    {{station.event.name}}{% else %} (SES){% end %}</h2>
+<h2>{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{station.event.name}}{% end %}</h2>
 {% end %}
 
 <div class="row mt-5">
     <div class="col-sm-6">
-        <div id="map" style="width: 100%; height: 25em;"></div>
+        <div class="card mx-auto bg-body-tertiary">
+            <div class="card-header">
+                <h5 class="mb-0 card-title">Location</h5>
+            </div>
+
+            <div class="card-body p-0">
+                <div id="map" style="width: 100%; height: 20em;"></div>
+            </div>
+
+            <div class="card-footer text-muted">
+                <ul class="nav flex-row">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">&laquo; Back to full map</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
+
     <div class="col-sm-6">
         <div class="card mx-auto bg-body-tertiary">
             <div class="card-header">
-                <h5 class="mb-0 card-title">Station Details</h5>
+                <h5 class="mb-0 card-title">Details</h5>
             </div>
 
             <div class="card-body">
@@ -84,14 +100,6 @@
                 {% end %}
 
                 {% if type == "perm" %}
-                <div class="row mb-2">
-                    <div class="col-sm-4">
-                        Type:
-                    </div>
-                    <div class="col-sm-8">
-                        {{ station.type.name }}
-                    </div>
-                </div>
                 <div class="row mb-2">
                     <div class="col-sm-4">
                         Meeting:
@@ -165,16 +173,7 @@
                 </div>
                 {% end %}
             </div>
-
-            <div class="card-footer text-muted">
-                <ul class="nav flex-row">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">&laquo; Back to map</a>
-                    </li>
-                </ul>
-            </div>
         </div>
-
 
         <p class="d-inline-flex gap-1 mt-4 mx-3">
             <a data-bs-toggle="collapse" href="#editDetailsPanel" role="button"
@@ -188,6 +187,7 @@
                 <p>You can edit a station you previously created by entering the "edit password" you were given when
                     the event was created. Please enter this below to edit or delete this station.</p>
                 <form method="post" class="mb-3">
+                    <!--suppress HtmlFormInputWithoutLabel -->
                     <input type="password" id="edit_password" class="form-control" name="edit_password"
                            style="max-width: 12em; display:inline-block;" required/>
                     <input type="submit" class="btn btn-primary" name="action" value="Edit"
@@ -195,7 +195,8 @@
                     <input type="submit" class="btn btn-danger" name="action" value="Delete"
                            style="margin-top: -0.25em;">
                 </form>
-                <p class="mb-0">If you have lost this password, please contact an administrator for assistance. (TODO)</p>
+                <p class="mb-0">If you have lost this password, please contact an administrator for assistance.
+                    (TODO)</p>
             </div>
         </div>
     </div>
@@ -213,5 +214,5 @@
 <script>
     let station = {% raw json_encode(station_json) %};
 </script>
-<script type="module" src="/js/map-viewstation.js?v=1"></script>
+<script type="module" src="/js/map-individual.js?v=1"></script>
 {% end %}

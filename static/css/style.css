@@ -1,5 +1,19 @@
 /* GENERAL PAGE LAYOUT */
 
+nav#header {
+    z-index: 1000;
+}
+
+img#rsgb-logo {
+    height: 5em;
+    position: absolute;
+    top: -1em;
+}
+
+span#site-title {
+    padding-left: 2.5em;
+}
+
 div.container {
     margin-bottom: 2em;
 }
@@ -14,6 +28,9 @@ div.map-container {
     width: 100% !important;
     max-width: 100% !important;
     padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
 div#map {
@@ -23,6 +40,10 @@ div#map {
     overflow: hidden;
     cursor: default;
     font-size: 16px;
+}
+
+.leaflet-top {
+    top: 4em !important;
 }
 
 .leaflet-container {
