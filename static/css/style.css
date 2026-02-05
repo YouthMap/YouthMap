@@ -5,13 +5,13 @@ nav#header {
 }
 
 img#rsgb-logo {
-    height: 5em;
+    height: 2.8em;
     position: absolute;
-    top: -1em;
+    top: 0em;
 }
 
 span#site-title {
-    padding-left: 2.5em;
+    padding-left: 2.8em;
 }
 
 div.container {
@@ -39,7 +39,7 @@ div#map {
     margin: 0;
     overflow: hidden;
     cursor: default;
-    font-size: 16px;
+    font-size: 15px;
 }
 
 .leaflet-top {
