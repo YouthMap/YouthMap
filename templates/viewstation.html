@@ -56,6 +56,113 @@
                         {{ station.humanized_start_end }}
                     </div>
                 </div>
+                {% if station.rsgb_attending %}
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                    </div>
+                    <div class="col-sm-8">
+                        RSGB attending
+                    </div>
+                </div>
+                {% end %}
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        Bands:
+                    </div>
+                    <div class="col-sm-8">
+                        {{ ", ".join([b.name for b in sorted(station.bands, key=lambda b: b.id)]) }}
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        Modes:
+                    </div>
+                    <div class="col-sm-8">
+                        {{ ", ".join([m.name for m in sorted(station.modes, key=lambda m: m.id)]) }}
+                    </div>
+                </div>
+                {% end %}
+
+                {% if type == "perm" %}
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        Type:
+                    </div>
+                    <div class="col-sm-8">
+                        {{ station.type.name }}
+                    </div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        Meeting:
+                    </div>
+                    <div class="col-sm-8">
+                        {{ station.meeting_when }}
+                        {% if station.meeting_when != "" and station.meeting_where != "" %}<br/>{% end %}
+                        {{ station.meeting_where }}
+                    </div>
+                </div>
+                {% end %}
+
+                {% if station.notes and station.notes != "" %}
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        Notes:
+                    </div>
+                    <div class="col-sm-8">
+                        {{ station.notes }}
+                    </div>
+                </div>
+                {% end %}
+                {% if station.website_url and station.website_url != "" %}
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        Website:
+                    </div>
+                    <div class="col-sm-8">
+                        <a href="{{ station.website_url }}" target="_new">{{ station.website_url }}</a>
+                    </div>
+                </div>
+                {% end %}
+                {% if station.qrz_url and station.qrz_url != "" %}
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        QRZ page:
+                    </div>
+                    <div class="col-sm-8">
+                        <a href="{{ station.qrz_url }}" target="_new">{{ station.qrz_url }}</a>
+                    </div>
+                </div>
+                {% end %}
+                {% if station.social_media_url and station.social_media_url != "" %}
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        Social media:
+                    </div>
+                    <div class="col-sm-8">
+                        <a href="{{ station.social_media_url }}" target="_new">{{ station.social_media_url }}</a>
+                    </div>
+                </div>
+                {% end %}
+                {% if station.email and station.email != "" %}
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        Contact email:
+                    </div>
+                    <div class="col-sm-8">
+                        <a href="mailto:{{ station.email }}" target="_new">{{ station.email }}</a>
+                    </div>
+                </div>
+                {% end %}
+                {% if station.phone_number and station.phone_number != "" %}
+                <div class="row mb-2">
+                    <div class="col-sm-4">
+                        Contact number:
+                    </div>
+                    <div class="col-sm-8">
+                        {{ station.phone_number }}
+                    </div>
+                </div>
                 {% end %}
             </div>
 
