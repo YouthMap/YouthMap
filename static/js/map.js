@@ -9,7 +9,7 @@ function setUpMap() {
     const map = new Map("map", {
         zoomControl: true,
         minZoom: 2,
-        maxZoom: 12
+        maxZoom: 16
     });
 
     // Add basemap

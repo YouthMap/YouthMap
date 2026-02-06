@@ -1,6 +1,5 @@
 import { FeatureGroup, Map, Marker, TileLayer } from "leaflet";
 import { Icon, PinSquarePanel } from "leaflet-extra-markers";
-import { DateTime, Interval } from "luxon";
 
 
 // Set up the map
@@ -9,7 +8,7 @@ function setUpMap() {
     const map = new Map("map", {
         zoomControl: false,
         minZoom: 2,
-        maxZoom: 12
+        maxZoom: 16
     });
 
     // Add basemap
@@ -23,10 +22,10 @@ function setUpMap() {
 
 // Create marker
 function createMarker(map) {
-    const marker = new Marker([station.latitude_degrees, station.longitude_degrees], {
+    const marker = new Marker([latitude_degrees, longitude_degrees], {
         icon: new Icon({
-          accentColor: station.color,
-          svgFillImageSrc: "/upload/" + station.icon,
+          accentColor: color,
+          svgFillImageSrc: "/upload/" + icon,
           scale: 1.5,
           svg: PinSquarePanel,
         }),
@@ -42,5 +41,5 @@ $(document).ready(function() {
     createMarker(map);
 
     // Zoom to it
-    map.setView([station.latitude_degrees, station.longitude_degrees], 12);
+    map.setView([latitude_degrees, longitude_degrees], 12);
 });

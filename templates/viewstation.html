@@ -188,7 +188,7 @@
                     the event was created. Please enter this below to edit or delete this station.</p>
                 <form method="post" class="mb-3">
                     <!--suppress HtmlFormInputWithoutLabel -->
-                    <input type="password" id="edit_password" class="form-control" name="edit_password"
+                    <input type="password" id="user_edit_password" class="form-control" name="user_edit_password"
                            style="max-width: 12em; display:inline-block;" required/>
                     <input type="submit" class="btn btn-primary" name="action" value="Edit"
                            style="margin-top: -0.25em;">
@@ -206,13 +206,15 @@
     {
       "imports": {
         "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
-        "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js",
-        "luxon": "https://cdn.jsdelivr.net/npm/luxon@3.7.2/+esm"
+        "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js"
       }
     }
 </script>
 <script>
-    let station = {% raw json_encode(station_json) %};
+    let latitude_degrees = {{ float(station.latitude_degrees) }};
+    let longitude_degrees = {{ float(station.longitude_degrees) }};
+    let color = "{{ station.color }}";
+    let icon = "{{ station.icon }}";
 </script>
-<script type="module" src="/js/map-individual.js?v=1"></script>
+<script type="module" src="/js/map-viewstation.js?v=1"></script>
 {% end %}

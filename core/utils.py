@@ -66,121 +66,19 @@ def humanize_start_end(start_time, end_time):
     return text
 
 
-def perm_station_to_json_for_user_frontend(s):
-    """Converts a permanent station to a JSON form suitable for sending to the frontend. This includes:
-     * Removing the 'edit password' which would allow malicious editing of all stations
-     * Adding icon and color
-     * Replacing non-JSON-serializable objects with serializable equivalents."""
-
-    return {
-        "id": s.id,
-        "callsign": s.callsign,
-        "club_name": s.club_name,
-        "latitude_degrees": float(s.latitude_degrees),
-        "longitude_degrees": float(s.longitude_degrees),
-        "meeting_when": s.meeting_when,
-        "meeting_where": s.meeting_where,
-        "notes": s.notes,
-        "website_url": s.website_url,
-        "email": s.email,
-        "phone_number": s.phone_number,
-        "qrz_url": s.qrz_url,
-        "social_media_url": s.social_media_url,
-        "type": {"id": s.type.id, "name": s.type.name},
-        "icon": get_icon_for_perm_station(s),
-        "color": get_color_for_perm_station(s)
-    }
+def populate_derived_fields_perm_station(s):
+    """Takes the provided permanent station and populates any fields in it which are derived rather than directly in the
+    object as it comes out of the database. This includes icon and colour."""
+    s.icon = get_icon_for_perm_station(s)
+    s.color = get_color_for_perm_station(s)
 
 
-def temp_station_to_json_for_user_frontend(s):
-    """Converts a temporary station to a JSON form suitable for sending to the frontend. This includes:
-     * Removing the 'edit password' which would allow malicious editing of all stations
-     * Adding icon and color
-     * Replacing non-JSON-serializable objects with serializable equivalents."""
-
-    return {
-        "id": s.id,
-        "callsign": s.callsign,
-        "club_name": s.club_name,
-        "start_time": s.start_time.isoformat(),
-        "end_time": s.end_time.isoformat(),
-        "humanized_start_end": humanize_start_end(s.start_time, s.end_time),
-        "latitude_degrees": float(s.latitude_degrees),
-        "longitude_degrees": float(s.longitude_degrees),
-        "notes": s.notes,
-        "website_url": s.website_url,
-        "email": s.email,
-        "phone_number": s.phone_number,
-        "qrz_url": s.qrz_url,
-        "social_media_url": s.social_media_url,
-        "rsgb_attending": s.rsgb_attending,
-        "event": {"id": s.event.id, "name": s.event.name} if s.event else None,
-        "bands": [{"id": b.id, "name": b.name} for b in s.bands],
-        "modes": [{"id": m.id, "name": m.name} for m in s.modes],
-        "icon": get_icon_for_temp_station(s),
-        "color": get_color_for_temp_station(s)
-    }
-
-
-def event_to_json_for_user_frontend(e):
-    """Converts an event to a JSON form suitable for sending to the frontend. This includes:
-     * Removing the stations list, as the user frontend doesn't need to look up this way round
-     * Replacing non-JSON-serializable objects with serializable equivalents."""
-
-    return {
-        "id": e.id,
-        "name": e.name,
-        "start_time": e.start_time.isoformat(),
-        "end_time": e.end_time.isoformat(),
-        "humanized_start_end": humanize_start_end(e.start_time, e.end_time),
-        "icon": e.icon,
-        "color": e.color,
-        "notes_template": e.notes_template,
-        "url_slug": e.url_slug,
-        "public": e.public,
-        "rsgb_event": e.rsgb_event,
-        "bands": [{"id": b.id, "name": b.name} for b in e.bands],
-        "modes": [{"id": m.id, "name": m.name} for m in e.modes]
-    }
-
-
-def get_permanent_stations_for_user_frontend(database):
-    """Get data for permanent stations, mutated to be suitable for the user frontend. This includes:
-     * Removing any stations that are not approved yet
-     * Removing the 'edit password' which would allow malicious editing of all stations
-     * Adding icon and color
-     * Replacing non-JSON-serializable objects with serializable equivalents."""
-
-    output = []
-    for s in database.get_all_permanent_stations():
-        if s.approved:
-            output.append(perm_station_to_json_for_user_frontend(s))
-    return output
-
-
-def get_temporary_stations_for_user_frontend(database):
-    """Get data for temporary stations, mutated to be suitable for the user frontend. This includes:
-     * Removing any stations that are not approved yet
-     * Removing the 'edit password' which would allow malicious editing of all stations
-     * Adding icon and color
-     * Replacing non-JSON-serializable objects with serializable equivalents."""
-
-    output = []
-    for s in database.get_all_temporary_stations():
-        if s.approved:
-            output.append(temp_station_to_json_for_user_frontend(s))
-    return output
-
-
-def get_events_for_user_frontend(database):
-    """Get data for events, mutated to be suitable for the user frontend. This includes:
-     * Removing the stations list, as the user frontend doesn't need to look up this way round
-     * Replacing non-JSON-serializable objects with serializable equivalents."""
-
-    output = []
-    for e in database.get_all_events():
-        output.append(event_to_json_for_user_frontend(e))
-    return output
+def populate_derived_fields_temp_station(s):
+    """Takes the provided temporary station and populates any fields in it which are derived rather than directly in the
+    object as it comes out of the database. This includes icon, colour and the "humanised" time we use for display."""
+    s.icon = get_icon_for_temp_station(s)
+    s.color = get_color_for_temp_station(s)
+    s.humanized_start_end = humanize_start_end(s.start_time, s.end_time)
 
 
 def serialize_everything(obj):

@@ -1,5 +1,4 @@
-from core.utils import temp_station_to_json_for_user_frontend, perm_station_to_json_for_user_frontend, \
-    humanize_start_end
+from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
 from requesthandlers.base import BaseHandler
 
 
@@ -14,18 +13,15 @@ class ViewStationHandler(BaseHandler):
 
         # Get data we need to include in the template
         station = None
-        station_json = None
         if perm_or_temp_slug == "perm":
             station = self.application.db.get_permanent_station(station_id)
-            station_json = perm_station_to_json_for_user_frontend(station)
+            populate_derived_fields_perm_station(station)
         elif perm_or_temp_slug == "temp":
             station = self.application.db.get_temporary_station(station_id)
-            station.humanized_start_end = humanize_start_end(station.start_time, station.end_time)
-            station_json = temp_station_to_json_for_user_frontend(station)
+            populate_derived_fields_temp_station(station)
 
-        # Render the template. Supply the real object for the template and the JSON version to load more easily into
-        # the map.
-        self.render("viewstation.html", type=perm_or_temp_slug, station=station, station_json=station_json)
+        # Render the template.
+        self.render("viewstation.html", type=perm_or_temp_slug, station=station)
 
     def post(self, perm_or_temp_slug, station_id_slug):
         """Handle the user entering an edit password and clicking Edit or Delete. This supports two 'actions' depending
@@ -34,7 +30,7 @@ class ViewStationHandler(BaseHandler):
         category, so e.g. the URL can be /view/station/temp/1 to view permanent station 1."""
 
         station_id = int(station_id_slug)
-        user_edit_password = self.get_argument("edit_password")
+        user_edit_password = self.get_argument("user_edit_password")
         edit_password_good = False
 
         # Check the edit password
@@ -64,5 +60,3 @@ class ViewStationHandler(BaseHandler):
             elif perm_or_temp_slug == "temp":
                 self.application.db.delete_temporary_station(station_id)
             self.redirect("/")
-
-    # TODO
