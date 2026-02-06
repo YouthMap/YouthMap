@@ -246,13 +246,16 @@
 <script type="importmap">
     {
       "imports": {
-        "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js"
+        "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
+        "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js"
       }
     }
 </script>
 <script>
     let latitude_degrees = {{ 50 if creating_new else float(station.latitude_degrees) }};
     let longitude_degrees = {{ 10 if creating_new else float(station.longitude_degrees) }};
+    let color = "{{ "#0d6efd" if creating_new else station.color }}";
+    let icon = "{{ "" if creating_new else station.icon }}";
     let default_zoom = {{ 4 if creating_new else 12 }};
 </script>
 <script type="module" src="/js/map-editstation.js?v=1"></script>
