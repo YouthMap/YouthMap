@@ -2,188 +2,204 @@
 {% block content %}
 
 <!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
-<div class="card mx-auto bg-body-tertiary" style="max-width: 40rem;">
-    <div class="card-header">
-        <h5 class="mb-0 card-title">{{ "Create" if creating_new else "Update" }} Permanent/Club Station</h5>
-    </div>
-    <div class="card-body">
-        {% if creating_new %}
-        <p>Please enter the details for the new station.</p>
-        {% else %}
-        <p>Updating details for {{ station.callsign }} {{ station.club_name }}.</p>
-        {% end %}
+{% if creating_new %}
+<h2 class="mb-5">New Permanent/Club Station</h2>
+{% else %}
+<h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}</h2>
+{% end %}
 
-        <form method="post">
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="callsign" class="form-label mt-2">Callsign:</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="callsign" class="form-control" name="callsign"
-                           value="{{ '' if creating_new else station.callsign }}"
-                           required/>
-                </div>
+<div class="row">
+    <div class="col-sm-6 mb-3">
+        <div class="card mx-auto bg-body-tertiary">
+            <div class="card-header">
+                <h5 class="mb-0 card-title">{{ "Set" if creating_new else "Edit" }} Location</h5>
             </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="club_name" class="form-label mt-2">Club name:</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="club_name" class="form-control" name="club_name"
-                           value="{{ '' if creating_new else station.club_name }}"
-                           required/>
-                </div>
+
+            <div class="card-body p-0">
+                <div id="map" style="width: 100%; height: 25em;"></div>
             </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="type" class="form-label mt-2">Type:</label>
-                </div>
-                <div class="col-sm-8">
-                    <select name="type" id="type" class="form-control">
-                        {% for type in all_perm_station_types %}
-                        <option value="{{ type.id }}" {% if not creating_new and station.type_id== type.id %}selected{%
-                                end %}>{{
-                            type.name }}
-                        </option>
-                        {% end %}
-                    </select>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="latitude_degrees" class="form-label mt-2">Latitude (degrees):</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="number" id="latitude_degrees" class="form-control"
-                           name="latitude_degrees" step="any" min="-90" max="90"
-                           value="{{ '' if creating_new else station.latitude_degrees }}" required/>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="longitude_degrees" class="form-label mt-2">Longitude (degrees):</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="number" id="longitude_degrees" class="form-control"
-                           name="longitude_degrees" step="any" min="-180" max="180"
-                           value="{{ '' if creating_new else station.longitude_degrees }}" required/>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="meeting_when" class="form-label mt-2">Meeting times:</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="meeting_when" class="form-control" name="meeting_when"
-                           value="{{ '' if creating_new else station.meeting_when }}"/>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="meeting_where" class="form-label mt-2">Meeting place:</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="meeting_where" class="form-control" name="meeting_where"
-                           value="{{ '' if creating_new else station.meeting_where }}"/>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="notes" class="form-label mt-2">Notes (optional):</label>
-                </div>
-                <div class="col-sm-8">
-                    <textarea id="notes" class="form-control" name="notes" rows="5">{{ '' if creating_new else station.notes }}</textarea>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="website_url" class="form-label mt-2">Website (optional):</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="website_url" class="form-control" name="website_url"
-                           value="{{ '' if creating_new else station.website_url }}"/>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="qrz_url" class="form-label mt-2">QRZ Page (optional):</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="qrz_url" class="form-control" name="qrz_url"
-                           value="{{ '' if creating_new else station.qrz_url }}"/>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="social_media_url" class="form-label mt-2">Social media (optional):</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="social_media_url" class="form-control" name="social_media_url"
-                           value="{{ '' if creating_new else station.social_media_url }}"/>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="email" class="form-label mt-2">Email address (optional):</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="email" class="form-control" name="email"
-                           value="{{ '' if creating_new else station.email }}"/>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="phone_number" class="form-label mt-2">Phone (optional):</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="phone_number" class="form-control" name="phone_number"
-                           value="{{ '' if creating_new else station.phone_number }}"/>
-                </div>
-            </div>
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                </div>
-                <div class="col-sm-8">
-                    <input type="checkbox" id="approved" class="form-check-input" name="approved" value="true"
-                           {% if not creating_new and station.approved %}checked{% end %}>
-                    <label for="approved" class="form-check-label">Approved</label>
-                </div>
-            </div>
-            {% if not creating_new %}
-            <div class="row mb-2">
-                <div class="col-sm-4">
-                    <label for="edit_password" class="form-label mt-2">User edit password:</label>
-                </div>
-                <div class="col-sm-8">
-                    <input type="text" id="edit_password" class="form-control" name="edit_password"
-                           value="{{ '' if creating_new else station.edit_password }}" required/>
-                </div>
-            </div>
-            {% end %}
-            <div class="row mb-2 mt-4">
-                <div class="col-sm-4">
-                </div>
-                <div class="col-sm-8">
-                    {% if creating_new %}
-                    <input type="submit" class="btn btn-primary" name="action" value="Create">
-                    {% else %}
-                    <input type="submit" class="btn btn-primary" name="action" value="Update">
-                    <input type="submit" class="btn btn-danger" name="action" value="Delete">
-                    {% end %}
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
-    <div class="card-footer text-muted">
-        <ul class="nav flex-row">
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/stations">&laquo; Back to station list</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
-            </li>
-        </ul>
+
+    <div class="col-sm-6">
+        <div class="card mx-auto bg-body-tertiary">
+            <div class="card-header">
+                <h5 class="mb-0 card-title">{{ "Set" if creating_new else "Edit" }} Details</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="callsign" class="form-label mt-2">Callsign:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="callsign" class="form-control" name="callsign"
+                                   value="{{ '' if creating_new else station.callsign }}"
+                                   required/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="club_name" class="form-label mt-2">Club name:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="club_name" class="form-control" name="club_name"
+                                   value="{{ '' if creating_new else station.club_name }}"
+                                   required/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="type" class="form-label mt-2">Type:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select name="type" id="type" class="form-control">
+                                {% for type in all_perm_station_types %}
+                                <option value="{{ type.id }}" {% if not creating_new and station.type_id== type.id
+                                        %}selected{%
+                                        end %}>{{
+                                    type.name }}
+                                </option>
+                                {% end %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="meeting_when" class="form-label mt-2">Meeting times:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="meeting_when" class="form-control" name="meeting_when"
+                                   value="{{ '' if creating_new else station.meeting_when }}"/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="meeting_where" class="form-label mt-2">Meeting place:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="meeting_where" class="form-control" name="meeting_where"
+                                   value="{{ '' if creating_new else station.meeting_where }}"/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="notes" class="form-label mt-2">Notes (optional):</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <textarea id="notes" class="form-control" name="notes" rows="5">{{ '' if creating_new else station.notes }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="website_url" class="form-label mt-2">Website (optional):</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="website_url" class="form-control" name="website_url"
+                                   value="{{ '' if creating_new else station.website_url }}"/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="qrz_url" class="form-label mt-2">QRZ Page (optional):</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="qrz_url" class="form-control" name="qrz_url"
+                                   value="{{ '' if creating_new else station.qrz_url }}"/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="social_media_url" class="form-label mt-2">Social media (optional):</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="social_media_url" class="form-control" name="social_media_url"
+                                   value="{{ '' if creating_new else station.social_media_url }}"/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="email" class="form-label mt-2">Email address (optional):</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="email" class="form-control" name="email"
+                                   value="{{ '' if creating_new else station.email }}"/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="phone_number" class="form-label mt-2">Phone (optional):</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="phone_number" class="form-control" name="phone_number"
+                                   value="{{ '' if creating_new else station.phone_number }}"/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="checkbox" id="approved" class="form-check-input" name="approved" value="true"
+                                   {% if not creating_new and station.approved %}checked{% end %}>
+                            <label for="approved" class="form-check-label">Approved</label>
+                        </div>
+                    </div>
+                    {% if not creating_new %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="edit_password" class="form-label mt-2">User edit password:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="edit_password" class="form-control" name="edit_password"
+                                   value="{{ '' if creating_new else station.edit_password }}" required/>
+                        </div>
+                    </div>
+                    {% end %}
+                    <div class="row mb-2 mt-4">
+                        <div class="col-sm-4">
+                        </div>
+                        <div class="col-sm-8">
+                            {% if creating_new %}
+                            <input type="submit" class="btn btn-primary" name="action" value="Create">
+                            {% else %}
+                            <input type="submit" class="btn btn-primary" name="action" value="Update">
+                            <input type="submit" class="btn btn-danger" name="action" value="Delete">
+                            {% end %}
+                            <a href="/admin/stations" class="btn btn-outline-primary" role="button">Cancel</a>
+                        </div>
+                    </div>
+                    <!-- lat/long fields updated by dragging the map marker -->
+                    <input type="hidden" id="latitude_degrees" class="form-control" name="latitude_degrees"
+                           value="{{ 50 if creating_new else station.latitude_degrees }}" required/>
+                    <input type="hidden" id="longitude_degrees" class="form-control" name="longitude_degrees"
+                           value="{{ 10 if creating_new else station.longitude_degrees }}" required/>
+                </form>
+            </div>
+            <div class="card-footer text-muted">
+                <ul class="nav flex-row">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/stations">&laquo; Back to station list</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
 
+<script type="importmap">
+    {
+      "imports": {
+        "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js"
+      }
+    }
+</script>
+<script>
+    let latitude_degrees = {{ 50 if creating_new else float(station.latitude_degrees) }};
+    let longitude_degrees = {{ 10 if creating_new else float(station.longitude_degrees) }};
+    let default_zoom = {{ 4 if creating_new else 12 }};
+</script>
+<script type="module" src="/js/map-editstation.js?v=1"></script>
 {% end %}

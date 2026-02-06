@@ -39,5 +39,5 @@ $(document).ready(function() {
     createMarker(map);
 
     // Zoom to it
-    map.setView([latitude_degrees, longitude_degrees], 12);
+    map.setView([latitude_degrees, longitude_degrees], default_zoom);
 });

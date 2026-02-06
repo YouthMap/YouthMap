@@ -2,18 +2,17 @@
 {% block content %}
 
 <!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
+{% if creating_new %}
+<h2 class="mb-5">New User</h2>
+{% else %}
+<h2 class="mb-5">{{ user.username }}</h2>
+{% end %}
+
 <div class="card mx-auto bg-body-tertiary" style="max-width: 40rem;">
     <div class="card-header">
-        <h5 class="mb-0 card-title">{{ "Create" if creating_new else "Update" }} User</h5>
+        <h5 class="mb-0 card-title">{{ "Set" if creating_new else "Update" }} Details</h5>
     </div>
     <div class="card-body">
-        {% if creating_new %}
-        <p>Please enter the details for the new user.</p>
-        {% else %}
-        <p>Updating details for {{ user.username }}.</p>
-        <p>Updating the password is optional. Leave the fields blank if you do not wish to change the password.</p>
-        {% end %}
-
         <form method="post">
             <div class="row mb-2">
                 <div class="col-sm-4">
@@ -31,6 +30,10 @@
                 <div class="col-sm-8">
                     <input type="password" id="password" class="form-control" name="password" {% if creating_new
                            %}required{% end %}>
+                    {% if not creating_new %}
+                    <p>Updating the password is optional. Leave the field blank if you do not wish to change the
+                        password.</p>
+                    {% end %}
                 </div>
             </div>
             <div class="row mb-2">
@@ -63,6 +66,7 @@
                     <input type="submit" class="btn btn-primary" name="action" value="Update">
                     <input type="submit" class="btn btn-danger" name="action" value="Delete">
                     {% end %}
+                    <a href="/admin/users" class="btn btn-outline-primary" role="button">Cancel</a>
                 </div>
             </div>
         </form>
