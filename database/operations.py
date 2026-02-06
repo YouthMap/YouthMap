@@ -40,7 +40,7 @@ class DatabaseOperations:
             )
             session.add(user)
             session.commit()
-            return True
+            return user.id
         except IntegrityError as e:
             logging.error("Error when adding user", e)
             session.rollback()
