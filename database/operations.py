@@ -44,7 +44,7 @@ class DatabaseOperations:
         except IntegrityError as e:
             logging.error("Error when adding user", e)
             session.rollback()
-            return False
+            return None
         finally:
             session.close()
 

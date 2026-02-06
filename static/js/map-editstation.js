@@ -24,8 +24,10 @@ function setUpMap() {
 function createMarker(map) {
     const marker = new Marker([latitude_degrees, longitude_degrees], {
         icon: new Icon({
-          color: "#0d6efd",
-          accentColor: "#0d6efd",
+          accentColor: color,
+          color: color,
+          content: (icon == "") ? "🌟" : null,
+          svgFillImageSrc: (icon == "") ? null : "/upload/" + icon,
           scale: 1.5,
           svg: PinSquarePanel,
         }),

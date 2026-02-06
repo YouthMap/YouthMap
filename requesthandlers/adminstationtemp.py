@@ -2,7 +2,7 @@ from datetime import datetime
 
 import tornado
 
-from core.utils import get_default_event_end_time, get_default_event_start_time
+from core.utils import get_default_event_end_time, get_default_event_start_time, populate_derived_fields_temp_station
 from requesthandlers.base import BaseHandler
 
 
@@ -20,6 +20,8 @@ class AdminStationTempHandler(BaseHandler):
 
         # Get data we need to include in the template
         station = self.application.db.get_temporary_station(station_id) if not creating_new else None
+        if station:
+            populate_derived_fields_temp_station(station)
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_events = self.application.db.get_all_events()

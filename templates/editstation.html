@@ -250,6 +250,8 @@
 <script>
     let latitude_degrees = {{ float(station.latitude_degrees) }};
     let longitude_degrees = {{ float(station.longitude_degrees) }};
+    let color = "{{ station.color }}";
+    let icon = "{{ station.icon }}";
     let default_zoom = 12;
 </script>
 <script type="module" src="/js/map-editstation.js?v=1"></script>
