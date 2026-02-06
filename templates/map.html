@@ -4,14 +4,54 @@
 <!--suppress HtmlUnknownTarget -->
 <div id="map"></div>
 
+
+<div class="modal fade" id="addStationModal1" tabindex="-1" aria-labelledby="addStationModal1Title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addStationModal1Title">Add Station</h1>
+            </div>
+            <div class="modal-body">
+                Want to put your station on the map? Click the "Get started!" button, then click on the map where you
+                want your station's marker to be placed. If your station is open to the public, please try to be
+                accurate to help others find it!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="addStationGetStarted" class="btn btn-primary" data-bs-dismiss="modal">Get started!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="addStationModal2" tabindex="-1" aria-labelledby="addStationModal2Title" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="addStationModal2Title">Add Station</h1>
+            </div>
+            <div class="modal-body">
+                TODO
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="addStationCancel" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">I need to reposition</button>
+                <button type="button" id="addStationSetUp" class="btn btn-primary" data-bs-dismiss="modal">Set up my station!</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script type="importmap">
-{
-  "imports": {
-    "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
-    "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js",
-    "luxon": "https://cdn.jsdelivr.net/npm/luxon@3.7.2/+esm"
-  }
-}
+    {
+      "imports": {
+        "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
+        "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js",
+        "luxon": "https://cdn.jsdelivr.net/npm/luxon@3.7.2/+esm"
+      }
+    }
 </script>
 <script>
     let perm_stations = JSON.parse({% raw json_encode(perm_stations_json) %});

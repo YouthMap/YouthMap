@@ -1,4 +1,5 @@
 import { FeatureGroup, Map, Marker, TileLayer } from "leaflet";
+import { Icon, PinSquarePanel } from "leaflet-extra-markers";
 
 
 // Set up the map
@@ -21,7 +22,15 @@ function setUpMap() {
 
 // Create marker and add support for updating the form's hidden lat/lon fields when finished dragging.
 function createMarker(map) {
-    const marker = new Marker([latitude_degrees, longitude_degrees], {draggable:'true'}).addTo(map);
+    const marker = new Marker([latitude_degrees, longitude_degrees], {
+        icon: new Icon({
+          color: "#0d6efd",
+          accentColor: "#0d6efd",
+          scale: 1.5,
+          svg: PinSquarePanel,
+        }),
+        draggable:'true'
+     }).addTo(map);
     marker.on('dragend', function(event){
         var marker = event.target;
         var position = marker.getLatLng();

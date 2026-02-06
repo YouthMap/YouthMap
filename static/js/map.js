@@ -2,6 +2,9 @@ import { FeatureGroup, Map, Marker, TileLayer } from "leaflet";
 import { Icon, PinSquarePanel } from "leaflet-extra-markers";
 import { DateTime } from "luxon";
 
+var placingMarker;
+var addStationMarker;
+
 
 // Set up the map
 function setUpMap() {
@@ -20,6 +23,31 @@ function setUpMap() {
 
     // Display a default view.
     map.setView([30, 0], 3);
+
+    // Set the onClick action to handle the user clicking on the map background. Won't do anything unless placingMarker
+    // has been set true.
+    map.on('click',	function(e) {
+        if (placingMarker) {
+            addStationMarker = new Marker(e.latlng, {
+                icon: new Icon({
+                  color: "#0d6efd",
+                  accentColor: "#0d6efd",
+                  content: "🌟",
+                  scale: 1.5,
+                  svg: PinSquarePanel,
+                }),
+                draggable:'true'
+            }).addTo(map);
+            addStationMarker.on('dragend', function(event){
+                var addStationMarker = event.target;
+                var position = addStationMarker.getLatLng();
+                setTimeout(function() { new bootstrap.Modal('#addStationModal2').show(); }, 1000);
+            });
+
+            placingMarker = false;
+            setTimeout(function() { new bootstrap.Modal('#addStationModal2').show(); }, 1000);
+        }
+    });
 
     return map;
 }
@@ -93,4 +121,12 @@ $(document).ready(function() {
 
     // Zoom to fit
     map.fitBounds(markersLayer.getBounds().pad(0.5));
+
+    // Add click handler to the button that lets you add a station to the map
+    $("#addStationGetStarted").click(function(){ placingMarker = true; });
+    // Add click handler to the cancel button on the second "add station" modal, as this is to cancel the whole process
+    // so we need to remove the marker we created
+    $("#addStationCancel").click(function(){ map.removeLayer(addStationMarker); });
+    // Add click handler to the OK button on the second "add station" modal, which will take us to the next stage
+    $("#addStationSetUp").click(function(){ alert("TODO " + addStationMarker.toString()); });
 });
