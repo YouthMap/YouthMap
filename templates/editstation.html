@@ -1,0 +1,221 @@
+{% extends "base-std.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
+{% if type == "perm" %}
+<h2>{{ station.callsign }} {{ station.club_name }}</h2>
+{% else %}
+<h2>{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{station.event.name}}{% end %}</h2>
+{% end %}
+
+<div class="row mt-5">
+    <div class="col-sm-6">
+        <div class="card mx-auto bg-body-tertiary">
+            <div class="card-header">
+                <h5 class="mb-0 card-title">Edit Location</h5>
+            </div>
+
+            <div class="card-body p-0">
+                <div id="map" style="width: 100%; height: 20em;"></div>
+            </div>
+
+            <p class="mt-3 mx-3">To change the location of your station, drag the marker to a new location on the map.</p>
+        </div>
+    </div>
+
+    <div class="col-sm-6">
+        <div class="card mx-auto bg-body-tertiary">
+            <div class="card-header">
+                <h5 class="mb-0 card-title">Edit Details</h5>
+            </div>
+
+            <div class="card-body">
+                <form method="post">
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="callsign" class="form-label mt-2">Callsign:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="callsign" class="form-control" name="callsign"
+                                   value="{{ station.callsign }}"
+                                   required/>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <label for="club_name" class="form-label mt-2">Club/station name:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input type="text" id="club_name" class="form-control" name="club_name"
+                                   value="{{ station.club_name }}"
+                                   required/>
+                        </div>
+                    </div>
+
+                    <!-- TODO from here -->
+
+                    {% if type == "temp" %}
+                    {% if station.event %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Event:
+                        </div>
+                        <div class="col-sm-8">
+                            {{ station.event.name }}
+                        </div>
+                    </div>
+                    {% end %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Active:
+                        </div>
+                        <div class="col-sm-8">
+                            {{ station.humanized_start_end }}
+                        </div>
+                    </div>
+                    {% if station.rsgb_attending %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                        </div>
+                        <div class="col-sm-8">
+                            RSGB attending
+                        </div>
+                    </div>
+                    {% end %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Bands:
+                        </div>
+                        <div class="col-sm-8">
+                            {{ ", ".join([b.name for b in sorted(station.bands, key=lambda b: b.id)]) }}
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Modes:
+                        </div>
+                        <div class="col-sm-8">
+                            {{ ", ".join([m.name for m in sorted(station.modes, key=lambda m: m.id)]) }}
+                        </div>
+                    </div>
+                    {% end %}
+
+                    {% if type == "perm" %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Meeting:
+                        </div>
+                        <div class="col-sm-8">
+                            {{ station.meeting_when }}
+                            {% if station.meeting_when != "" and station.meeting_where != "" %}<br/>{% end %}
+                            {{ station.meeting_where }}
+                        </div>
+                    </div>
+                    {% end %}
+
+                    {% if station.notes and station.notes != "" %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Notes:
+                        </div>
+                        <div class="col-sm-8">
+                            {{ station.notes }}
+                        </div>
+                    </div>
+                    {% end %}
+                    {% if station.website_url and station.website_url != "" %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Website:
+                        </div>
+                        <div class="col-sm-8">
+                            <a href="{{ station.website_url }}" target="_new">{{ station.website_url }}</a>
+                        </div>
+                    </div>
+                    {% end %}
+                    {% if station.qrz_url and station.qrz_url != "" %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            QRZ page:
+                        </div>
+                        <div class="col-sm-8">
+                            <a href="{{ station.qrz_url }}" target="_new">{{ station.qrz_url }}</a>
+                        </div>
+                    </div>
+                    {% end %}
+                    {% if station.social_media_url and station.social_media_url != "" %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Social media:
+                        </div>
+                        <div class="col-sm-8">
+                            <a href="{{ station.social_media_url }}" target="_new">{{ station.social_media_url }}</a>
+                        </div>
+                    </div>
+                    {% end %}
+                    {% if station.email and station.email != "" %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Contact email:
+                        </div>
+                        <div class="col-sm-8">
+                            <a href="mailto:{{ station.email }}" target="_new">{{ station.email }}</a>
+                        </div>
+                    </div>
+                    {% end %}
+                    {% if station.phone_number and station.phone_number != "" %}
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            Contact number:
+                        </div>
+                        <div class="col-sm-8">
+                            {{ station.phone_number }}
+                        </div>
+                    </div>
+                    {% end %}
+
+                    <input type="submit" class="btn btn-primary" name="action" value="Update"
+                           style="margin-top: -0.25em;">
+                    <input type="submit" class="btn btn-danger" name="action" value="Delete"
+                           style="margin-top: -0.25em;">
+                </form>
+            </div>
+        </div>
+
+        <p class="d-inline-flex gap-1 mt-4 mx-3">
+            <a data-bs-toggle="collapse" href="#editDetailsPanel" role="button"
+               class="link-underline link-underline-opacity-0"
+               aria-expanded="false" aria-controls="editDetailsPanel">
+                Is this your station?
+            </a>
+        </p>
+        <div class="collapse" id="editDetailsPanel">
+            <div class="card card-body">
+                <p>You can edit a station you previously created by entering the "edit password" you were given when
+                    the event was created. Please enter this below to edit or delete this station.</p>
+                <form method="post" class="mb-3">
+                    <!--suppress HtmlFormInputWithoutLabel -->
+                    <input type="password" id="edit_password" class="form-control" name="edit_password"
+                           style="max-width: 12em; display:inline-block;" required/>
+                </form>
+                <p class="mb-0">If you have lost this password, please contact an administrator for assistance.
+                    (TODO)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="importmap">
+    {
+      "imports": {
+        "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
+        "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js",
+        "luxon": "https://cdn.jsdelivr.net/npm/luxon@3.7.2/+esm"
+      }
+    }
+</script>
+<script>
+    let station = {% raw json_encode(station_json) %};
+</script>
+<script type="module" src="/js/map-individual.js?v=1"></script>
+{% end %}
