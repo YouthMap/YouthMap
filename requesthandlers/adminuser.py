@@ -114,7 +114,7 @@ class AdminUserHandler(BaseHandler):
                                               super_admin=super_admin)
             if new_user_id:
                 # Create OK, go back to the user management page which will have the new data in it
-                self.redirect("/admin/users")
+                self.redirect("/admin/user/" + slug)
             else:
                 self.write("Failed to add user")
                 return
