@@ -61,7 +61,7 @@ Check the service has started up correctly with `sudo journalctl -u youthmap -f`
 
 ### nginx Reverse Proxy configuration
 
-Web servers generally serve their pages from port 80. However, it's best not to serve Youth Map's web interface directly on port 80, as that requires root privileges on a Linux system. It also and prevents us using HTTPS to serve a secure site, since Spothole itself doesn't directly support acting as an HTTPS server. The normal solution to this is to use a "reverse proxy" setup, where a general web server handles HTTP and HTTP requests (to port 80 & 443 respectively), then passes on the request to the back-end application (in this case Spothole). nginx is a common choice for this general web server.
+Web servers generally serve their pages from port 80. However, it's best not to serve Youth Map's web interface directly on port 80, as that requires root privileges on a Linux system. It also and prevents us using HTTPS to serve a secure site, since Youth Map itself doesn't directly support acting as an HTTPS server. The normal solution to this is to use a "reverse proxy" setup, where a general web server handles HTTP and HTTP requests (to port 80 & 443 respectively), then passes on the request to the back-end application (in this case Spothole). nginx is a common choice for this general web server.
 
 To set up nginx as a reverse proxy that sits in front of Youth Map, first ensure it's installed e.g. `sudo apt install nginx`, and enabled e.g. `sudo systemd enable nginx`.
 
