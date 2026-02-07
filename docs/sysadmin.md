@@ -61,11 +61,11 @@ Check the service has started up correctly with `sudo journalctl -u youthmap -f`
 
 ### nginx Reverse Proxy configuration
 
-Web servers generally serve their pages from port 80. However, it's best not to serve Youth Map's web interface directly on port 80, as that requires root privileges on a Linux system. It also and prevents us using HTTPS to serve a secure site, since Youth Map itself doesn't directly support acting as an HTTPS server. The normal solution to this is to use a "reverse proxy" setup, where a general web server handles HTTP and HTTP requests (to port 80 & 443 respectively), then passes on the request to the back-end application (in this case Spothole). nginx is a common choice for this general web server.
+Web servers generally serve their pages from port 80. However, it's best not to serve Youth Map's web interface directly on port 80, as that requires root privileges on a Linux system. It also and prevents us using HTTPS to serve a secure site, since Youth Map itself doesn't directly support acting as an HTTPS server. The normal solution to this is to use a "reverse proxy" setup, where a general web server handles HTTP and HTTP requests (to port 80 & 443 respectively), then passes on the request to the back-end application (in this case Youth Map). nginx is a common choice for this general web server.
 
 To set up nginx as a reverse proxy that sits in front of Youth Map, first ensure it's installed e.g. `sudo apt install nginx`, and enabled e.g. `sudo systemd enable nginx`.
 
-Create a file at `/etc/nginx/sites-available/` called `youthmap`. Give it the following contents, replacing `youthmap.com` with the domain name on which you want to run Youth Map. If you changed the port on which Youth Map runs, update that on the "proxy_pass" line too.
+Create a file in `/etc/nginx/sites-available/` called `youthmap`. Give it the following contents, replacing `youthmap.com` with the domain name on which you want to run Youth Map. If you changed the port on which Youth Map runs, update that on the "proxy_pass" line too.
 
 ```nginx
 server {
@@ -95,6 +95,6 @@ Test that your nginx config isn't broken using `nginx -t`. If it works, restart 
 
 If you haven't already done so, set up a DNS entry to make sure requests for your domain name end up at the server that's running Youth Map.
 
-You should now be able to access the web interface by going to the domain from your browser.
+You should now be able to access the web interface by going to the domain from your browser, using HTTP.
 
 Once that's working, [install certbot](https://certbot.eff.org/instructions?ws=nginx&os=snap) onto your server. Run it as root, and when prompted pick your domain name from the list. After a few seconds, it should successfully provision a certificate and modify your nginx config files automatically. You should then be able to access the site via HTTPS.
