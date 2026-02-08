@@ -1,0 +1,144 @@
+{% extends "base-std.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
+
+<div class="mx-auto" style="max-width: 48rem;">
+    <h2 class="mb-5">What type of station?</h2>
+
+    <p>To begin setting up your station, please tell us what type it is. Is it:</p>
+
+    <form method="post">
+        <div class="row mb-2 mt-4 mx-2">
+            <div class="form-check">
+                <input class="form-check-input stationTypeRadio" type="radio" name="type" id="perm" value="perm">
+                <label class="form-check-label" for="perm">
+                    A <strong>permanent</strong> station, such as a <strong>School club, University society or Cadet
+                    unit</strong>, that holds its own callsign and allows members to operate?
+                </label>
+            </div>
+        </div>
+        <div id="permDetails" class="row mb-2 mx-5 g-2" style="display: none;">
+            <div class="col-auto">
+                <label for="type" class="form-label mt-2">Type:</label>
+            </div>
+            <div class="col-auto">
+                <select name="type" id="type" class="form-control" style="min-width: 12rem;">
+                    {% for type in all_perm_station_types %}
+                    <option value="{{ type.id }}">{{ type.name }}</option>
+                    {% end %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#typeNotListedModal">
+                    My station's type isn't listed
+                </button>
+            </div>
+        </div>
+        <div class="row mb-2 mt-4 mx-2">
+            <div class="form-check">
+                <input class="form-check-input stationTypeRadio" type="radio" name="type" id="temp" value="temp">
+                <label class="form-check-label" for="temp">
+                    A <strong>temporary</strong> station, such as one set up for <strong>JOTA weekend, YOTA month or
+                    another event</strong>, that will operate using a time-limited special event callsign?
+                </label>
+            </div>
+        </div>
+        <div id="tempDetails" class="row mb-2 mx-5 g-2" style="display: none;">
+            <div class="col-auto">
+                <label for="event" class="form-label mt-2">Event:</label>
+            </div>
+            <div class="col-auto">
+                <select name="event" id="event" class="form-control" style="min-width: 12rem;">
+                    <option value=""></option>
+                    {% for event in all_events %}
+                    <option value="{{ event.id }}">{{ event.name }}</option>
+                    {% end %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#eventNotListedModal">
+                    My event isn't listed
+                </button>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col-sm-12">
+                <input type="submit" id="submitButton" class="btn btn-primary" name="action" value="Next" disabled>
+                <a href="/" class="btn btn-secondary" role="button">Cancel</a>
+            </div>
+        </div>
+
+        <!-- lat/long fields set by GET params -->
+        <input type="hidden" id="latitude_degrees" class="form-control" name="latitude_degrees"
+               value="{{ latitude_degrees }}" required/>
+        <input type="hidden" id="longitude_degrees" class="form-control" name="longitude_degrees"
+               value="{{ longitude_degrees }}" required/>
+    </form>
+</div>
+
+<div class="modal fade" id="typeNotListedModal" tabindex="-1" aria-labelledby="typeNotListedModalTitle"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="typeNotListedModalTitle">New Station Types</h1>
+            </div>
+            <div class="modal-body">
+                If your station is of a new type that we don't know about yet, please contact the site administrators
+                with the details. Please note that it must be an amateur radio station specifically focussed on young
+                people or supporting their education.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onClick="alert('TODO');">Contact
+                    the administrators
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="eventNotListedModal" tabindex="-1" aria-labelledby="eventNotListedModalTitle"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="eventNotListedModalTitle">New Events</h1>
+            </div>
+            <div class="modal-body">
+                If your station is for an event we don't know about yet, don't worry&mdash;selecting an event is
+                optional, so you can just pick the "blank" option. On the next page, you can give your station a name
+                which can include the event it's for. If you think there will be many stations operating for this event,
+                and you'd like to be able to filter the map for just this event's stations, please contact the
+                administrators with details.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onClick="alert('TODO');">Contact
+                    the administrators
+                </button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(".stationTypeRadio").on("click", function() {
+        var selectedValue = $("input[name='type']:checked").val();
+        if (selectedValue == "perm") {
+            $("#permDetails").show();
+            $("#tempDetails").hide();
+            $("#submitButton").prop("disabled", false);
+        } else if (selectedValue == "temp") {
+            $("#permDetails").hide();
+            $("#tempDetails").show();
+            $("#submitButton").prop("disabled", false);
+        } else {
+            $("#permDetails").hide();
+            $("#tempDetails").hide();
+            $("#submitButton").prop("disabled", true);
+        }
+    });
+</script>
+{% end %}

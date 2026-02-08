@@ -41,11 +41,11 @@ function setUpMap() {
             addStationMarker.on('dragend', function(event){
                 var addStationMarker = event.target;
                 var position = addStationMarker.getLatLng();
-                setTimeout(function() { new bootstrap.Modal('#addStationModal2').show(); }, 1000);
+                setTimeout(function() { new bootstrap.Modal('#addStationModal2').show(); }, 500);
             });
 
             placingMarker = false;
-            setTimeout(function() { new bootstrap.Modal('#addStationModal2').show(); }, 1000);
+            setTimeout(function() { new bootstrap.Modal('#addStationModal2').show(); }, 500);
         }
     });
 
@@ -128,5 +128,5 @@ $(document).ready(function() {
     // so we need to remove the marker we created
     $("#addStationCancel").click(function(){ map.removeLayer(addStationMarker); });
     // Add click handler to the OK button on the second "add station" modal, which will take us to the next stage
-    $("#addStationSetUp").click(function(){ alert("TODO " + addStationMarker.toString()); });
+    $("#addStationSetUp").click(function(){ window.location.href = "/create/station/type?lat=" + addStationMarker.getLatLng().lat + "&lon=" + addStationMarker.getLatLng().lng });
 });

@@ -24,6 +24,7 @@ class EditStationHandler(BaseHandler):
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_events = self.application.db.get_all_events()
+        all_perm_station_types = self.application.db.get_all_permanent_station_types()
 
         # Check edit password is supplied and correct
         user_edit_password = self.get_argument("edit_password")
@@ -34,7 +35,8 @@ class EditStationHandler(BaseHandler):
 
         # Render the template. Supply the user password as well, this will be included in the form as a hidden field,
         # so we can check it again when it comes back to us in the POST.
-        self.render("editstation.html", type2=perm_or_temp_slug, station=station, all_events=all_events,
+        self.render("editstation.html", type2=perm_or_temp_slug, station=station,
+                    all_perm_station_types=all_perm_station_types, all_events=all_events,
                     all_bands=all_bands, all_modes=all_modes, user_edit_password=user_edit_password)
 
     def post(self, perm_or_temp_slug, station_id_slug):
