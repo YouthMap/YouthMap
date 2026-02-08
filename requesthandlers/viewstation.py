@@ -11,17 +11,26 @@ class ViewStationHandler(BaseHandler):
 
         station_id = int(station_id_slug)
 
+        # If "edit_password" was provided as a GET parameter, and it matches, include that in the template. This will
+        # cause the password to be displayed. We use this on the first return to this page after the user has created
+        # the station, to display that password and remind them to note it down.
+        user_edit_password = self.get_argument("edit_password", None)
+
         # Get data we need to include in the template
         station = None
+        edit_password_good = False
         if perm_or_temp_slug == "perm":
             station = self.application.db.get_permanent_station(station_id)
             populate_derived_fields_perm_station(station)
+            edit_password_good = station.edit_password == user_edit_password
         elif perm_or_temp_slug == "temp":
             station = self.application.db.get_temporary_station(station_id)
             populate_derived_fields_temp_station(station)
+            edit_password_good = station.edit_password == user_edit_password
 
         # Render the template.
-        self.render("viewstation.html", type=perm_or_temp_slug, station=station)
+        self.render("viewstation.html", type=perm_or_temp_slug, station=station,
+                    user_edit_password=user_edit_password if edit_password_good else None)
 
     def post(self, perm_or_temp_slug, station_id_slug):
         """Handle the user entering an edit password and clicking Edit or Delete. This supports two 'actions' depending

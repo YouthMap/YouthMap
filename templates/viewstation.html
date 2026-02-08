@@ -8,7 +8,15 @@
 <h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{station.event.name}}{% end %}</h2>
 {% end %}
 
-{% if not station.approved %}
+{% if user_edit_password %}
+<div class="alert alert-success mb-5" role="alert">
+    <h5 class="alert-success"><svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg> Your station has been created!</h5>
+    <p class="mt-4">Before it can be displayed on the main map, it needs a site administrator to approve it.</p>
+    <p>Please review the details you have entered and make sure they are correct. If not, click the "Is this your station?" link and edit or delete it.</p>
+    <p><strong>Important:</strong> If you want to edit or delete your station in future, you will need the "edit password", which has been automatically generated for you. <strong>Make a note of this password now.</strong></p>
+    <p class="mb-0 text-center fs-1 font-monospace">{{ user_edit_password }}</p>
+</div>
+{% elif not station.approved %}
 <div class="alert alert-primary mb-5" role="alert">
     <h5 class="alert-primary"><svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg> This station has not yet been approved</h5>
     <p class="mb-0">This station has recently been created, and is still waiting for a site administrator to approve it. Until that happens, it will not be shown on the main map.</p>
@@ -196,7 +204,7 @@
                 <form method="post" class="mb-3">
                     <!--suppress HtmlFormInputWithoutLabel -->
                     <input type="password" id="user_edit_password" class="form-control" name="user_edit_password"
-                           style="max-width: 12em; display:inline-block;" required/>
+                           style="max-width: 12em; display:inline-block;" value="{{ user_edit_password if user_edit_password else '' }}" required/>
                     <input type="submit" class="btn btn-primary" name="action" value="Edit"
                            style="margin-top: -0.25em;">
                     <input type="submit" class="btn btn-danger" name="action" value="Delete"

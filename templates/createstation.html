@@ -82,7 +82,8 @@
                             {% for band in all_bands %}
                             <span style="display:inline-block; min-width:5em;">
                     <input type="checkbox" id="band-{{ band.id }}" class="form-check-input" name="bands[]"
-                           value="{{ band.id }}"/>&nbsp;
+                           value="{{ band.id }}"
+                           {% if event and band.id in [x.id for x in event.bands] %}checked{% end %} />&nbsp;
                     <label for="band-{{ band.id }}" class="form-check-label">{{ band.name }}</label>
                     </span>
                             {% end %}
@@ -100,7 +101,8 @@
                             {% for mode in all_modes %}
                             <span style="display:inline-block; min-width:5em;">
                     <input type="checkbox" id="mode-{{ mode.id }}" class="form-check-input" name="modes[]"
-                           value="{{ mode.id }}"/>&nbsp;
+                           value="{{ mode.id }}"
+                           {% if event and mode.id in [x.id for x in event.modes] %}checked{% end %}/>&nbsp;
                     <label for="mode-{{ mode.id }}" class="form-check-label">{{ mode.name }}</label>
                     </span>
                             {% end %}

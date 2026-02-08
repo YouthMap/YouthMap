@@ -48,7 +48,6 @@ class CreateStationHandler(BaseHandler):
                 color = event.color
                 icon = event.icon
 
-
         # Render the template. Supply the user password as well, this will be included in the form as a hidden field,
         # so we can check it again when it comes back to us in the POST.
         self.render("createstation.html", station_type=perm_or_temp_slug, latitude_degrees=lat, longitude_degrees=lon,
@@ -108,6 +107,7 @@ class CreateStationHandler(BaseHandler):
 
             # Now create the station, taking into account its type
             new_station_id = None
+            edit_password = None
             if perm_or_temp_slug == "perm":
                 new_station_id = self.application.db.add_permanent_station(callsign=callsign, club_name=club_name,
                                                                            type_id=type_id,
@@ -120,24 +120,27 @@ class CreateStationHandler(BaseHandler):
                                                                            social_media_url=social_media_url,
                                                                            email=email,
                                                                            phone_number=phone_number)
+                edit_password = self.application.db.get_permanent_station(new_station_id).edit_password
             elif perm_or_temp_slug == "temp":
                 new_station_id = self.application.db.add_temporary_station(callsign=callsign, club_name=club_name,
-                                                                              event_id=event_id, start_time=start_time,
-                                                                              end_time=end_time,
-                                                                              latitude_degrees=latitude_degrees,
-                                                                              longitude_degrees=longitude_degrees,
-                                                                              band_ids=band_ids,
-                                                                              mode_ids=mode_ids,
-                                                                              notes=notes, website_url=website_url,
-                                                                              qrz_url=qrz_url,
-                                                                              social_media_url=social_media_url,
-                                                                              email=email,
-                                                                              phone_number=phone_number)
+                                                                           event_id=event_id, start_time=start_time,
+                                                                           end_time=end_time,
+                                                                           latitude_degrees=latitude_degrees,
+                                                                           longitude_degrees=longitude_degrees,
+                                                                           band_ids=band_ids,
+                                                                           mode_ids=mode_ids,
+                                                                           notes=notes, website_url=website_url,
+                                                                           qrz_url=qrz_url,
+                                                                           social_media_url=social_media_url,
+                                                                           email=email,
+                                                                           phone_number=phone_number)
+                edit_password = self.application.db.get_temporary_station(new_station_id).edit_password
 
             if new_station_id:
-                # Create OK, go back to the view station page to show the data
-                # TODO we need to show the edit password here in a modal or something
-                self.redirect("/view/station/" + perm_or_temp_slug + "/" + str(new_station_id))
+                # Create OK, go back to the view station page to show the data. Include the edit password in the GET
+                # params here, which will cause the view station page to show it to the user.
+                self.redirect("/view/station/" + perm_or_temp_slug + "/" + str(new_station_id) + "?edit_password="
+                              + edit_password)
             else:
                 self.write("Failed to create station")
                 return
