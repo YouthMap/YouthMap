@@ -57,7 +57,7 @@ class YouthMap(tornado.web.Application):
             (r"/admin/stations", AdminStationsHandler),
             (r"/admin/station/temp/([^/]+)", AdminStationTempHandler),
             (r"/admin/station/perm/([^/]+)", AdminStationPermHandler),
-            (r"/upload/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "data/upload")}),
+            (r"/upload/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "data/upload"), "cache_time": 120}),
             (r"/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "static")})
         ]
 
