@@ -199,6 +199,16 @@ class DatabaseOperations:
         finally:
             session.close()
 
+    def get_permanent_station_type(self, type_id):
+        """Get a permanent station type by ID. Returns the PermanentStationType object if found, otherwise None."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(PermanentStationType).options(joinedload(PermanentStationType.stations)).filter_by(
+                id=type_id).first()
+        finally:
+            session.close()
+            
     def add_event(self, name, start_time, end_time, icon, color, notes_template, band_ids, mode_ids,
                   url_slug=None, public=True, rsgb_event=False):
         """Create a new event. Returns the event ID if one was created."""

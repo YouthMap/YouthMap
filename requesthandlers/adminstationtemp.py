@@ -62,7 +62,7 @@ class AdminStationTempHandler(BaseHandler):
             club_name = self.get_argument("club_name")
             event_id = 0
             if self.get_argument("event", None):
-                event_id = self.get_argument("event", None)
+                event_id = int(self.get_argument("event", None))
             start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
             end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
             latitude_degrees = float(self.get_argument("latitude_degrees"))

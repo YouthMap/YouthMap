@@ -35,7 +35,7 @@ class EditStationHandler(BaseHandler):
 
         # Render the template. Supply the user password as well, this will be included in the form as a hidden field,
         # so we can check it again when it comes back to us in the POST.
-        self.render("editstation.html", type2=perm_or_temp_slug, station=station,
+        self.render("editstation.html", station_type=perm_or_temp_slug, station=station,
                     all_perm_station_types=all_perm_station_types, all_events=all_events,
                     all_bands=all_bands, all_modes=all_modes, user_edit_password=user_edit_password)
 
@@ -72,7 +72,7 @@ class EditStationHandler(BaseHandler):
             club_name = self.get_argument("club_name")
             event_id = 0
             if self.get_argument("event", None):
-                event_id = self.get_argument("event", None)
+                event_id = int(self.get_argument("event", None))
             type_id = 0
             if self.get_argument("type", None):
                 type_id = int(self.get_argument("type"))
@@ -147,3 +147,6 @@ class EditStationHandler(BaseHandler):
             elif perm_or_temp_slug == "temp":
                 self.application.db.delete_temporary_station(station_id)
             self.redirect("/")
+
+        else:
+            self.write("Invalid action '" + action + "'")

@@ -18,6 +18,14 @@ div.container {
     margin-bottom: 2em;
 }
 
+svg.alert-icon {
+    fill:currentColor;
+    max-width: 1em;
+    max-height: 1em;
+    position: relative;
+    top: -0.1em;
+}
+
 /* MAP */
 
 div.map-container {

@@ -4,7 +4,7 @@
 <!--suppress HtmlUnknownTarget -->
 {% if insecure_user_present %}
 <div class="alert alert-danger mb-5" role="alert">
-    <h5 class="alert-heading">This site has not been secured</h5>
+    <h5 class="alert-heading"><svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> This site has not been secured</h5>
     {% if user.username == "admin" %}
     <p class="mb-0">Your account has username "admin" and password "password". This is not secure. Please <a
             href="/admin/users" class="alert-link">fix this</a> as soon as possible by setting a different username,

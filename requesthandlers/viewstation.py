@@ -60,3 +60,6 @@ class ViewStationHandler(BaseHandler):
             elif perm_or_temp_slug == "temp":
                 self.application.db.delete_temporary_station(station_id)
             self.redirect("/")
+
+        else:
+            self.write("Invalid action '" + action + "'")

@@ -8,6 +8,13 @@
 <h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{station.event.name}}{% end %}</h2>
 {% end %}
 
+{% if not station.approved %}
+<div class="alert alert-primary mb-5" role="alert">
+    <h5 class="alert-primary"><svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Info:"><use xlink:href="#info-fill"/></svg> This station has not yet been approved</h5>
+    <p class="mb-0">This station has recently been created, and is still waiting for a site administrator to approve it. Until that happens, it will not be shown on the main map.</p>
+</div>
+{% end %}
+
 <div class="row">
     <div class="col-sm-6 mb-3">
         <div class="card mx-auto bg-body-tertiary">

@@ -11,7 +11,7 @@
     <form method="post">
         <div class="row mb-2 mt-4 mx-2">
             <div class="form-check">
-                <input class="form-check-input stationTypeRadio" type="radio" name="type" id="perm" value="perm">
+                <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="perm" value="perm">
                 <label class="form-check-label" for="perm">
                     A <strong>permanent</strong> station, such as a <strong>School club, University society or Cadet
                     unit</strong>, that holds its own callsign and allows members to operate?
@@ -37,7 +37,7 @@
         </div>
         <div class="row mb-2 mt-4 mx-2">
             <div class="form-check">
-                <input class="form-check-input stationTypeRadio" type="radio" name="type" id="temp" value="temp">
+                <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="temp" value="temp">
                 <label class="form-check-label" for="temp">
                     A <strong>temporary</strong> station, such as one set up for <strong>JOTA weekend, YOTA month or
                     another event</strong>, that will operate using a time-limited special event callsign?
@@ -125,7 +125,7 @@
 
 <script>
     $(".stationTypeRadio").on("click", function() {
-        var selectedValue = $("input[name='type']:checked").val();
+        var selectedValue = $("input[name='station_type']:checked").val();
         if (selectedValue == "perm") {
             $("#permDetails").show();
             $("#tempDetails").hide();

@@ -7,6 +7,9 @@ import pytz
 
 from core.config import UPLOAD_DIR
 
+TEMP_STATION_NO_EVENT_COLOR = "red"
+TEMP_STATION_NO_EVENT_ICON = "radio.png"
+
 
 def get_color_for_perm_station(s):
     """For a given permanent station, look up what colour it should have. This is based on its type."""
@@ -23,7 +26,7 @@ def get_color_for_temp_station(s):
     if s.event:
         return s.event.color
     else:
-        return "red"
+        return TEMP_STATION_NO_EVENT_COLOR
 
 
 def get_icon_for_temp_station(s):
@@ -31,7 +34,7 @@ def get_icon_for_temp_station(s):
     if s.event:
         return s.event.icon
     else:
-        return "radio.png"
+        return TEMP_STATION_NO_EVENT_ICON
 
 
 def humanize_start_end(start_time, end_time):

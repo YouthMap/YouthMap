@@ -3,23 +3,28 @@
 
 <!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
 {% if station_type == "perm" %}
-<h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}</h2>
+<h2 class="mb-5">Create {{ type.name }} Station</h2>
 {% else %}
-<h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{station.event.name}}{% end %}</h2>
+<h2 class="mb-5">Create {{ event.name if event else "Event" }} Station</h2>
 {% end %}
+
+<div class="alert alert-warning mb-5" role="alert">
+    <h5 class="alert-warning"><svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> Entering publicly-visible information</h5>
+    <p class="mb-0">Information you enter on this form, such as an email address and telephone number, is displayed publicly on the website to help potential visitors to your station to get in touch with you. If you don't want such information to be public, please don't enter it here.</p>
+</div>
 
 <div class="row">
     <div class="col-sm-6 mb-3">
         <div class="card mx-auto bg-body-tertiary">
             <div class="card-header">
-                <h5 class="mb-0 card-title">Edit Location</h5>
+                <h5 class="mb-0 card-title">Refine Location</h5>
             </div>
 
             <div class="card-body p-0">
                 <div id="map" style="width: 100%; height: 20em;"></div>
             </div>
 
-            <p class="mt-3 mx-3">To change the location of your station, drag the marker to a new location on the
+            <p class="mt-3 mx-3">To refine the location of your station, drag the marker to a new location on the
                 map.</p>
         </div>
     </div>
@@ -27,7 +32,7 @@
     <div class="col-sm-6">
         <div class="card mx-auto bg-body-tertiary">
             <div class="card-header">
-                <h5 class="mb-0 card-title">Edit Details</h5>
+                <h5 class="mb-0 card-title">Set Details</h5>
             </div>
 
             <div class="card-body">
@@ -37,9 +42,7 @@
                             <label for="callsign" class="form-label mt-2">Callsign:</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="callsign" class="form-control" name="callsign"
-                                   value="{{ station.callsign }}"
-                                   required/>
+                            <input type="text" id="callsign" class="form-control" name="callsign" required/>
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -47,37 +50,18 @@
                             <label for="club_name" class="form-label mt-2">Club/station name:</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="club_name" class="form-control" name="club_name"
-                                   value="{{ station.club_name }}"
-                                   required/>
+                            <input type="text" id="club_name" class="form-control" name="club_name" required/>
                         </div>
                     </div>
 
                     {% if station_type == "temp" %}
                     <div class="row mb-2">
                         <div class="col-sm-4">
-                            <label for="event" class="form-label mt-2">Event (optional):</label>
-                        </div>
-                        <div class="col-sm-8">
-                            <select name="event" id="event" class="form-control">
-                                <option value=""></option>
-                                {% for event in all_events %}
-                                <option value="{{ event.id }}" {% if station.event_id== event.id
-                                        %}selected{% end %}>{{ event.name }}
-                                </option>
-                                {% end %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row mb-2">
-                        <div class="col-sm-4">
                             <label for="start_time" class="form-label mt-2">Start time (UTC):</label>
                         </div>
                         <div class="col-sm-8">
                             <input id="start_time" class="form-control" name="start_time" type="datetime-local"
-                                   value="{{ station.start_time.strftime('%Y-%m-%dT%H:%M') }}"
-                                   required/>
+                                   value="{{ (event.start_time if event else default_start).strftime('%Y-%m-%dT%H:%M') }}" required/>
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -86,21 +70,19 @@
                         </div>
                         <div class="col-sm-8">
                             <input id="end_time" class="form-control" name="end_time" type="datetime-local"
-                                   value="{{ station.end_time.strftime('%Y-%m-%dT%H:%M') }}"
-                                   required/>
+                                   value="{{ (event.end_time if event else default_end).strftime('%Y-%m-%dT%H:%M') }}" required/>
                         </div>
                     </div>
 
                     <div class="row mb-2">
                         <div class="col-sm-4">
-                            <label class="form-label mt-2">Bands:</label>
+                            <label class="form-label">Bands:</label>
                         </div>
                         <div class="col-sm-8">
                             {% for band in all_bands %}
                             <span style="display:inline-block; min-width:5em;">
                     <input type="checkbox" id="band-{{ band.id }}" class="form-check-input" name="bands[]"
-                           value="{{ band.id }}"
-                           {% if band.id in [x.id for x in station.bands] %}checked{% end %}/>&nbsp;
+                           value="{{ band.id }}"/>&nbsp;
                     <label for="band-{{ band.id }}" class="form-check-label">{{ band.name }}</label>
                     </span>
                             {% end %}
@@ -112,14 +94,13 @@
                     </div>
                     <div class="row mb-2">
                         <div class="col-sm-4">
-                            <label class="form-label mt-2">Modes:</label>
+                            <label class="form-label">Modes:</label>
                         </div>
                         <div class="col-sm-8">
                             {% for mode in all_modes %}
                             <span style="display:inline-block; min-width:5em;">
                     <input type="checkbox" id="mode-{{ mode.id }}" class="form-check-input" name="modes[]"
-                           value="{{ mode.id }}"
-                           {% if mode.id in [x.id for x in station.modes] %}checked{% end %}/>&nbsp;
+                           value="{{ mode.id }}"/>&nbsp;
                     <label for="mode-{{ mode.id }}" class="form-check-label">{{ mode.name }}</label>
                     </span>
                             {% end %}
@@ -130,25 +111,10 @@
                     {% if station_type == "perm" %}
                     <div class="row mb-2">
                         <div class="col-sm-4">
-                            <label for="type" class="form-label mt-2">Type:</label>
-                        </div>
-                        <div class="col-sm-8">
-                            <select name="type" id="type" class="form-control">
-                                {% for type in all_perm_station_types %}
-                                <option value="{{ type.id }}" {% if station.type_id== type.id %}selected{% end %}>{{
-                                    type.name }}
-                                </option>
-                                {% end %}
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row mb-2">
-                        <div class="col-sm-4">
                             <label for="meeting_when" class="form-label mt-2">Meeting times:</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="meeting_when" class="form-control" name="meeting_when"
-                                   value="{{ station.meeting_when }}"/>
+                            <input type="text" id="meeting_when" class="form-control" name="meeting_when"/>
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -156,8 +122,7 @@
                             <label for="meeting_where" class="form-label mt-2">Meeting place:</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="meeting_where" class="form-control" name="meeting_where"
-                                   value="{{ station.meeting_where }}"/>
+                            <input type="text" id="meeting_where" class="form-control" name="meeting_where"/>
                         </div>
                     </div>
                     {% end %}
@@ -167,8 +132,7 @@
                             <label for="notes" class="form-label mt-2">Notes (optional):</label>
                         </div>
                         <div class="col-sm-8">
-                            <textarea id="notes" class="form-control" name="notes"
-                                      rows="5">{{ station.notes }}</textarea>
+                            <textarea id="notes" class="form-control" name="notes" rows="5">{{ event.notes_template if event and event.notes_template else "" }}</textarea>
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -176,8 +140,7 @@
                             <label for="website_url" class="form-label mt-2">Website (optional):</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="website_url" class="form-control" name="website_url"
-                                   value="{{ station.website_url }}"/>
+                            <input type="text" id="website_url" class="form-control" name="website_url" />
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -185,8 +148,7 @@
                             <label for="qrz_url" class="form-label mt-2">QRZ Page (optional):</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="qrz_url" class="form-control" name="qrz_url"
-                                   value="{{ station.qrz_url }}"/>
+                            <input type="text" id="qrz_url" class="form-control" name="qrz_url" />
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -194,8 +156,7 @@
                             <label for="social_media_url" class="form-label mt-2">Social media (optional):</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="social_media_url" class="form-control" name="social_media_url"
-                                   value="{{ station.social_media_url }}"/>
+                            <input type="text" id="social_media_url" class="form-control" name="social_media_url" />
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -203,8 +164,7 @@
                             <label for="email" class="form-label mt-2">Email address (optional):</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="email" class="form-control" name="email"
-                                   value="{{ station.email }}"/>
+                            <input type="text" id="email" class="form-control" name="email" />
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -212,27 +172,26 @@
                             <label for="phone_number" class="form-label mt-2">Phone (optional):</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="phone_number" class="form-control" name="phone_number"
-                                   value="{{ station.phone_number }}"/>
+                            <input type="text" id="phone_number" class="form-control" name="phone_number" />
                         </div>
                     </div>
                     <div class="row mb-2 mt-4">
                         <div class="col-sm-4">
                         </div>
                         <div class="col-sm-8">
-                            <input type="submit" class="btn btn-primary" name="action" value="Update">
-                            <input type="submit" class="btn btn-danger" name="action" value="Delete">
-                            <a href="/view/station/{{ station_type }}/{{ station.id }}" class="btn btn-secondary" role="button">Cancel</a>
+                            <input type="submit" class="btn btn-primary" name="action" value="Create">
+                            <a href="/create/station/type?lat={{ latitude_degrees }}&lon={{ longitude_degrees }}" class="btn btn-secondary" role="button">Back</a>
+                            <a href="/" class="btn btn-secondary" role="button">Cancel</a>
                         </div>
                     </div>
 
-                    <!-- lat/long fields updated by dragging the map marker; user_edit_password provided by GET param -->
+                    <!-- lat/long fields set by GET params and updated by dragging the map marker; event_id and type_id provided by GET params. -->
                     <input type="hidden" id="latitude_degrees" class="form-control" name="latitude_degrees"
-                           value="{{ station.latitude_degrees }}" required/>
+                           value="{{ latitude_degrees }}" required/>
                     <input type="hidden" id="longitude_degrees" class="form-control" name="longitude_degrees"
-                           value="{{ station.longitude_degrees }}" required/>
-                    <input type="hidden" id="user_edit_password" class="form-control" name="user_edit_password"
-                           value="{{ user_edit_password }}" required/>
+                           value="{{ longitude_degrees }}" required/>
+                    <input type="hidden" id="type_id" class="form-control" name="type_id" value="{{ type_id }}"/>
+                    <input type="hidden" id="event_id" class="form-control" name="event_id" value="{{ event_id }}"/>
                 </form>
             </div>
         </div>
@@ -248,10 +207,10 @@
     }
 </script>
 <script>
-    let latitude_degrees = {{ float(station.latitude_degrees) }};
-    let longitude_degrees = {{ float(station.longitude_degrees) }};
-    let color = "{{ station.color }}";
-    let icon = "{{ station.icon }}";
+    let latitude_degrees = {{ float(latitude_degrees) }};
+    let longitude_degrees = {{ float(longitude_degrees) }};
+    let color = "{{ color }}";
+    let icon = "{{ icon }}";
     let default_zoom = 12;
 </script>
 <script type="module" src="/js/map-editstation.js?v=1"></script>
