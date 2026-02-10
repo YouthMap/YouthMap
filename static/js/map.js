@@ -24,7 +24,7 @@ function setUpMap() {
     // Display a default view.
     map.setView([30, 0], 3);
 
-    // Set the onClick action to handle the user clicking on the map background. Won't do anything unless placingMarker
+    // Set the onclick action to handle the user clicking on the map background. Won't do anything unless placingMarker
     // has been set true.
     map.on('click',	function(e) {
         if (placingMarker) {

@@ -88,9 +88,9 @@
                     </span>
                             {% end %}
                             <a href="#/" class="ms-4 link-underline link-underline-opacity-0"
-                               onClick="$(':input:checkbox[name=\'bands[]\']').prop('checked', true);">All</a>
+                               onclick="$(':input:checkbox[name=\'bands[]\']').prop('checked', true);">All</a>
                             <a href="#/" class="ms-2 link-underline link-underline-opacity-0"
-                               onClick="$(':input:checkbox[name=\'bands[]\']').prop('checked', false);">None</a>
+                               onclick="$(':input:checkbox[name=\'bands[]\']').prop('checked', false);">None</a>
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -181,7 +181,7 @@
                         <div class="col-sm-4">
                         </div>
                         <div class="col-sm-8">
-                            <input type="submit" class="btn btn-primary" name="action" value="Create">
+                            <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Create')" value="Create">
                             <a href="/create/station/type?lat={{ latitude_degrees }}&lon={{ longitude_degrees }}" class="btn btn-secondary" role="button">Back</a>
                             <a href="/" class="btn btn-secondary" role="button">Cancel</a>
                         </div>

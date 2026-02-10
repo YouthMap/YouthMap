@@ -24,7 +24,7 @@
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
             <input type="hidden" name="next" value="{{ next }}">
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary" onclick="submitForm('')">Login</button>
 
             {% module Template("widgets/form-result.html") %}
         </form>

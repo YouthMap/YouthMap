@@ -66,10 +66,10 @@ class AdminUserHandler(BaseHandler):
                 # deleting somebody else, so go back to the user management page.
                 if is_me:
                     self.set_status(200)
-                    self.write(json.dumps({"message": "Your account has been deleted.", "redirect_url": "/"}))
+                    self.write(json.dumps({"message": "Your account has been deleted. Returning you to the home page...", "redirect_url": "/"}))
                 else:
                     self.set_status(200)
-                    self.write(json.dumps({"message": "User deleted.", "redirect_url": "/admin/users"}))
+                    self.write(json.dumps({"message": "User deleted. Returning you to the user list...", "redirect_url": "/admin/users"}))
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to delete the user."}))
@@ -102,7 +102,7 @@ class AdminUserHandler(BaseHandler):
             if ok:
                 # Update OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "User updated.", "redirect_url": "/admin/users"}))
+                self.write(json.dumps({"message": "User updated. Returning you to the user list...", "redirect_url": "/admin/users"}))
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to update the user."}))
@@ -122,7 +122,7 @@ class AdminUserHandler(BaseHandler):
             if new_user_id:
                 # Create OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "User created.", "redirect_url": "/admin/users"}))
+                self.write(json.dumps({"message": "User created. Returning you to the user list...", "redirect_url": "/admin/users"}))
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to create the user."}))

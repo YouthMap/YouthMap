@@ -50,7 +50,7 @@ class AdminStationPermHandler(BaseHandler):
             if ok:
                 # Delete OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station deleted.", "redirect_url": "/admin/stations"}))
+                self.write(json.dumps({"message": "Station deleted. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to delete the station."}))
@@ -96,7 +96,7 @@ class AdminStationPermHandler(BaseHandler):
             if ok:
                 # Update OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station updated.", "redirect_url": "/admin/stations"}))
+                self.write(json.dumps({"message": "Station updated. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to update the station."}))
@@ -142,7 +142,7 @@ class AdminStationPermHandler(BaseHandler):
             if new_station_id:
                 # Create OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station created.", "redirect_url": "/admin/stations"}))
+                self.write(json.dumps({"message": "Station created. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to create the station."}))
