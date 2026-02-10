@@ -36,7 +36,7 @@
             </div>
 
             <div class="card-body">
-                <form method="post">
+                <form method="post" id="form">
                     <div class="row mb-2">
                         <div class="col-sm-4">
                             <label for="callsign" class="form-label mt-2">Callsign:</label>
@@ -187,6 +187,8 @@
                         </div>
                     </div>
 
+                    {% module Template("widgets/form-result.html") %}
+
                     <!-- lat/long fields set by GET params and updated by dragging the map marker; event_id and type_id provided by GET params. -->
                     <input type="hidden" id="latitude_degrees" class="form-control" name="latitude_degrees"
                            value="{{ latitude_degrees }}" required/>
@@ -216,4 +218,7 @@
     let default_zoom = 12;
 </script>
 <script type="module" src="/js/map-editstation.js?v=1"></script>
+
+{% module Template("widgets/form-post-handler.html") %}
+
 {% end %}

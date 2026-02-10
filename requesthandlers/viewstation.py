@@ -1,3 +1,5 @@
+import json
+
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
 from requesthandlers.base import BaseHandler
 
@@ -38,6 +40,8 @@ class ViewStationHandler(BaseHandler):
          station. Two slugs are provided here. The first is "perm" or "temp", and the second is the station ID within that
         category, so e.g. the URL can be /view/station/temp/1 to view permanent station 1."""
 
+        self.set_header("Content-Type", "application/json")
+
         station_id = int(station_id_slug)
         user_edit_password = self.get_argument("user_edit_password")
         edit_password_good = False
@@ -51,7 +55,8 @@ class ViewStationHandler(BaseHandler):
             edit_password_good = station.edit_password == user_edit_password
 
         if not edit_password_good:
-            self.write("Password incorrect")
+            self.set_status(401)
+            self.write(json.dumps({"message": "The password you provided was incorrect."}))
             return
 
         # Get the action we have been asked to do
@@ -59,16 +64,25 @@ class ViewStationHandler(BaseHandler):
 
         # Check for Edit action
         if action == "Edit":
-            self.redirect(
-                "/edit/station/" + perm_or_temp_slug + "/" + station_id_slug + "?edit_password=" + user_edit_password)
+            self.set_status(200)
+            self.write(json.dumps({"redirect_url": "/edit/station/" + perm_or_temp_slug + "/" + station_id_slug + "?edit_password=" + user_edit_password }))
 
         # Check for Delete action
         elif action == "Delete":
+            ok = False
             if perm_or_temp_slug == "perm":
-                self.application.db.delete_permanent_station(station_id)
+                ok = self.application.db.delete_permanent_station(station_id)
             elif perm_or_temp_slug == "temp":
-                self.application.db.delete_temporary_station(station_id)
-            self.redirect("/")
+                ok = self.application.db.delete_temporary_station(station_id)
+
+            if ok:
+                self.set_status(200)
+                self.write(json.dumps({"message": "Your station has been deleted. Taking you back home...",
+                                       "redirect_url": "/" }))
+            else:
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to delete the station."}))
 
         else:
-            self.write("Invalid action '" + action + "'")
+            self.set_status(400)
+            self.write(json.dumps({"message": "Invalid action '" + action + "'"}))

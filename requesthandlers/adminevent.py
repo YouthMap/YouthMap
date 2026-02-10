@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 import tornado
@@ -37,6 +38,8 @@ class AdminEventHandler(BaseHandler):
         be /admin/event/1 to edit event 1. A special slug of 'new' is also allowed, which sets up the form to create an
         event rather than to edit one."""
 
+        self.set_header("Content-Type", "application/json")
+
         event_id = int(slug) if slug != "new" else None
 
         # Get the action we have been asked to do
@@ -47,10 +50,12 @@ class AdminEventHandler(BaseHandler):
             # Process the delete action
             ok = self.application.db.delete_event(event_id)
             if ok:
-                # Delete OK, go back to events list
-                self.redirect("/admin/events")
+                # Delete OK
+                self.set_status(200)
+                self.write(json.dumps({"message": "Event deleted.", "redirect_url": "/admin/events"}))
             else:
-                self.write("Failed to delete event")
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to delete the event."}))
 
         # Check for Update action
         elif action == "Update":
@@ -79,11 +84,12 @@ class AdminEventHandler(BaseHandler):
                                                   notes_template=notes_template, url_slug=url_slug, public=public,
                                                   rsgb_event=rsgb_event)
             if ok:
-                # Update OK, just reload the page which will have the new data in it
-                self.redirect("/admin/event/" + slug)
+                # Update OK
+                self.set_status(200)
+                self.write(json.dumps({"message": "Event updated.", "redirect_url": "/admin/events"}))
             else:
-                self.write("Failed to update event")
-                return
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to update the event."}))
 
         # Check for Create action
         elif action == "Create":
@@ -112,11 +118,13 @@ class AdminEventHandler(BaseHandler):
                                                          notes_template=notes_template, url_slug=url_slug,
                                                          public=public, rsgb_event=rsgb_event)
             if new_event_id:
-                # Create OK, just reload the page which will have the new data in it
-                self.redirect("/admin/event/" + str(new_event_id))
+                # Create OK
+                self.set_status(200)
+                self.write(json.dumps({"message": "Event created.", "redirect_url": "/admin/events"}))
             else:
-                self.write("Failed to update event")
-                return
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to create the event."}))
 
         else:
-            self.write("Invalid action '" + action + "'")
+            self.set_status(400)
+            self.write(json.dumps({"message": "Invalid action '" + action + "'"}))

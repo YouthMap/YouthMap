@@ -1,0 +1,33 @@
+<script>
+    // Hijack the posting of the form to instead send the POST asynchronously and show the form-success or form-error
+    // elements
+    $(document).ready(function() {
+        $("#form").submit(function(event) {
+            event.preventDefault();
+            const formData = $(this).serialize();
+
+            $.post(window.location.href, formData)
+                .done(function(response) {
+                    $("#form-error").hide();
+                    if ("message" in response) {
+                        $("#form-success").show();
+                        $("#form-success-text").text(response["message"]);
+                    }
+                    if ("redirect_url" in response) {
+                        setTimeout(function() { window.location.href = response["redirect_url"] }, ("message" in response) ? 1000 : 0);
+                    }
+                })
+                .fail(function(xhr) {
+                    response = JSON.parse(xhr.responseText);
+                    $("#form-success").hide();
+                    if ("message" in response) {
+                        $("#form-error").show();
+                        $("#form-error-text").text(response["message"]);
+                    }
+                    if ("redirect_url" in response) {
+                        setTimeout(function() { window.location.href = response["redirect_url"] }, ("message" in response) ? 1000 : 0);
+                    }
+                });
+        });
+    });
+</script>

@@ -1,3 +1,5 @@
+import json
+
 import tornado
 
 from requesthandlers.base import BaseHandler
@@ -41,6 +43,8 @@ class AdminUserHandler(BaseHandler):
         The slug here is the user ID, so e.g. the URL can be /admin/user/1 to edit user 1. A special slug of 'new' is
         also allowed, which sets up the form to create a user rather than to edit one."""
 
+        self.set_header("Content-Type", "application/json")
+
         # Bail out if the user is a non-super-admin and is editing a user that's not their own (or trying to create a
         # new one)
         user_id = int(slug) if (slug != "me" and slug != "new") else self.current_user
@@ -61,12 +65,14 @@ class AdminUserHandler(BaseHandler):
                 # Delete OK. If you were deleting yourself, go back to the home page, otherwise it was an admin
                 # deleting somebody else, so go back to the user management page.
                 if is_me:
-                    self.redirect("/")
+                    self.set_status(200)
+                    self.write(json.dumps({"message": "Your account has been deleted.", "redirect_url": "/"}))
                 else:
-                    self.redirect("/admin/users")
+                    self.set_status(200)
+                    self.write(json.dumps({"message": "User deleted.", "redirect_url": "/admin/users"}))
             else:
-                self.write("Failed to delete user")
-                return
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to delete the user."}))
 
         # Check for Update action
         elif action == "Update":
@@ -94,11 +100,12 @@ class AdminUserHandler(BaseHandler):
             ok = self.application.db.update_user(user_id, username=username, password=password, email=email,
                                                  super_admin=super_admin)
             if ok:
-                # Update OK, just reload the page which will have the new data in it
-                self.redirect("/admin/user/" + slug)
+                # Update OK
+                self.set_status(200)
+                self.write(json.dumps({"message": "User updated.", "redirect_url": "/admin/users"}))
             else:
-                self.write("Failed to update user")
-                return
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to update the user."}))
 
         # Check for Create action
         elif action == "Create":
@@ -113,10 +120,13 @@ class AdminUserHandler(BaseHandler):
             new_user_id = self.application.db.add_user(username=username, password=password, email=email,
                                               super_admin=super_admin)
             if new_user_id:
-                # Create OK, go back to the user management page which will have the new data in it
-                self.redirect("/admin/user/" + str(new_user_id))
+                # Create OK
+                self.set_status(200)
+                self.write(json.dumps({"message": "User created.", "redirect_url": "/admin/users"}))
             else:
-                self.write("Failed to add user")
-                return
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to create the user."}))
+
         else:
-            self.write("Invalid action '" + action + "'")
+            self.set_status(400)
+            self.write(json.dumps({"message": "Invalid action '" + action + "'"}))

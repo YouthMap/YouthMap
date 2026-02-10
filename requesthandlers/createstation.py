@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from core.utils import TEMP_STATION_NO_EVENT_COLOR, TEMP_STATION_NO_EVENT_ICON, get_default_event_start_time, \
@@ -56,6 +57,8 @@ class CreateStationHandler(BaseHandler):
 
     def post(self, perm_or_temp_slug):
         """Handle the user filling in the form and clicking Create. The "perm" or "temp" slug is provided here as well."""
+
+        self.set_header("Content-Type", "application/json")
 
         # Get the action we have been asked to do
         action = self.get_argument("action")
@@ -139,11 +142,14 @@ class CreateStationHandler(BaseHandler):
             if new_station_id:
                 # Create OK, go back to the view station page to show the data. Include the edit password in the GET
                 # params here, which will cause the view station page to show it to the user.
-                self.redirect("/view/station/" + perm_or_temp_slug + "/" + str(new_station_id) + "?edit_password="
-                              + edit_password)
+                self.set_status(200)
+                self.write(json.dumps({"message": "Your new station has been created. Taking you there...",
+                                       "redirect_url": "/view/station/" + perm_or_temp_slug + "/" + str(
+                                           new_station_id) + "?edit_password=" + edit_password}))
             else:
-                self.write("Failed to create station")
-                return
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to create the station. Please contact the administrators (TODO) for help."}))
 
         else:
-            self.write("Unknown action")
+            self.set_status(400)
+            self.write(json.dumps({"message": "Invalid action '" + action + "'"}))

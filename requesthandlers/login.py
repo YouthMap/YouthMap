@@ -1,3 +1,5 @@
+import json
+
 from requesthandlers.base import BaseHandler
 
 
@@ -25,6 +27,8 @@ class LoginHandler(BaseHandler):
         """Handles POST requests for login page. If successful a session token will be created, stored in a cookie, and
         the user will be redirected to the admin page."""
 
+        self.set_header("Content-Type", "application/json")
+
         # Get request arguments
         username = self.get_argument("username")
         password = self.get_argument("password")
@@ -36,6 +40,8 @@ class LoginHandler(BaseHandler):
         if user_id:
             session_token = self.application.db.create_user_session(user_id)
             self.set_secure_cookie("session_token", session_token)
-            self.redirect(next_url)
+            self.set_status(200)
+            self.write(json.dumps({ "redirect_url": next_url }))
         else:
-            self.write("Invalid credentials")
+            self.set_status(401)
+            self.write(json.dumps({"message": "The username and password you provided were incorrect."}))

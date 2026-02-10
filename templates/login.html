@@ -14,7 +14,7 @@
         <h5 class="mb-0 card-title">Admin Login</h5>
     </div>
     <div class="card-body">
-        <form method="post">
+        <form method="post" id="form">
             <div class="mb-3">
                 <label class="form-label" for="username">Username</label>
                 <input type="text" class="form-control" id="username" name="username" required autofocus>
@@ -25,9 +25,12 @@
             </div>
             <input type="hidden" name="next" value="{{ next }}">
             <button type="submit" class="btn btn-primary">Login</button>
+
+            {% module Template("widgets/form-result.html") %}
         </form>
     </div>
 </div>
 
+{% module Template("widgets/form-post-handler.html") %}
 
 {% end %}

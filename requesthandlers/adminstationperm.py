@@ -1,3 +1,5 @@
+import json
+
 import tornado
 
 from core.utils import populate_derived_fields_perm_station
@@ -34,6 +36,8 @@ class AdminStationPermHandler(BaseHandler):
         ID, so e.g. the URL can be /admin/station/perm/1 to edit permanent station 1. A special slug of 'new' is also
         allowed, which sets up the form to create a permanent station rather than to edit one."""
 
+        self.set_header("Content-Type", "application/json")
+
         station_id = int(slug) if slug != "new" else None
 
         # Get the action we have been asked to do
@@ -44,10 +48,12 @@ class AdminStationPermHandler(BaseHandler):
             # Process the delete action
             ok = self.application.db.delete_permanent_station(station_id)
             if ok:
-                # Delete OK, go back to stations list
-                self.redirect("/admin/stations")
+                # Delete OK
+                self.set_status(200)
+                self.write(json.dumps({"message": "Station deleted.", "redirect_url": "/admin/stations"}))
             else:
-                self.write("Failed to delete station")
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to delete the station."}))
 
         # Check for Update action
         elif action == "Update":
@@ -88,11 +94,12 @@ class AdminStationPermHandler(BaseHandler):
                                                               edit_password=edit_password)
 
             if ok:
-                # Update OK, just reload the page which will have the new data in it
-                self.redirect("/admin/station/perm/" + slug)
+                # Update OK
+                self.set_status(200)
+                self.write(json.dumps({"message": "Station updated.", "redirect_url": "/admin/stations"}))
             else:
-                self.write("Failed to update station")
-                return
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to update the station."}))
 
             # Check for Create action
         elif action == "Create":
@@ -133,13 +140,13 @@ class AdminStationPermHandler(BaseHandler):
                                                                        phone_number=phone_number, approved=approved)
 
             if new_station_id:
-                # Create OK, just reload the page which will have the new data in it
-                self.redirect("/admin/station/perm/" + str(new_station_id))
+                # Create OK
+                self.set_status(200)
+                self.write(json.dumps({"message": "Station created.", "redirect_url": "/admin/stations"}))
             else:
-                self.write("Failed to update station")
-                return
-
-            self.write("not implemented yet")
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to create the station."}))
 
         else:
-            self.write("Invalid action '" + action + "'")
+            self.set_status(400)
+            self.write(json.dumps({"message": "Invalid action '" + action + "'"}))

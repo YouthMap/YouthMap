@@ -13,7 +13,7 @@
         <h5 class="mb-0 card-title">{{ "Set" if creating_new else "Edit" }} Details</h5>
     </div>
     <div class="card-body">
-        <form method="post">
+        <form method="post" id="form">
             <div class="row mb-2">
                 <div class="col-sm-4">
                     <label for="name" class="form-label mt-2">Name:</label>
@@ -149,6 +149,8 @@
                     <a href="/admin/events" class="btn btn-secondary" role="button">Cancel</a>
                 </div>
             </div>
+
+            {% module Template("widgets/form-result.html") %}
         </form>
 
         {% if not creating_new %}
@@ -176,5 +178,7 @@
         </ul>
     </div>
 </div>
+
+{% module Template("widgets/form-post-handler.html") %}
 
 {% end %}
