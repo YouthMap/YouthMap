@@ -70,3 +70,15 @@ For the main map, we need a complex data structure of arrays of two different ty
 </script>
 <script type="module" src="/js/map.js"></script>
 ```
+
+### POST responses in JSON
+
+The site contains a number of HTML forms. Each of these submits its POST request using a jQuery function rather than directly via the browser. This allows a more modern look to handling the form submission, where the result is included in the sumbitting page rather than forcing an immediate refresh.
+
+Only POST is used, regardless of whether the action is creating, updating, or deleting an entry. The POST request contains an "action" parameter, set by which button the user clicks on the form, which can be "Create", "Update" or "Delete".
+
+Each `post()` method in the Python code handles the form submission and replies with JSON content, along with an appropriate HTTP status code. The status code will be 2xx for a successful operation, or 4xx/5xx if a problem occurred. The sending page's JavaScript deals with this response and can display either an "OK" message or an error message accordingly.
+
+The JSON response contains two fields, `message` and `redirect_url`, of which one or both will be populated.
+
+If `message` is provided, this will be displayed on the submitting page in an "OK" or Error message according to the status code. If `redirect_url` is provided, the JavaScript code will cause the browser to redirect the user to that URL. This can be immediate if no `message` is provided, but if a `message` is provided, a timeout will be used to give the user chance to read the message. `redirect_url` should generally only be used for success messages; for error messages the user should generally remain on the source page. 

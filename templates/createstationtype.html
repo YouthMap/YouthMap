@@ -8,7 +8,7 @@
 
     <p>To begin setting up your station, please tell us what type it is. Is it:</p>
 
-    <form method="post">
+    <form id="form" method="post">
         <div class="row mb-2 mt-4 mx-2">
             <div class="form-check">
                 <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="perm" value="perm">
@@ -68,12 +68,6 @@
                 <a href="/" class="btn btn-secondary" role="button">Cancel</a>
             </div>
         </div>
-
-        <!-- lat/long fields set by GET params -->
-        <input type="hidden" id="latitude_degrees" class="form-control" name="latitude_degrees"
-               value="{{ latitude_degrees }}" required/>
-        <input type="hidden" id="longitude_degrees" class="form-control" name="longitude_degrees"
-               value="{{ longitude_degrees }}" required/>
     </form>
 </div>
 
@@ -124,6 +118,7 @@
 </div>
 
 <script>
+    // Show/hide areas depending on whether a permanent or temporary station is selected
     $(".stationTypeRadio").on("click", function() {
         var selectedValue = $("input[name='station_type']:checked").val();
         if (selectedValue == "perm") {
@@ -139,6 +134,21 @@
             $("#tempDetails").hide();
             $("#submitButton").prop("disabled", true);
         }
+    });
+
+    // Hijack the posting of the form to instead redirect the browser window with the new data in the GET request. We
+    // don't do anything on the backend to react to this page being filled in, so there's no need to POST to the server,
+    // we can just pass the user's choices on to the next page.
+    $("#form").submit(function(event) {
+        event.preventDefault();
+        var stationType = $("input[name='station_type']:checked").val();
+        newURL = "/create/station/" + stationType + "?lat={{ latitude_degrees }}&lon={{ longitude_degrees }}";
+        if (stationType == "perm") {
+            newURL = newURL + "&type=" + $("#type").find(":selected").val();
+        } else if (stationType == "temp") {
+            newURL = newURL + "&event=" + $("#event").find(":selected").val();
+        }
+        window.location.href = newURL
     });
 </script>
 {% end %}
