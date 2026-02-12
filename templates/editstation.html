@@ -5,7 +5,8 @@
 {% if station_type == "perm" %}
 <h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}</h2>
 {% else %}
-<h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{station.event.name}}{% end %}</h2>
+<h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{station.event.name}}{% end
+    %}</h2>
 {% end %}
 
 <div class="row">
@@ -220,9 +221,13 @@
                         <div class="col-sm-4">
                         </div>
                         <div class="col-sm-8">
-                            <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Update')" value="Update">
-                            <input type="submit" class="btn btn-danger" name="action" onclick="submitForm('Delete')" value="Delete">
-                            <a href="/view/station/{{ station_type }}/{{ station.id }}" class="btn btn-secondary" role="button">Cancel</a>
+                            <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Update')"
+                                   value="Update">
+                            <button type="button" class="btn btn-danger my-2 my-sm-0" data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal">Delete
+                            </button>
+                            <a href="/view/station/{{ station_type }}/{{ station.id }}" class="btn btn-secondary"
+                               role="button">Cancel</a>
                         </div>
                     </div>
 
@@ -235,6 +240,26 @@
                            value="{{ station.longitude_degrees }}" required/>
                     <input type="hidden" id="user_edit_password" class="form-control" name="user_edit_password"
                            value="{{ user_edit_password }}" required/>
+
+                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalTitle"
+                         aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="deleteModalTitle">Delete this station?</h1>
+                                </div>
+                                <div class="modal-body">
+                                    Please confirm you really want to delete this station.
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
+                                    </button>
+                                    <input type="submit" class="btn btn-danger" name="action" data-bs-dismiss="modal"
+                                           onclick="submitForm('Delete')" value="Delete">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>

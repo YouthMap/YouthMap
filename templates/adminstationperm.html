@@ -160,10 +160,14 @@
                         </div>
                         <div class="col-sm-8">
                             {% if creating_new %}
-                            <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Create')" value="Create">
+                            <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Create')"
+                                   value="Create">
                             {% else %}
-                            <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Update')" value="Update">
-                            <input type="submit" class="btn btn-danger" name="action" onclick="submitForm('Delete')" value="Delete">
+                            <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Update')"
+                                   value="Update">
+                            <button type="button" class="btn btn-danger my-2 my-sm-0" data-bs-toggle="modal"
+                                    data-bs-target="#deleteModal">Delete
+                            </button>
                             {% end %}
                             <a href="/admin/stations" class="btn btn-secondary" role="button">Cancel</a>
                         </div>
@@ -176,6 +180,26 @@
                            value="{{ 50 if creating_new else station.latitude_degrees }}" required/>
                     <input type="hidden" id="longitude_degrees" class="form-control" name="longitude_degrees"
                            value="{{ 10 if creating_new else station.longitude_degrees }}" required/>
+
+                    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalTitle"
+                         aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="deleteModalTitle">Delete this station?</h1>
+                                </div>
+                                <div class="modal-body">
+                                    Please confirm you really want to delete this station.
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
+                                    </button>
+                                    <input type="submit" class="btn btn-danger" name="action" data-bs-dismiss="modal"
+                                           onclick="submitForm('Delete')" value="Delete">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
             <div class="card-footer text-muted">
