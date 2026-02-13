@@ -1,7 +1,11 @@
 /* GENERAL PAGE LAYOUT */
 
 nav#header {
-    z-index: 1000;
+    z-index: 1020;
+}
+
+#settingsPanel {
+    margin-top: 3.5em;
 }
 
 img#rsgb-logo {

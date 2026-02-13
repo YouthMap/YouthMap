@@ -5,6 +5,20 @@
 <div id="map"></div>
 
 
+<div class="offcanvas offcanvas-end bg-body-tertiary" data-bs-backdrop="false" tabindex="-1" id="settingsPanel"
+     aria-labelledby="settingsPanelLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="settingsPanelLabel">Map Settings</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <div>
+            TODO content
+        </div>
+    </div>
+</div>
+
+
 <div class="modal fade" id="addStationModal1" tabindex="-1" aria-labelledby="addStationModal1Title" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -63,5 +77,5 @@
     let perm_stations = JSON.parse({% raw json_encode(perm_stations_json) %});
     let temp_stations = JSON.parse({% raw json_encode(temp_stations_json) %});
 </script>
-<script type="module" src="/js/map.js?v=1770965876"></script>
+<script type="module" src="/js/map.js?v=1770971227"></script>
 {% end %}
