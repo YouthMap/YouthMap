@@ -8,12 +8,99 @@
 <div class="offcanvas offcanvas-end bg-body-tertiary" data-bs-backdrop="false" tabindex="-1" id="settingsPanel"
      aria-labelledby="settingsPanelLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="settingsPanelLabel">Map Settings</h5>
+        <h5 class="offcanvas-title" id="settingsPanelLabel">Map settings</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
     <div class="offcanvas-body">
         <div>
-            TODO content
+            <p class="mt-0 mb-2">Show:</p>
+
+            <div class="row mb-2 mx-2">
+                <div class="form-check">
+                    <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="all"
+                           value="all" checked>
+                    <label class="form-check-label" for="all">Everything</label>
+                </div>
+            </div>
+            <div class="row mb-2 mx-2">
+                <div class="form-check">
+                    <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="perm"
+                           value="perm">
+                    <label class="form-check-label" for="perm">Club stations</label>
+                </div>
+            </div>
+            <div id="permDetails" class="row mb-4 mx-5 g-2" style="display: none;">
+                <div class="col-auto" style="min-width: 4rem;">
+                    <label for="event" class="form-label mt-2">Type:</label>
+                </div>
+                <div class="col-auto">
+                    <select name="type" id="type" class="form-control" style="min-width: 12rem;">
+                        <option value="all">All</option>
+                        {% for type in all_perm_station_types %}
+                        <option value="{{ type.id }}">{{ type.name }}</option>
+                        {% end %}
+                    </select>
+                </div>
+            </div>
+            <div class="row mb-2 mx-2">
+                <div class="form-check">
+                    <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="temp"
+                           value="temp">
+                    <label class="form-check-label" for="temp">
+                        Event stations
+                    </label>
+                </div>
+            </div>
+            <div id="tempDetails" style="display: none;">
+                <div class="row mb-2 mx-5 g-2">
+                    <div class="col-auto" style="min-width: 4rem;">
+                        <label for="event" class="form-label mt-2">Event:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select name="event" id="event" class="form-control" style="min-width: 12rem;">
+                            <option value="all">All</option>
+                            {% for event in all_events %}
+                            <option value="{{ event.id }}">{{ event.name }}</option>
+                            {% end %}
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-2 mx-5 g-2">
+                    <div class="col-auto" style="min-width: 4rem;">
+                        <label for="band" class="form-label mt-2">Band:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select name="band" id="band" class="form-control" style="min-width: 12rem;">
+                            <option value="any">Any</option>
+                            {% for band in all_bands %}
+                            <option value="{{ band.id }}">{{ band.name }}</option>
+                            {% end %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-2 mx-5 g-2">
+                    <div class="col-auto" style="min-width: 4rem;">
+                        <label for="mode" class="form-label mt-2">Mode:</label>
+                    </div>
+                    <div class="col-auto">
+                        <select name="mode" id="mode" class="form-control" style="min-width: 12rem;">
+                            <option value="any">Any</option>
+                            {% for mode in all_modes %}
+                            <option value="{{ mode.id }}">{{ mode.name }}</option>
+                            {% end %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4 mb-2 mx-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="allow_past" id="allow_past">
+                    <label class="form-check-label" for="allow_past">
+                        Show past events and stations
+                    </label>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -74,8 +161,24 @@
     }
 </script>
 <script>
+    // Load JSON data from the backend for the map
     let perm_stations = JSON.parse({% raw json_encode(perm_stations_json) %});
     let temp_stations = JSON.parse({% raw json_encode(temp_stations_json) %});
+
+    // Show/hide areas depending on whether a permanent or temporary station is selected
+    $(".stationTypeRadio").on("click", function() {
+        var selectedValue = $("input[name='station_type']:checked").val();
+        if (selectedValue == "perm") {
+            $("#permDetails").show();
+            $("#tempDetails").hide();
+        } else if (selectedValue == "temp") {
+            $("#permDetails").hide();
+            $("#tempDetails").show();
+        } else {
+            $("#permDetails").hide();
+            $("#tempDetails").hide();
+        }
+    });
 </script>
 <script type="module" src="/js/map.js?v=1770971227"></script>
 {% end %}

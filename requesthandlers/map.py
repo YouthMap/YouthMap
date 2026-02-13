@@ -11,11 +11,15 @@ class MapHandler(BaseHandler):
         # Get data we need to include in the template. Convert to JSON here so we can load it straight up in JS.
         temp_stations_json = json.dumps(self.get_temporary_stations_for_map_js())
         perm_stations_json = json.dumps(self.get_permanent_stations_for_map_js())
+        all_bands = self.application.db.get_all_bands()
+        all_modes = self.application.db.get_all_modes()
+        all_events = self.application.db.get_all_events()
+        all_perm_station_types = self.application.db.get_all_permanent_station_types()
 
         # Render the template
-        self.render("map.html", temp_stations_json=temp_stations_json, perm_stations_json=perm_stations_json)
-
-
+        self.render("map.html", temp_stations_json=temp_stations_json, perm_stations_json=perm_stations_json,
+                    all_bands=all_bands, all_modes=all_modes, all_perm_station_types=all_perm_station_types,
+                    all_events=all_events)
 
     def get_permanent_stations_for_map_js(self):
         """Get data for permanent stations, mutated to be suitable for the main map. This includes:
@@ -41,7 +45,6 @@ class MapHandler(BaseHandler):
                     "type": {"id": s.type.id, "name": s.type.name}
                 })
         return output
-
 
     def get_temporary_stations_for_map_js(self):
         """Get data for temporary stations, mutated to be suitable for the main map. This includes:
