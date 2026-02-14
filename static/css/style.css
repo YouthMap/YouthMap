@@ -62,6 +62,10 @@ div#map {
     font-family: var(--bs-body-font-family) !important;
 }
 
+.leaflet-popup-content p {
+  margin: 0.5em 0 !important;
+}
+
 [data-bs-theme=dark] .leaflet-layer,
 [data-bs-theme=dark] .leaflet-control-attribution {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);

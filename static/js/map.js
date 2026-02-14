@@ -161,9 +161,14 @@ function getPopupTextForPerm(s) {
 function getPopupTextForTemp(s) {
     var text = "<p><b>" + s.callsign + "</b><br/>" + s.club_name + "<br/>";
     if (s.event) {
-        text = text + "at " + s.event.name + "<br/>";
+        text = text + "at " + s.event.name;
     }
-    text = text + s.humanized_start_end + "</p><p style='text-align: right;'><a class='nav-link ml-auto' href='/view/station/temp/" + s.id + "'>More details &raquo;</a></p>";
+    text = text + "</p>";
+    if (s.rsgb_attending) {
+        text = text + "<p><img src='/img/rsgb-logo.png' alt='RSGB logo' class='me-2' style='height: 2em;'/>RSGB attending</p>";
+    }
+    text = text + "<p>" + s.humanized_start_end + "</p>";
+    text = text + "<p style='text-align: right;'><a class='nav-link ml-auto' href='/view/station/temp/" + s.id + "'>More details &raquo;</a></p>";
     return text;
 }
 
