@@ -202,6 +202,15 @@
     </div>
 </div>
 
+{% if creating_new %}
+<script>
+    // For new events only, create a proposed URL slug live as the user types the event name
+    $("#name").on("input",function(e) {
+        $("#url_slug").val($("#name").val().replace(/[^a-zA-Z0-9]/g, ""));
+    });
+</script>
+{% end %}
+
 {% module Template("widgets/form-post-handler.html") %}
 
 {% end %}
