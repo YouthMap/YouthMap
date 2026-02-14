@@ -15,11 +15,12 @@ class MapHandler(BaseHandler):
         all_modes = self.application.db.get_all_modes()
         all_events = self.application.db.get_all_events()
         all_perm_station_types = self.application.db.get_all_permanent_station_types()
+        all_events_json = json.dumps(self.get_events_for_map_js())
 
         # Render the template
         self.render("map.html", temp_stations_json=temp_stations_json, perm_stations_json=perm_stations_json,
                     all_bands=all_bands, all_modes=all_modes, all_perm_station_types=all_perm_station_types,
-                    all_events=all_events)
+                    all_events=all_events, all_events_json=all_events_json)
 
     def get_permanent_stations_for_map_js(self):
         """Get data for permanent stations, mutated to be suitable for the main map. This includes:
@@ -75,4 +76,23 @@ class MapHandler(BaseHandler):
                     "bands": [{"id": b.id, "name": b.name} for b in s.bands],
                     "modes": [{"id": m.id, "name": m.name} for m in s.modes]
                 })
+        return output
+
+    def get_events_for_map_js(self):
+        """Get data for events, mutated to be suitable for the main map. This includes:
+         * Removing any parameters of those events that the map doesn't need to know about
+         * Sorting by event start time, reversed (so furthest future events are at the start, and furthest past events
+           are at the bottom.
+         * Replacing non-JSON-serializable objects with serializable equivalents.
+         This allows us to dump Python objects (the output of this function) straight into JS rather than templating in the
+         HTML template as an intermediary step."""
+
+        output = []
+        events = sorted(self.application.db.get_all_events(), key=lambda x: x.start_time, reverse=True)
+        for e in events:
+            output.append({
+                "id": e.id,
+                "start_time": e.start_time.isoformat(),
+                "end_time": e.end_time.isoformat()
+            })
         return output

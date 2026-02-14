@@ -164,6 +164,7 @@
     // Load JSON data from the backend for the map
     let perm_stations = JSON.parse({% raw json_encode(perm_stations_json) %});
     let temp_stations = JSON.parse({% raw json_encode(temp_stations_json) %});
+    let events = JSON.parse({% raw json_encode(all_events_json) %});
 
     // Show/hide areas depending on whether a permanent or temporary station is selected
     $(".stationTypeRadio").on("click", function() {
@@ -180,5 +181,5 @@
         }
     });
 </script>
-<script type="module" src="/js/map.js?v=1770971227"></script>
+<script type="module" src="/js/map.js?v=1771063811"></script>
 {% end %}
