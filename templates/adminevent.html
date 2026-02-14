@@ -202,14 +202,23 @@
     </div>
 </div>
 
-{% if creating_new %}
 <script>
+    // When an icon is selected, extract a colour from it to use for the marker. Also do this once on startup with the
+    // default selected icon.
+    $("#icon").change(function () {
+        getTopLeftPixelColor("/upload/" + $("#icon").val()).then(color => $("#color").val(color));
+    });
+    $(document).ready(function() {
+        getTopLeftPixelColor("/upload/" + $("#icon").val()).then(color => $("#color").val(color));
+    });
+{% if creating_new %}
     // For new events only, create a proposed URL slug live as the user types the event name
     $("#name").on("input",function(e) {
         $("#url_slug").val($("#name").val().replace(/[^a-zA-Z0-9]/g, ""));
     });
-</script>
 {% end %}
-<script src="/js/form-post-handler.js?v=1771086373"></script>
+</script>
+<script src="/js/form-post-handler.js?v=1771088806"></script>
+<script src="/js/image-color-extractor.js?v=1771088806"></script>
 
 {% end %}
