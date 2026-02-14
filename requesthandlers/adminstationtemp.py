@@ -28,10 +28,14 @@ class AdminStationTempHandler(BaseHandler):
         all_events = self.application.db.get_all_events()
         default_start = get_default_event_start_time()
         default_end = get_default_event_end_time()
+        # Include a JSON version of all events. This allows us to pull out the start/end times, notes template, bands
+        # and modes from the event in real time via JS when the user selects an event from the drop-down.
+        all_events_json = json.dumps(self.get_events_js())
 
         # Render the template
         self.render("adminstationtemp.html", station=station, creating_new=creating_new, all_events=all_events,
-                    all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end)
+                    all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end,
+                    all_events_json=all_events_json)
 
     @tornado.web.authenticated
     def post(self, slug):
@@ -172,3 +176,23 @@ class AdminStationTempHandler(BaseHandler):
         else:
             self.set_status(400)
             self.write(json.dumps({"message": "Invalid action '" + action + "'"}))
+
+
+    def get_events_js(self):
+        """Get data for events, mutated to be suitable for the admin temporary station page. This includes:
+         * Removing any parameters of those events that the page doesn't need to know about
+         * Replacing non-JSON-serializable objects with serializable equivalents.
+         This allows us to dump Python objects (the output of this function) straight into JS rather than templating in the
+         HTML template as an intermediary step."""
+
+        output = []
+        for e in self.application.db.get_all_events():
+            output.append({
+                "id": e.id,
+                "start_time": e.start_time.isoformat(),
+                "end_time": e.end_time.isoformat(),
+                "notes_template": e.notes_template,
+                "band_ids": [b.id for b in e.bands],
+                "mode_ids": [m.id for m in e.modes]
+            })
+        return output

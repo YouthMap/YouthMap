@@ -91,7 +91,7 @@
                         <div class="col-sm-8">
                             {% for band in all_bands %}
                             <span style="display:inline-block; min-width:5em;">
-                    <input type="checkbox" id="band-{{ band.id }}" class="form-check-input" name="bands[]"
+                    <input type="checkbox" id="band-{{ band.id }}" class="form-check-input band-checkbox" name="bands[]"
                            value="{{ band.id }}"
                            {% if not creating_new and band.id in [x.id for x in station.bands] %}checked{% end %}/>&nbsp;
                     <label for="band-{{ band.id }}" class="form-check-label">{{ band.name }}</label>
@@ -110,7 +110,7 @@
                         <div class="col-sm-8">
                             {% for mode in all_modes %}
                             <span style="display:inline-block; min-width:5em;">
-                    <input type="checkbox" id="mode-{{ mode.id }}" class="form-check-input" name="modes[]"
+                    <input type="checkbox" id="mode-{{ mode.id }}" class="form-check-input mode-checkbox" name="modes[]"
                            value="{{ mode.id }}"
                            {% if not creating_new and mode.id in [x.id for x in station.modes] %}checked{% end %}/>&nbsp;
                     <label for="mode-{{ mode.id }}" class="form-check-label">{{ mode.name }}</label>
@@ -284,8 +284,28 @@
     let color = "{{ "#0d6efd" if creating_new else station.color }}";
     let icon = "{{ "" if creating_new else station.icon }}";
     let default_zoom = {{ 4 if creating_new else 12 }};
+    let events = JSON.parse({% raw json_encode(all_events_json) %});
 </script>
-<script type="module" src="/js/map-editstation.js?v=1771075721"></script>
+<script>
+    // As the user changes events, populate the rest of the page
+    $("#event").change(function(e) {
+        const eventID = $("#event").val();
+        if (eventID) {
+            events.forEach(e => {
+                if (e.id == eventID) {
+                    $("#start_time").val(e.start_time);
+                    $("#end_time").val(e.end_time);
+                    $("#notes").val(e.notes_template);
+                    $(".band-checkbox").prop('checked', false);
+                    e.band_ids.forEach(id => $("#band-" + id).prop('checked', true));
+                    $(".mode-checkbox").prop('checked', false);
+                    e.mode_ids.forEach(id => $("#mode-" + id).prop('checked', true));
+                }
+            });
+        }
+    });
+</script>
+<script type="module" src="/js/map-editstation.js?v=1771080460"></script>
 
 {% module Template("widgets/form-post-handler.html") %}
 

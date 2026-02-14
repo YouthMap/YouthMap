@@ -21,19 +21,19 @@ class MapHandler(BaseHandler):
             self.redirect("/")
 
         # Get data we need to include in the template. Convert to JSON here so we can load it straight up in JS.
-        temp_stations_json = json.dumps(self.get_temporary_stations_for_map_js())
-        perm_stations_json = json.dumps(self.get_permanent_stations_for_map_js())
+        temp_stations_json = json.dumps(self.get_temporary_stations_js())
+        perm_stations_json = json.dumps(self.get_permanent_stations_js())
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_perm_station_types = self.application.db.get_all_permanent_station_types()
-        all_events_json = json.dumps(self.get_events_for_map_js())
+        all_events_json = json.dumps(self.get_events_js())
 
         # Render the template
         self.render("map.html", temp_stations_json=temp_stations_json, perm_stations_json=perm_stations_json,
                     all_bands=all_bands, all_modes=all_modes, all_perm_station_types=all_perm_station_types,
                     all_events=all_events, all_events_json=all_events_json, preselect_event=preselect_event)
 
-    def get_permanent_stations_for_map_js(self):
+    def get_permanent_stations_js(self):
         """Get data for permanent stations, mutated to be suitable for the main map. This includes:
          * Removing any stations that are not approved yet
          * Removing any parameters of those stations that the map doesn't need to know about - in particular removing
@@ -58,7 +58,7 @@ class MapHandler(BaseHandler):
                 })
         return output
 
-    def get_temporary_stations_for_map_js(self):
+    def get_temporary_stations_js(self):
         """Get data for temporary stations, mutated to be suitable for the main map. This includes:
          * Removing any stations that are not approved yet
          * Removing any parameters of those stations that the map doesn't need to know about - in particular removing
@@ -89,7 +89,7 @@ class MapHandler(BaseHandler):
                 })
         return output
 
-    def get_events_for_map_js(self):
+    def get_events_js(self):
         """Get data for events, mutated to be suitable for the main map. This includes:
          * Removing any parameters of those events that the map doesn't need to know about
          * Sorting by event start time, reversed (so furthest future events are at the start, and furthest past events
