@@ -149,9 +149,13 @@
                         <div class="col-sm-4">
                             <label for="edit_password" class="form-label mt-2">User edit password:</label>
                         </div>
-                        <div class="col-sm-8">
+                        <div class="col-sm-5">
                             <input type="text" id="edit_password" class="form-control" name="edit_password"
                                    value="{{ '' if creating_new else station.edit_password }}" required/>
+                        </div>
+                        <div class="col-sm-3 ps-0 mt-2">
+                            <a href="#/" class="ms-0 link-underline link-underline-opacity-0"
+                               onClick="$('#edit_password').val(generatePassword());">Regenerate</a>
                         </div>
                     </div>
                     {% end %}
@@ -216,14 +220,7 @@
     </div>
 </div>
 
-<script type="importmap">
-    {
-      "imports": {
-        "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
-        "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js"
-      }
-    }
-</script>
+{% module Template("widgets/import-map.html") %}
 <script>
     let latitude_degrees = {{ 50 if creating_new else float(station.latitude_degrees) }};
     let longitude_degrees = {{ 10 if creating_new else float(station.longitude_degrees) }};
@@ -231,8 +228,8 @@
     let icon = "{{ "" if creating_new else station.icon }}";
     let default_zoom = {{ 4 if creating_new else 12 }};
 </script>
-<script type="module" src="/js/map-editstation.js?v=1771080460"></script>
-
-{% module Template("widgets/form-post-handler.html") %}
+<script type="module" src="/js/map-editstation.js?v=1771086373"></script>
+<script src="/js/form-post-handler.js?v=1771086373"></script>
+<script src="/js/password-generator.js?v=1771086373"></script>
 
 {% end %}

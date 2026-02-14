@@ -256,22 +256,14 @@
     </div>
 </div>
 
-<script type="importmap">
-    {
-      "imports": {
-        "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
-        "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js"
-      }
-    }
-</script>
+{% module Template("widgets/import-map.html") %}
 <script>
     let latitude_degrees = {{ float(station.latitude_degrees) }};
     let longitude_degrees = {{ float(station.longitude_degrees) }};
     let color = "{{ station.color }}";
     let icon = "{{ station.icon }}";
 </script>
-<script type="module" src="/js/map-viewstation.js?v=1771080460"></script>
-
-{% module Template("widgets/form-post-handler.html") %}
+<script type="module" src="/js/map-viewstation.js?v=1771086373"></script>
+<script src="/js/form-post-handler.js?v=1771086373"></script>
 
 {% end %}

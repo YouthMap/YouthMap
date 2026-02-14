@@ -202,14 +202,7 @@
     </div>
 </div>
 
-<script type="importmap">
-    {
-      "imports": {
-        "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
-        "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js"
-      }
-    }
-</script>
+{% module Template("widgets/import-map.html") %}
 <script>
     let latitude_degrees = {{ float(latitude_degrees) }};
     let longitude_degrees = {{ float(longitude_degrees) }};
@@ -217,8 +210,7 @@
     let icon = "{{ icon }}";
     let default_zoom = 12;
 </script>
-<script type="module" src="/js/map-editstation.js?v=1771080460"></script>
-
-{% module Template("widgets/form-post-handler.html") %}
+<script type="module" src="/js/map-editstation.js?v=1771086373"></script>
+<script src="/js/form-post-handler.js?v=1771086373"></script>
 
 {% end %}

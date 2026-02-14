@@ -155,20 +155,12 @@
 </div>
 
 
-<script type="importmap">
-    {
-      "imports": {
-        "leaflet": "https://unpkg.com/leaflet@2.0.0-alpha.1/dist/leaflet.js",
-        "leaflet-extra-markers": "https://unpkg.com/leaflet-extra-markers@2.0.1/src/index.js",
-        "luxon": "https://cdn.jsdelivr.net/npm/luxon@3.7.2/+esm"
-      }
-    }
-</script>
+{% module Template("widgets/import-map.html") %}
 <script>
     // Load JSON data from the backend for the map
     let perm_stations = JSON.parse({% raw json_encode(perm_stations_json) %});
     let temp_stations = JSON.parse({% raw json_encode(temp_stations_json) %});
     let events = JSON.parse({% raw json_encode(all_events_json) %});
 </script>
-<script type="module" src="/js/map.js?v=1771080460"></script>
+<script type="module" src="/js/map.js?v=1771086373"></script>
 {% end %}
