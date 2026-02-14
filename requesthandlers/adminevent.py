@@ -55,7 +55,7 @@ class AdminEventHandler(BaseHandler):
                 self.write(json.dumps({"message": "Event deleted. Returning you to the events list...", "redirect_url": "/admin/events"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to delete the event."}))
+                self.write(json.dumps({"message": "Failed to delete the event. Please check the logs for more details."}))
 
         # Check for Update action
         elif action == "Update":
@@ -89,7 +89,7 @@ class AdminEventHandler(BaseHandler):
                 self.write(json.dumps({"message": "Event updated. Returning you to the events list...", "redirect_url": "/admin/events"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to update the event."}))
+                self.write(json.dumps({"message": "Failed to update the event. Please check the logs for more details."}))
 
         # Check for Create action
         elif action == "Create":
@@ -123,7 +123,7 @@ class AdminEventHandler(BaseHandler):
                 self.write(json.dumps({"message": "Event created. Returning you to the events list...", "redirect_url": "/admin/events"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to create the event."}))
+                self.write(json.dumps({"message": "Failed to create the event. Please check the logs for more details."}))
 
         else:
             self.set_status(400)

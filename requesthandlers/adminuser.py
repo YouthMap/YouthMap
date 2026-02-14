@@ -51,7 +51,8 @@ class AdminUserHandler(BaseHandler):
         is_me = user_id == self.current_user
         current_user = self.application.db.get_user(self.current_user)
         if not is_me and not current_user.super_admin:
-            self.write("You are not permitted to update a user account other than your own.")
+            self.set_status(401)
+            self.write(json.dumps({"message": "You are not permitted to update a user account other than your own."}))
             return
 
         # Get the action we have been asked to do
@@ -72,7 +73,7 @@ class AdminUserHandler(BaseHandler):
                     self.write(json.dumps({"message": "User deleted. Returning you to the user list...", "redirect_url": "/admin/users"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to delete the user."}))
+                self.write(json.dumps({"message": "Failed to delete the user. Please check the logs for more details."}))
 
         # Check for Update action
         elif action == "Update":
@@ -89,7 +90,8 @@ class AdminUserHandler(BaseHandler):
             # super-admins, so bail out.
             if is_me and ((current_user.super_admin and not super_admin)
                     or (not current_user.super_admin and super_admin)):
-                self.write("Changing your own super-admin status is not allowed.")
+                self.set_status(401)
+                self.write(json.dumps({"message": "Changing your own super-admin status is not allowed."}))
                 return
 
             # Password is optional, so if we got a blank string, set the value to None so that we don't update that
@@ -105,7 +107,7 @@ class AdminUserHandler(BaseHandler):
                 self.write(json.dumps({"message": "User updated. Returning you to the user list...", "redirect_url": "/admin/users"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to update the user."}))
+                self.write(json.dumps({"message": "Failed to update the user. Please check the logs for more details."}))
 
         # Check for Create action
         elif action == "Create":
@@ -125,7 +127,7 @@ class AdminUserHandler(BaseHandler):
                 self.write(json.dumps({"message": "User created. Returning you to the user list...", "redirect_url": "/admin/users"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to create the user."}))
+                self.write(json.dumps({"message": "Failed to create the user. Please check the logs for more details."}))
 
         else:
             self.set_status(400)
