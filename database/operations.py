@@ -125,7 +125,8 @@ class DatabaseOperations:
         session = self.SessionLocal()
         try:
             # Find the user matching the username (if there is one)
-            user = [u for u in self.get_all_users() if u.username.lower() == username.lower()][0]
+            matching_users = [u for u in self.get_all_users() if u.username.lower() == username.lower()]
+            user = matching_users[0] if len(matching_users) > 0 else None
             if not user:
                 return None
 

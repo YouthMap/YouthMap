@@ -18,7 +18,7 @@
             <div class="row mb-2 mx-2">
                 <div class="form-check">
                     <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="all"
-                           value="all" checked>
+                           value="all" {% if not preselect_event %}checked{% end %}>
                     <label class="form-check-label" for="all">Everything</label>
                 </div>
             </div>
@@ -45,7 +45,7 @@
             <div class="row mb-2 mx-2">
                 <div class="form-check">
                     <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="temp"
-                           value="temp">
+                           value="temp" {% if preselect_event %}checked{% end %}>
                     <label class="form-check-label" for="temp">
                         Event stations
                     </label>
@@ -60,7 +60,10 @@
                         <select name="event" id="event" class="form-control" style="min-width: 12rem;">
                             <option value="all">All</option>
                             {% for event in all_events %}
-                            <option value="{{ event.id }}">{{ event.name }}</option>
+                            <option value="{{ event.id }}"
+                                    {% if preselect_event and preselect_event.id== event.id %}selected{% end %}>
+                                {{ event.name }}
+                            </option>
                             {% end %}
                             <option value="other">Other</option>
                         </select>
@@ -95,7 +98,8 @@
             </div>
             <div class="row mt-4 mb-2 mx-2">
                 <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="allow_past" id="allow_past">
+                    <input class="form-check-input" type="checkbox" name="allow_past" id="allow_past"
+                           {% if preselect_event %}checked{% end %}>
                     <label class="form-check-label" for="allow_past">
                         Show past events and stations
                     </label>
@@ -165,21 +169,6 @@
     let perm_stations = JSON.parse({% raw json_encode(perm_stations_json) %});
     let temp_stations = JSON.parse({% raw json_encode(temp_stations_json) %});
     let events = JSON.parse({% raw json_encode(all_events_json) %});
-
-    // Show/hide areas depending on whether a permanent or temporary station is selected
-    $(".stationTypeRadio").on("click", function() {
-        var selectedValue = $("input[name='station_type']:checked").val();
-        if (selectedValue == "perm") {
-            $("#permDetails").show();
-            $("#tempDetails").hide();
-        } else if (selectedValue == "temp") {
-            $("#permDetails").hide();
-            $("#tempDetails").show();
-        } else {
-            $("#permDetails").hide();
-            $("#tempDetails").hide();
-        }
-    });
 </script>
-<script type="module" src="/js/map.js?v=1771063811"></script>
+<script type="module" src="/js/map.js?v=1771075721"></script>
 {% end %}

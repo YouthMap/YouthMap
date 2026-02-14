@@ -196,10 +196,23 @@ function refreshEventSelect() {
                     }
                 }
             });
-
-
         }
     });
+}
+
+// Shows and hides areas of the Map Settings panel depending on what's just been selected
+function showHideSettingsAreas() {
+    var selectedValue = $("input[name='station_type']:checked").val();
+        if (selectedValue == "perm") {
+            $("#permDetails").show();
+            $("#tempDetails").hide();
+        } else if (selectedValue == "temp") {
+            $("#permDetails").hide();
+            $("#tempDetails").show();
+        } else {
+            $("#permDetails").hide();
+            $("#tempDetails").hide();
+        }
 }
 
 // Callback on any filter control being clicked. Regenerates the markers to match the new filter settings, and sets up
@@ -220,10 +233,12 @@ $(document).ready(function() {
     const markersLayer = new FeatureGroup();
     markersLayer.addTo(map);
 
-    // Create markers
-    createMarkers(markersLayer);
+    // Ensure whatever the HTML selections are by default in the Map Settings panel are applied on startup. This will
+    // also cause the first-time marker generation to happen.
+    showHideSettingsAreas();
+    filtersUpdated(markersLayer);
 
-    // Zoom to fit
+    // Zoom to fit the markers
     map.fitBounds(markersLayer.getBounds().pad(0.5));
 
     // Add click handler to the button that lets you add a station to the map
@@ -235,13 +250,10 @@ $(document).ready(function() {
     $("button#addStationSetUp").click(function(){ window.location.href = "/create/station/type?lat=" + addStationMarker.getLatLng().lat + "&lon=" + addStationMarker.getLatLng().lng });
 
     // Add listeners to filter controls
-    $("input.stationTypeRadio").click(function(){ filtersUpdated(markersLayer); });
+    $("input.stationTypeRadio").click(function(){ showHideSettingsAreas(); filtersUpdated(markersLayer); });
     $("select#type").click(function(){ filtersUpdated(markersLayer); });
     $("select#event").click(function(){ filtersUpdated(markersLayer); });
     $("select#band").click(function(){ filtersUpdated(markersLayer); });
     $("select#mode").click(function(){ filtersUpdated(markersLayer); });
     $("input#allow_past").click(function(){ filtersUpdated(markersLayer); });
-
-    // TODO slug handling
-    // TODO if a slug is provided we should show finished events & stations
 });

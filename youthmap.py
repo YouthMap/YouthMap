@@ -44,13 +44,19 @@ class YouthMap(tornado.web.Application):
 
         logging.info("Setting up web server...")
         handlers = [
+            # Normal home URL for the map with no slug provided
             (r"/", MapHandler),
+            # Map with event slug, configures the UI to only show stations for that event
+            (r"/event/([^/]+)", MapHandler),
+            # User-accessible pages to view, edit and create stations
             (r"/view/station/(perm|temp)/([^/]+)", ViewStationHandler),
             (r"/edit/station/(perm|temp)/([^/]+)", EditStationHandler),
             (r"/create/station/type", CreateStationTypeHandler),
             (r"/create/station/(perm|temp)", CreateStationHandler),
+            # Authentication-related pages
             (r"/login", LoginHandler),
             (r"/logout", LogoutHandler),
+            # Admin dashboard and management pages
             (r"/admin", AdminHandler),
             (r"/admin/users", AdminUsersHandler),
             (r"/admin/user/([^/]+)", AdminUserHandler),
@@ -59,7 +65,9 @@ class YouthMap(tornado.web.Application):
             (r"/admin/stations", AdminStationsHandler),
             (r"/admin/station/temp/([^/]+)", AdminStationTempHandler),
             (r"/admin/station/perm/([^/]+)", AdminStationPermHandler),
+            # Uploads area
             (r"/upload/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "data/upload")}),
+            # If none of the other patterns match the URL, assume it's a static asset and try to serve that.
             (r"/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "static")})
         ]
 
