@@ -111,11 +111,11 @@
             </div>
             <div class="row mb-2">
                 <div class="col-sm-4">
-                    <label for="url_slug" class="form-label mt-2">URL slug (optional):</label>
+                    <label for="url_slug" class="form-label mt-2">URL slug:</label>
                 </div>
                 <div class="col-sm-8">
                     <input type="text" id="url_slug" class="form-control" name="url_slug"
-                           value="{{ '' if creating_new else event.url_slug }}"/>
+                           value="{{ '' if creating_new else event.url_slug }}" required/>
                 </div>
             </div>
             <div class="row mb-2">

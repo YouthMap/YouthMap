@@ -134,7 +134,7 @@ class Event(Base):
     icon = Column(String, nullable=False)
     color = Column(String, nullable=False)
     notes_template = Column(String, nullable=False)
-    url_slug = Column(String, unique=True, nullable=True)
+    url_slug = Column(String, unique=True, nullable=False)
     public = Column(Boolean, nullable=False)
     rsgb_event = Column(Boolean, nullable=False)
 

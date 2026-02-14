@@ -94,6 +94,13 @@ class AdminUserHandler(BaseHandler):
                 self.write(json.dumps({"message": "Changing your own super-admin status is not allowed."}))
                 return
 
+            # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
+            other_users = [e for e in self.application.db.get_all_users() if e.id != user_id]
+            if any(e.username == username for e in other_users):
+                self.set_status(400)
+                self.write(json.dumps(
+                    {"message": "Another user is already called '" + username + "'. User names must be unique."}))
+
             # Password is optional, so if we got a blank string, set the value to None so that we don't update that
             # aspect of the user.
             password = password if password != "" else None

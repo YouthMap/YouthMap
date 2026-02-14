@@ -52,10 +52,12 @@ class AdminEventHandler(BaseHandler):
             if ok:
                 # Delete OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Event deleted. Returning you to the events list...", "redirect_url": "/admin/events"}))
+                self.write(json.dumps(
+                    {"message": "Event deleted. Returning you to the events list...", "redirect_url": "/admin/events"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to delete the event. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to delete the event. Please check the logs for more details."}))
 
         # Check for Update action
         elif action == "Update":
@@ -78,6 +80,17 @@ class AdminEventHandler(BaseHandler):
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
+            # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
+            other_events = [e for e in self.application.db.get_all_events() if e.id != event_id]
+            if any(e.name == name for e in other_events):
+                self.set_status(400)
+                self.write(json.dumps(
+                    {"message": "Another event is already called '" + name + "'. Event names must be unique."}))
+            if any(e.url_slug == url_slug for e in other_events):
+                self.set_status(400)
+                self.write(json.dumps({
+                                          "message": "Another event already has the URL slug '" + url_slug + "'. Event URL slugs must be unique."}))
+
             # Process the update
             ok = self.application.db.update_event(event_id, name=name, start_time=start_time, end_time=end_time,
                                                   band_ids=band_ids, mode_ids=mode_ids, icon=icon, color=color,
@@ -86,10 +99,12 @@ class AdminEventHandler(BaseHandler):
             if ok:
                 # Update OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Event updated. Returning you to the events list...", "redirect_url": "/admin/events"}))
+                self.write(json.dumps(
+                    {"message": "Event updated. Returning you to the events list...", "redirect_url": "/admin/events"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to update the event. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to update the event. Please check the logs for more details."}))
 
         # Check for Create action
         elif action == "Create":
@@ -112,6 +127,18 @@ class AdminEventHandler(BaseHandler):
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
+            # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
+            other_events = self.application.db.get_all_events()
+            if any(e.name == name for e in other_events):
+                self.set_status(400)
+                self.write(json.dumps(
+                    {"message": "Another event is already called '" + name + "'. Event names must be unique."}))
+            if any(e.url_slug == url_slug for e in other_events):
+                self.set_status(400)
+                self.write(json.dumps({
+                                          "message": "Another event already has the URL slug '" + url_slug + "'. Event URL slugs must be unique."}))
+
+
             # Process the create action
             new_event_id = self.application.db.add_event(name=name, start_time=start_time, end_time=end_time,
                                                          band_ids=band_ids, mode_ids=mode_ids, icon=icon, color=color,
@@ -120,10 +147,12 @@ class AdminEventHandler(BaseHandler):
             if new_event_id:
                 # Create OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Event created. Returning you to the events list...", "redirect_url": "/admin/events"}))
+                self.write(json.dumps(
+                    {"message": "Event created. Returning you to the events list...", "redirect_url": "/admin/events"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to create the event. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to create the event. Please check the logs for more details."}))
 
         else:
             self.set_status(400)
