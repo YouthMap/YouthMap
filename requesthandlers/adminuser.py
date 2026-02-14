@@ -67,13 +67,17 @@ class AdminUserHandler(BaseHandler):
                 # deleting somebody else, so go back to the user management page.
                 if is_me:
                     self.set_status(200)
-                    self.write(json.dumps({"message": "Your account has been deleted. Returning you to the home page...", "redirect_url": "/"}))
+                    self.write(json.dumps(
+                        {"message": "Your account has been deleted. Returning you to the home page...",
+                         "redirect_url": "/"}))
                 else:
                     self.set_status(200)
-                    self.write(json.dumps({"message": "User deleted. Returning you to the user list...", "redirect_url": "/admin/users"}))
+                    self.write(json.dumps(
+                        {"message": "User deleted. Returning you to the user list...", "redirect_url": "/admin/users"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to delete the user. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to delete the user. Please check the logs for more details."}))
 
         # Check for Update action
         elif action == "Update":
@@ -89,17 +93,17 @@ class AdminUserHandler(BaseHandler):
             # have it is priviledge escalation, and removing it when they have it could leave the site with no
             # super-admins, so bail out.
             if is_me and ((current_user.super_admin and not super_admin)
-                    or (not current_user.super_admin and super_admin)):
+                          or (not current_user.super_admin and super_admin)):
                 self.set_status(401)
                 self.write(json.dumps({"message": "Changing your own super-admin status is not allowed."}))
                 return
 
             # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
-            other_users = [e for e in self.application.db.get_all_users() if e.id != user_id]
-            if any(e.username == username for e in other_users):
+            other_users = [u for u in self.application.db.get_all_users() if u.id != user_id]
+            if any(u.username.lower() == username.lower() for u in other_users):
                 self.set_status(400)
-                self.write(json.dumps(
-                    {"message": "Another user is already called '" + username + "'. User names must be unique."}))
+                self.write(json.dumps({
+                    "message": "Another user is already called '" + username + "'. User names must be unique, and are not case sensitive."}))
 
             # Password is optional, so if we got a blank string, set the value to None so that we don't update that
             # aspect of the user.
@@ -111,10 +115,12 @@ class AdminUserHandler(BaseHandler):
             if ok:
                 # Update OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "User updated. Returning you to the user list...", "redirect_url": "/admin/users"}))
+                self.write(json.dumps(
+                    {"message": "User updated. Returning you to the user list...", "redirect_url": "/admin/users"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to update the user. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to update the user. Please check the logs for more details."}))
 
         # Check for Create action
         elif action == "Create":
@@ -125,16 +131,25 @@ class AdminUserHandler(BaseHandler):
             email = self.get_argument("email")
             super_admin = True if self.get_argument("super_admin", None) else False
 
+            # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
+            other_users = self.application.db.get_all_users()
+            if any(u.username.lower() == username.lower() for u in other_users):
+                self.set_status(400)
+                self.write(json.dumps({
+                    "message": "Another user is already called '" + username + "'. User names must be unique, and are not case sensitive."}))
+
             # Process the create action
             new_user_id = self.application.db.add_user(username=username, password=password, email=email,
-                                              super_admin=super_admin)
+                                                       super_admin=super_admin)
             if new_user_id:
                 # Create OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "User created. Returning you to the user list...", "redirect_url": "/admin/users"}))
+                self.write(json.dumps(
+                    {"message": "User created. Returning you to the user list...", "redirect_url": "/admin/users"}))
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to create the user. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to create the user. Please check the logs for more details."}))
 
         else:
             self.set_status(400)

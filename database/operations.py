@@ -119,12 +119,13 @@ class DatabaseOperations:
             session.close()
 
     def verify_user(self, username, password):
-        """Verify user credentials. If successful, the user ID is returned. Otherwise, None is returned."""
+        """Verify user credentials. If successful, the user ID is returned. Otherwise, None is returned. Usernames are
+        not case sensitive."""
 
         session = self.SessionLocal()
         try:
             # Find the user matching the username (if there is one)
-            user = session.query(User).filter_by(username=username).first()
+            user = [u for u in self.get_all_users() if u.username.lower() == username.lower()][0]
             if not user:
                 return None
 
