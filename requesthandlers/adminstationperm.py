@@ -6,7 +6,6 @@ from core.utils import populate_derived_fields_perm_station
 from requesthandlers.base import BaseHandler
 
 
-# noinspection PyUnresolvedReferences
 class AdminStationPermHandler(BaseHandler):
     """Handler for admin permanent station editing page"""
 

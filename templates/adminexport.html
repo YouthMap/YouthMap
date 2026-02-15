@@ -1,0 +1,62 @@
+{% extends "base-std.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownTarget -->
+<h2 class="mb-5">Export Data</h2>
+
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="card mx-auto bg-body-tertiary" style="max-width: 24rem;">
+            <div class="card-header">
+                <h5 class="mb-0">Generic Data Export</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Click on any of the following links to export data in CSV format.</p>
+
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link" href="/admin/export?data=stations">All stations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/admin/export?data=events">All events</a></li>
+                </ul>
+            </div>
+            <div class="card-footer text-muted">
+                <ul class="nav flex-row">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="card mx-auto bg-body-tertiary" style="max-width: 24rem;">
+            <div class="card-header">
+                <h5 class="mb-0">Event Station Data Export</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">Click on an event to export a CSV file of all associated stations.</p>
+
+                <ul class="nav flex-column">
+                    {% if len(events) > 0 %}
+                    {% for event in events %}
+                    <li class="nav-item"><a class="nav-link" href="/admin/export?data=stations&event={{ event.id }}">
+                        {{ event.name }}</a>
+                    </li>
+                    {% end %}
+                    {% else %}
+                    <li class="nav-item px-3 py-2">There are no events in the system.</li>
+                    {% end %}
+                </ul>
+            </div>
+            <div class="card-footer text-muted">
+                <ul class="nav flex-row">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% end %}

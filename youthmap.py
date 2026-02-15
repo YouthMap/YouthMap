@@ -13,6 +13,7 @@ from requesthandlers.admin import AdminHandler
 from requesthandlers.adminapproval import AdminApprovalHandler
 from requesthandlers.adminevent import AdminEventHandler
 from requesthandlers.adminevents import AdminEventsHandler
+from requesthandlers.adminexport import AdminExportHandler
 from requesthandlers.adminstationperm import AdminStationPermHandler
 from requesthandlers.adminstations import AdminStationsHandler
 from requesthandlers.adminstationtemp import AdminStationTempHandler
@@ -65,6 +66,7 @@ class YouthMap(tornado.web.Application):
             (r"/admin/approval", AdminApprovalHandler),
             (r"/admin/station/temp/([^/]+)", AdminStationTempHandler),
             (r"/admin/station/perm/([^/]+)", AdminStationPermHandler),
+            (r"/admin/export", AdminExportHandler),
             # Uploads area
             (r"/upload/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "data/upload")}),
             # Static CSS/JS/image assets

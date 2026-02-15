@@ -5,7 +5,6 @@ import tornado
 from requesthandlers.base import BaseHandler
 
 
-# noinspection PyUnresolvedReferences
 class AdminEventsHandler(BaseHandler):
     """Handler for admin event list page"""
 

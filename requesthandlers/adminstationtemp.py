@@ -7,7 +7,6 @@ from core.utils import get_default_event_end_time, get_default_event_start_time,
 from requesthandlers.base import BaseHandler
 
 
-# noinspection PyUnresolvedReferences
 class AdminStationTempHandler(BaseHandler):
     """Handler for admin temporary station editing page"""
 

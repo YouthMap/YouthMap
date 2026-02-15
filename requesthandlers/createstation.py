@@ -6,7 +6,6 @@ from core.utils import TEMP_STATION_NO_EVENT_COLOR, TEMP_STATION_NO_EVENT_ICON, 
 from requesthandlers.base import BaseHandler
 
 
-# noinspection PyUnresolvedReferences
 class CreateStationHandler(BaseHandler):
     """Handler for the create station page (the full version where the user fills in the form, rather than the
     interstitial page where they set the type"""
