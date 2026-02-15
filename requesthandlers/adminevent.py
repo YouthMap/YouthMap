@@ -7,6 +7,7 @@ from core.utils import get_all_icons, get_default_event_start_time, get_default_
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class AdminEventHandler(BaseHandler):
     """Handler for admin event editing page"""
 

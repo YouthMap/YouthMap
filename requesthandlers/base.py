@@ -1,6 +1,7 @@
 import tornado
 
 
+# noinspection PyUnresolvedReferences
 class BaseHandler(tornado.web.RequestHandler):
     """Request handler superclass providing common functions"""
 

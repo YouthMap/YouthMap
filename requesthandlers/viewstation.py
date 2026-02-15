@@ -4,6 +4,7 @@ from core.utils import populate_derived_fields_temp_station, populate_derived_fi
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class ViewStationHandler(BaseHandler):
     """Handler for station view page"""
 

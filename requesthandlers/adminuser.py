@@ -5,6 +5,7 @@ import tornado
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class AdminUserHandler(BaseHandler):
     """Handler for user details page, includes POSTing the new details as well as rendering the HTML. This does double
     duty not just for the user to update their own details (e.g. reset their password) but also for super-admins to

@@ -4,6 +4,7 @@ from core.utils import populate_derived_fields_temp_station, populate_derived_fi
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class MapHandler(BaseHandler):
     """Handler for the main map page. This only supports a GET but comes in two flavours, one of which is for the base
     URL (/) and the other is when a slug is provided. If a slug is provided, the whole station and event dataset is sent

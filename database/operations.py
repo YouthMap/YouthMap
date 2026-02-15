@@ -231,8 +231,8 @@ class DatabaseOperations:
 
             # Add selected bands and modes to the station. Because these are lists of bands and modes, and stored in an
             # association table, we can't just set them at object creation time using SQLalchemy, so we add them here.
-            bands = [session.query(Band).filter_by(id=id).first() for id in band_ids]
-            modes = [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
+            bands = [session.query(Band).filter_by(id=band_id).first() for band_id in band_ids]
+            modes = [session.query(Mode).filter_by(id=mode_id).first() for mode_id in mode_ids]
             event.bands.extend(bands)
             event.modes.extend(modes)
 
@@ -296,11 +296,11 @@ class DatabaseOperations:
             if rsgb_event is not None:
                 event.rsgb_event = rsgb_event
             if band_ids is not None:
-                bands = [session.query(Band).filter_by(id=id).first() for id in band_ids]
+                bands = [session.query(Band).filter_by(id=band_id).first() for band_id in band_ids]
                 event.bands.clear()
                 event.bands.extend(bands)
             if mode_ids is not None:
-                modes = [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
+                modes = [session.query(Mode).filter_by(id=mode_id).first() for mode_id in mode_ids]
                 event.modes.clear()
                 event.modes.extend(modes)
 
@@ -383,8 +383,8 @@ class DatabaseOperations:
 
             # Add selected bands and modes to the station. Because these are lists of bands and modes, and stored in an
             # association table, we can't just set them at object creation time using SQLalchemy, so we add them here.
-            bands = [session.query(Band).filter_by(id=id).first() for id in band_ids]
-            modes = [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
+            bands = [session.query(Band).filter_by(id=band_id).first() for band_id in band_ids]
+            modes = [session.query(Mode).filter_by(id=mode_id).first() for mode_id in mode_ids]
             station.bands.extend(bands)
             station.modes.extend(modes)
 
@@ -479,11 +479,11 @@ class DatabaseOperations:
             if rsgb_attending is not None:
                 station.rsgb_attending = rsgb_attending
             if band_ids is not None:
-                bands = [session.query(Band).filter_by(id=id).first() for id in band_ids]
+                bands = [session.query(Band).filter_by(id=band_id).first() for band_id in band_ids]
                 station.bands.clear()
                 station.bands.extend(bands)
             if mode_ids is not None:
-                modes = [session.query(Mode).filter_by(id=id).first() for id in mode_ids]
+                modes = [session.query(Mode).filter_by(id=mode_id).first() for mode_id in mode_ids]
                 station.modes.clear()
                 station.modes.extend(modes)
             if approved is not None:

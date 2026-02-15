@@ -3,6 +3,7 @@ import tornado
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class AdminHandler(BaseHandler):
     """Handler for admin dashboard"""
 

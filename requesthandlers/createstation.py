@@ -6,6 +6,7 @@ from core.utils import TEMP_STATION_NO_EVENT_COLOR, TEMP_STATION_NO_EVENT_ICON, 
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class CreateStationHandler(BaseHandler):
     """Handler for the create station page (the full version where the user fills in the form, rather than the
     interstitial page where they set the type"""
@@ -35,14 +36,14 @@ class CreateStationHandler(BaseHandler):
 
         # Derive color/icon. We have to do this manually because we don't have a real station object yet, but for a nice
         # display for the user we want to use the real marker icon and colour at this point.
-        type = None
+        perm_station_type = None
         event = None
         color = TEMP_STATION_NO_EVENT_COLOR
         icon = TEMP_STATION_NO_EVENT_ICON
         if perm_or_temp_slug == "perm":
-            type = self.application.db.get_permanent_station_type(type_id)
-            color = type.color
-            icon = type.icon
+            perm_station_type = self.application.db.get_permanent_station_type(type_id)
+            color = perm_station_type.color
+            icon = perm_station_type.icon
         elif perm_or_temp_slug == "temp":
             event = self.application.db.get_event(event_id)
             if event:
@@ -52,7 +53,7 @@ class CreateStationHandler(BaseHandler):
         # Render the template. Supply the user password as well, this will be included in the form as a hidden field,
         # so we can check it again when it comes back to us in the POST.
         self.render("createstation.html", station_type=perm_or_temp_slug, latitude_degrees=lat, longitude_degrees=lon,
-                    event=event, event_id=event_id, type=type, type_id=type_id, color=color, icon=icon,
+                    event=event, event_id=event_id, type=perm_station_type, type_id=type_id, color=color, icon=icon,
                     all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end)
 
     def post(self, perm_or_temp_slug):

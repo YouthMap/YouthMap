@@ -1,6 +1,6 @@
 # Developer Documentation
 
-Youth Map is a single integrated program that includes a web server, database and access code, static HTML/CSS assets, and JavaScript code to provide the web site.
+Youth Map is a single integrated program that includes a web server, database and access code, static HTML/CSS assets, and JavaScript code to provide the website.
 
 ## Code Structure
 
@@ -40,7 +40,7 @@ The data is structured as follows:
 The other areas in the codebase are as follows:
 
 * `/core/*.py`: Python functionality not relating directly to the web server or database, for example config file handling and general utilities. 
-* `/data/upload/*`: A location for user-uploaded files. Currently this is limited to PNG icons to use for the markers. Some defaults are provided in the repository but on a live running site administrators will be able to manage these and upload their own.
+* `/data/upload/*`: A location for user-uploaded files. Currently, this is limited to PNG icons to use for the markers. Some defaults are provided in the repository but on a live running site administrators will be able to manage these and upload their own.
 * `/docs/*`: Contains this documentation.
 
 ## Design Choices

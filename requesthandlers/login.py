@@ -3,6 +3,7 @@ import json
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class LoginHandler(BaseHandler):
     """Handler for login page, includes POSTing username and password as well as rendering the HTML"""
 

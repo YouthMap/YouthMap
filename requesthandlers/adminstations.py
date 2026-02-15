@@ -5,6 +5,7 @@ import tornado
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class AdminStationsHandler(BaseHandler):
     """Handler for admin station list page"""
 

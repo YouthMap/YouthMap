@@ -1,6 +1,7 @@
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class CreateStationTypeHandler(BaseHandler):
     """Handler for the interstitial page on user station creation that asks what type the station should be. Receives
     the lat/lon point the user previously picked via GET, and then passes that on along with type/event information to

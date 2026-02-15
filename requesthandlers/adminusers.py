@@ -3,6 +3,7 @@ import tornado
 from requesthandlers.base import BaseHandler
 
 
+# noinspection PyUnresolvedReferences
 class AdminUsersHandler(BaseHandler):
     """Handler for admin user list page"""
 

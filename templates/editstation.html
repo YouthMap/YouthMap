@@ -1,7 +1,7 @@
 {% extends "base-std.html" %}
 {% block content %}
 
-<!--suppress HtmlUnknownAttribute, HtmlUnknownTarget  -->
+<!--suppress HtmlUnknownAttribute, HtmlUnknownTarget , HtmlUnknownAnchorTarget -->
 {% if station_type == "perm" %}
 <h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}</h2>
 {% else %}
@@ -274,7 +274,7 @@
     let icon = "{{ station.icon }}";
     let default_zoom = 12;
 </script>
-<script type="module" src="/static/js/map-editstation.js?v=1771143546"></script>
-<script src="/static/js/form-post-handler.js?v=1771143546"></script>
+<script type="module" src="/static/js/map-editstation.js?v=1771143804"></script>
+<script src="/static/js/form-post-handler.js?v=1771143804"></script>
 
 {% end %}
