@@ -70,14 +70,17 @@ class AdminUserHandler(BaseHandler):
                     self.write(json.dumps(
                         {"message": "Your account has been deleted. Returning you to the home page...",
                          "redirect_url": "/"}))
+                    return
                 else:
                     self.set_status(200)
                     self.write(json.dumps(
                         {"message": "User deleted. Returning you to the user list...", "redirect_url": "/admin/users"}))
+                    return
             else:
                 self.set_status(500)
                 self.write(
                     json.dumps({"message": "Failed to delete the user. Please check the logs for more details."}))
+                return
 
         # Check for Update action
         elif action == "Update":
@@ -104,6 +107,7 @@ class AdminUserHandler(BaseHandler):
                 self.set_status(400)
                 self.write(json.dumps({
                     "message": "Another user is already called '" + username + "'. User names must be unique, and are not case sensitive."}))
+                return
 
             # Password is optional, so if we got a blank string, set the value to None so that we don't update that
             # aspect of the user.
@@ -117,10 +121,12 @@ class AdminUserHandler(BaseHandler):
                 self.set_status(200)
                 self.write(json.dumps(
                     {"message": "User updated. Returning you to the user list...", "redirect_url": "/admin/users"}))
+                return
             else:
                 self.set_status(500)
                 self.write(
                     json.dumps({"message": "Failed to update the user. Please check the logs for more details."}))
+                return
 
         # Check for Create action
         elif action == "Create":
@@ -137,6 +143,7 @@ class AdminUserHandler(BaseHandler):
                 self.set_status(400)
                 self.write(json.dumps({
                     "message": "Another user is already called '" + username + "'. User names must be unique, and are not case sensitive."}))
+                return
 
             # Process the create action
             new_user_id = self.application.db.add_user(username=username, password=password, email=email,
@@ -146,11 +153,14 @@ class AdminUserHandler(BaseHandler):
                 self.set_status(200)
                 self.write(json.dumps(
                     {"message": "User created. Returning you to the user list...", "redirect_url": "/admin/users"}))
+                return
             else:
                 self.set_status(500)
                 self.write(
                     json.dumps({"message": "Failed to create the user. Please check the logs for more details."}))
+                return
 
         else:
             self.set_status(400)
             self.write(json.dumps({"message": "Invalid action '" + action + "'"}))
+            return

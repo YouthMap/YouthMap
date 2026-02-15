@@ -60,9 +60,11 @@ class AdminStationTempHandler(BaseHandler):
                 # Delete OK
                 self.set_status(200)
                 self.write(json.dumps({"message": "Station deleted. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
+                return
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to delete the station. Please check the logs for more details."}))
+                return
 
         # Check for Update action
         elif action == "Update":
@@ -114,9 +116,11 @@ class AdminStationTempHandler(BaseHandler):
                 # Update OK
                 self.set_status(200)
                 self.write(json.dumps({"message": "Station updated. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
+                return
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to update the station. Please check the logs for more details."}))
+                return
 
         # Check for Create action
         elif action == "Create":
@@ -169,13 +173,16 @@ class AdminStationTempHandler(BaseHandler):
                 # Create OK
                 self.set_status(200)
                 self.write(json.dumps({"message": "Station created. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
+                return
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to create the station. Please check the logs for more details."}))
+                return
 
         else:
             self.set_status(400)
             self.write(json.dumps({"message": "Invalid action '" + action + "'"}))
+            return
 
 
     def get_events_js(self):

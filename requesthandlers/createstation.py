@@ -146,10 +146,13 @@ class CreateStationHandler(BaseHandler):
                 self.write(json.dumps({"message": "Your new station has been created. Taking you there...",
                                        "redirect_url": "/view/station/" + perm_or_temp_slug + "/" + str(
                                            new_station_id) + "?edit_password=" + edit_password}))
+                return
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to create the station. Please contact the administrators (TODO) for help."}))
+                return
 
         else:
             self.set_status(400)
             self.write(json.dumps({"message": "Invalid action '" + action + "'"}))
+            return

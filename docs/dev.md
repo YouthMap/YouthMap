@@ -58,7 +58,7 @@ For simple data, such as the position, colour and icon for a single station mark
     let color = "{{ station.color }}";
     let icon = "{{ station.icon }}";
 </script>
-<script type="module" src="/js/map-viewstation.js"></script>
+<script type="module" src="/static/js/map-viewstation.js"></script>
 ```
 
 For the main map, we need a complex data structure of arrays of two different types of station, each of which has various parameters. Here, this approach would get very complex in the HTML template. Instead, a different approach is taken using the `get_permanent_stations_for_map_js()` and `get_temporary_stations_for_map_js()` methods in `MapHandler` (`map.py`) to transform the database objects into JSON-serialisable objects. The resulting JSON is then dumped wholesale into JavaScript objects in `map.html`:
@@ -68,7 +68,7 @@ For the main map, we need a complex data structure of arrays of two different ty
     let perm_stations = JSON.parse({% raw json_encode(perm_stations_json) %});
     let temp_stations = JSON.parse({% raw json_encode(temp_stations_json) %});
 </script>
-<script type="module" src="/js/map.js"></script>
+<script type="module" src="/static/js/map.js"></script>
 ```
 
 ### POST responses in JSON

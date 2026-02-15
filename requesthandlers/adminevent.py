@@ -54,10 +54,12 @@ class AdminEventHandler(BaseHandler):
                 self.set_status(200)
                 self.write(json.dumps(
                     {"message": "Event deleted. Returning you to the events list...", "redirect_url": "/admin/events"}))
+                return
             else:
                 self.set_status(500)
                 self.write(
                     json.dumps({"message": "Failed to delete the event. Please check the logs for more details."}))
+                return
 
         # Check for Update action
         elif action == "Update":
@@ -75,21 +77,19 @@ class AdminEventHandler(BaseHandler):
             color = self.get_argument("color")
             notes_template = self.get_argument("notes_template", None)
             notes_template = notes_template if notes_template else ""
-            url_slug = self.get_argument("url_slug", None)
-            url_slug = url_slug if url_slug else ""
+            url_slug = self.get_argument("url_slug")
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
             # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
             other_events = [e for e in self.application.db.get_all_events() if e.id != event_id]
-            if any(e.name == name for e in other_events):
-                self.set_status(400)
-                self.write(json.dumps(
-                    {"message": "Another event is already called '" + name + "'. Event names must be unique."}))
-            if any(e.url_slug == url_slug for e in other_events):
+            if any(e.name.lower() == name.lower() for e in other_events):
                 self.set_status(400)
                 self.write(json.dumps({
-                                          "message": "Another event already has the URL slug '" + url_slug + "'. Event URL slugs must be unique."}))
+                    "message": "Another event is already called '" + name + "'. Event names must be unique and are case-insensitive."}))
+                return
+            if not self.ensure_url_slug_validity(url_slug, other_events):
+                return
 
             # Process the update
             ok = self.application.db.update_event(event_id, name=name, start_time=start_time, end_time=end_time,
@@ -101,10 +101,12 @@ class AdminEventHandler(BaseHandler):
                 self.set_status(200)
                 self.write(json.dumps(
                     {"message": "Event updated. Returning you to the events list...", "redirect_url": "/admin/events"}))
+                return
             else:
                 self.set_status(500)
                 self.write(
                     json.dumps({"message": "Failed to update the event. Please check the logs for more details."}))
+                return
 
         # Check for Create action
         elif action == "Create":
@@ -122,22 +124,19 @@ class AdminEventHandler(BaseHandler):
             color = self.get_argument("color")
             notes_template = self.get_argument("notes_template", None)
             notes_template = notes_template if notes_template else ""
-            url_slug = self.get_argument("url_slug", None)
-            url_slug = url_slug if url_slug else ""
+            url_slug = self.get_argument("url_slug")
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
             # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
             other_events = self.application.db.get_all_events()
-            if any(e.name == name for e in other_events):
-                self.set_status(400)
-                self.write(json.dumps(
-                    {"message": "Another event is already called '" + name + "'. Event names must be unique."}))
-            if any(e.url_slug == url_slug for e in other_events):
+            if any(e.name.lower() == name.lower() for e in other_events):
                 self.set_status(400)
                 self.write(json.dumps({
-                                          "message": "Another event already has the URL slug '" + url_slug + "'. Event URL slugs must be unique."}))
-
+                    "message": "Another event is already called '" + name + "'. Event names must be unique and are case-insensitive."}))
+                return
+            if not self.ensure_url_slug_validity(url_slug, other_events):
+                return
 
             # Process the create action
             new_event_id = self.application.db.add_event(name=name, start_time=start_time, end_time=end_time,
@@ -149,11 +148,47 @@ class AdminEventHandler(BaseHandler):
                 self.set_status(200)
                 self.write(json.dumps(
                     {"message": "Event created. Returning you to the events list...", "redirect_url": "/admin/events"}))
+                return
             else:
                 self.set_status(500)
                 self.write(
                     json.dumps({"message": "Failed to create the event. Please check the logs for more details."}))
+                return
 
         else:
             self.set_status(400)
             self.write(json.dumps({"message": "Invalid action '" + action + "'"}))
+            return
+
+    def ensure_url_slug_validity(self, url_slug, other_events):
+        """Ensures that a URL slug is valid. It must not match the slug of any existing event, or the name of a
+        permanent station type, or another page such as "admin" or "login" that means it would not work. Supply the
+        URL slug to test, and "other_events" - for a new event being added, this should be all existing events, whereas
+        when updating an event, this should be all *other* events to avoid finding a conflict with itself. The method
+        sets a status code and writes the error message where required, then returns true if it was validated and false
+        if it was not."""
+
+        if any(e.url_slug.lower() == url_slug.lower() for e in other_events):
+            self.set_status(400)
+            self.write(json.dumps({
+                "message": "Another event already has the URL slug '" + url_slug + "'. Event URL slugs must be unique and are case-insensitive."}))
+            return False
+
+        if any(t.name.lower() == url_slug.lower() for t in self.application.db.get_all_permanent_station_types()):
+            self.set_status(400)
+            self.write(json.dumps({
+                "message": "A permanent station type of '" + url_slug + "' is in use. Event URL slugs cannot conflict with permanent station types, and both are case-insensitive."}))
+            return False
+
+        if any(slug == url_slug.lower() for slug in ["admin", "login", "logout"]):
+            self.set_status(400)
+            self.write(json.dumps({
+                "message": "A URL slug of '" + url_slug + "' would conflict with an internal site page."}))
+            return False
+
+        if url_slug == "":
+            self.set_status(400)
+            self.write(json.dumps({"message": "A URL slug cannot be blank."}))
+            return False
+
+        return True

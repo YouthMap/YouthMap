@@ -1,7 +1,7 @@
 {% extends "base-map.html" %}
 {% block content %}
 
-<!--suppress HtmlUnknownTarget -->
+<!--suppress HtmlUnknownTarget, HtmlUnknownAttribute -->
 <div id="map"></div>
 
 
@@ -18,26 +18,28 @@
             <div class="row mb-2 mx-2">
                 <div class="form-check">
                     <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="all"
-                           value="all" {% if not preselect_event %}checked{% end %}>
+                           value="all" {% if not preselect_event and not preselect_type %}checked{% end %}>
                     <label class="form-check-label" for="all">Everything</label>
                 </div>
             </div>
             <div class="row mb-2 mx-2">
                 <div class="form-check">
                     <input class="form-check-input stationTypeRadio" type="radio" name="station_type" id="perm"
-                           value="perm">
+                           value="perm" {% if preselect_type %}checked{% end %}>
                     <label class="form-check-label" for="perm">Club stations</label>
                 </div>
             </div>
             <div id="permDetails" class="row mb-4 mx-5 g-2" style="display: none;">
                 <div class="col-auto" style="min-width: 4rem;">
-                    <label for="event" class="form-label mt-2">Type:</label>
+                    <label for="type" class="form-label mt-2">Type:</label>
                 </div>
                 <div class="col-auto">
                     <select name="type" id="type" class="form-control" style="min-width: 12rem;">
                         <option value="all">All</option>
                         {% for type in all_perm_station_types %}
-                        <option value="{{ type.id }}">{{ type.name }}</option>
+                        <option value="{{ type.id }}"
+                                {% if preselect_type and preselect_type.id== type.id %}selected{% end %}>{{ type.name }}
+                        </option>
                         {% end %}
                     </select>
                 </div>
@@ -162,5 +164,5 @@
     let temp_stations = JSON.parse({% raw json_encode(temp_stations_json) %});
     let events = JSON.parse({% raw json_encode(all_events_json) %});
 </script>
-<script type="module" src="/js/map.js?v=1771089475"></script>
+<script type="module" src="/static/js/map.js?v=1771143546"></script>
 {% end %}

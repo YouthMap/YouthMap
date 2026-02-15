@@ -46,8 +46,6 @@ class YouthMap(tornado.web.Application):
         handlers = [
             # Normal home URL for the map with no slug provided
             (r"/", MapHandler),
-            # Map with event slug, configures the UI to only show stations for that event
-            (r"/event/([^/]+)", MapHandler),
             # User-accessible pages to view, edit and create stations
             (r"/view/station/(perm|temp)/([^/]+)", ViewStationHandler),
             (r"/edit/station/(perm|temp)/([^/]+)", EditStationHandler),
@@ -67,8 +65,12 @@ class YouthMap(tornado.web.Application):
             (r"/admin/station/perm/([^/]+)", AdminStationPermHandler),
             # Uploads area
             (r"/upload/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "data/upload")}),
-            # If none of the other patterns match the URL, assume it's a static asset and try to serve that.
-            (r"/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "static")})
+            # Static CSS/JS/image assets
+            (r"/static/(.*)", StaticFileHandler, {"path": os.path.join(os.path.dirname(__file__), "static")}),
+            # If a single slug is provided, and it doesn't match anything above, assume this is an event or permanent
+            # station type. Pass it to the main map handler, which will configure the UI to only show stations for that
+            # event or of that permanent station type.
+            (r"/([^/]+)", MapHandler)
         ]
 
         settings = {

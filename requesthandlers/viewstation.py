@@ -66,6 +66,7 @@ class ViewStationHandler(BaseHandler):
         if action == "Edit":
             self.set_status(200)
             self.write(json.dumps({"redirect_url": "/edit/station/" + perm_or_temp_slug + "/" + station_id_slug + "?edit_password=" + user_edit_password }))
+            return
 
         # Check for Delete action
         elif action == "Delete":
@@ -79,10 +80,13 @@ class ViewStationHandler(BaseHandler):
                 self.set_status(200)
                 self.write(json.dumps({"message": "Your station has been deleted. Taking you back home...",
                                        "redirect_url": "/" }))
+                return
             else:
                 self.set_status(500)
                 self.write(json.dumps({"message": "Failed to delete the station."}))
+                return
 
         else:
             self.set_status(400)
             self.write(json.dumps({"message": "Invalid action '" + action + "'"}))
+            return
