@@ -1,0 +1,105 @@
+{% extends "base-std.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownTarget -->
+<h2 class="mb-5">Stations Awaiting Approval</h2>
+
+{% for s in temp_stations %}
+<div class="row mb-2">
+    <div class="col-sm-6 mt-2">
+        <h4>{{ s.callsign }} &nbsp; {{ s.club_name }}</h4>
+    </div>
+    <div class="col-sm-3 mt-2">
+        <h5>{{ s.event.name if s.event else "Event Station" }}</h5>
+    </div>
+    <div class="col-sm-3">
+        <form method="post">
+            <input type="hidden" id="typeTemp{{ s.id }}" class="form-control" name="type" value="temp" required/>
+            <input type="hidden" id="idTemp{{ s.id }}" class="form-control" name="id" value="{{ s.id }}" required/>
+            <a href="/view/station/temp/{{ s.id }}" class="btn btn-outline-primary" role="button">View</a>
+            <a href="/admin/station/temp/{{ s.id }}" class="btn btn-outline-primary" role="button">Edit</a>
+            <input type="submit" class="btn btn-success" name="action" onclick="submitForm('Approve')" value="Approve">
+            <button type="button" class="btn btn-danger my-2 my-sm-0" data-bs-toggle="modal"
+                    data-bs-target="#deleteModalTemp{{ s.id }}">Deny
+            </button>
+
+            <div class="modal fade" id="deleteModalTemp{{ s.id }}" tabindex="-1"
+                 aria-labelledby="deleteModalTitleTemp{{ s.id }}"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="deleteModalTitleTemp{{ s.id }}">Deny approval?</h1>
+                        </div>
+                        <div class="modal-body">
+                            Please confirm you really want to deny approval. This will delete the station.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
+                            </button>
+                            <input type="submit" class="btn btn-danger" name="action" data-bs-dismiss="modal"
+                                   onclick="submitForm('Deny')" value="Deny">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% end %}
+
+{% for s in perm_stations %}
+<div class="row mb-2">
+    <div class="col-sm-6 mt-2">
+        <h4>{{ s.callsign }} &nbsp; {{ s.club_name }}</h4>
+    </div>
+    <div class="col-sm-3 mt-2">
+        <h5>{{ s.type.name }}</h5>
+    </div>
+    <div class="col-sm-3">
+        <form method="post">
+            <input type="hidden" id="typePerm{{ s.id }}" class="form-control" name="type" value="perm" required/>
+            <input type="hidden" id="idPerm{{ s.id }}" class="form-control" name="id" value="{{ s.id }}" required/>
+            <a href="/view/station/perm/{{ s.id }}" class="btn btn-outline-primary" role="button">View</a>
+            <a href="/admin/station/perm/{{ s.id }}" class="btn btn-outline-primary" role="button">Edit</a>
+            <input type="submit" class="btn btn-success" name="action" onclick="submitForm('Approve')" value="Approve">
+            <button type="button" class="btn btn-danger my-2 my-sm-0" data-bs-toggle="modal"
+                    data-bs-target="#deleteModalPerm{{ s.id }}">Deny
+            </button>
+
+            <div class="modal fade" id="deleteModalPerm{{ s.id }}" tabindex="-1"
+                 aria-labelledby="deleteModalTitlePerm{{ s.id }}"
+                 aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="deleteModalTitlePerm{{ s.id }}">Deny approval?</h1>
+                        </div>
+                        <div class="modal-body">
+                            Please confirm you really want to deny approval. This will delete the station.
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
+                            </button>
+                            <input type="submit" class="btn btn-danger" name="action" data-bs-dismiss="modal"
+                                   onclick="submitForm('Deny')" value="Deny">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% end %}
+
+{% if len(temp_stations) == 0 and len(perm_stations) == 0 %}
+There are no stations awaiting approval.
+{% end %}
+
+<ul class="nav flex-column mt-5">
+    <li class="nav-item">
+        <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+    </li>
+</ul>
+
+{% end %}

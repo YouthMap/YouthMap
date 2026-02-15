@@ -4,7 +4,12 @@
 <!--suppress HtmlUnknownTarget -->
 {% if insecure_user_present %}
 <div class="alert alert-danger mb-5" role="alert">
-    <h5 class="alert-heading"><svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> This site has not been secured</h5>
+    <h5 class="alert-heading">
+        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Warning:">
+            <use xlink:href="#exclamation-triangle-fill"/>
+        </svg>
+        This site has not been secured
+    </h5>
     {% if user.username == "admin" %}
     <p class="mb-0">Your account has username "admin" and password "password". This is not secure. Please <a
             href="/admin/users" class="alert-link">fix this</a> as soon as possible by setting a different username,
@@ -28,7 +33,7 @@
                 <p class="card-text mt-2">Logged in as: {{ user.username }}</p>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin/user/{{ user.id }}">Update Details</a>
+                        <a class="nav-link" href="/admin/user/{{ user.id }}">Update details</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/logout">Logout</a>
@@ -51,7 +56,13 @@
                         <a class="nav-link" href="/admin/events">Manage events</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin">Stations awaiting approval</a>
+                        <a class="nav-link" href="/admin/approval">Stations awaiting approval &nbsp;
+                            {% if approval_queue_length == 0 %}
+                            <span class="badge text-bg-secondary">0</span>
+                            {% else %}
+                            <span class="badge text-bg-danger">{{ approval_queue_length }}</span>
+                            {% end %}
+                        </a>
                     </li>
                 </ul>
             </div>
@@ -69,13 +80,13 @@
                         <a class="nav-link" href="/admin/users">Manage users</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin">Manage permenent station types</a>
+                        <a class="nav-link" href="/admin">Manage permanent station types</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/admin">Manage uploads</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin">View Logs</a>
+                        <a class="nav-link" href="/admin">View logs</a>
                     </li>
                 </ul>
             </div>

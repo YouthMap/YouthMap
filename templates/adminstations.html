@@ -21,7 +21,10 @@
                     {% for station in temp_stations_by_type[type] %}
                     <li class="nav-item"><a class="nav-link" href="/admin/station/temp/{{ station.id }}">
                         {{ station.callsign }} {{ station.club_name }}
-                        {% if station.event %} at {{ station.event.name }}{% else %} (SES){% end %}</a></li>
+                        {% if station.event %} at {{ station.event.name }}{% else %} (SES){% end %}
+                        {% if not station.approved %}
+                        &nbsp; <span class="badge text-bg-danger" style="position: relative; top: -0.2em;">Pending approval</span>
+                        {% end %}</a></li>
                     {% end %}
                     {% else %}
                     <li class="nav-item px-3 py-2">None</li>
@@ -62,7 +65,10 @@
                     {% if len(perm_stations_by_type[type]) > 0 %}
                     {% for station in perm_stations_by_type[type] %}
                     <li class="nav-item"><a class="nav-link" href="/admin/station/perm/{{ station.id }}">{{
-                        station.callsign }} {{ station.club_name }}</a></li>
+                        station.callsign }} {{ station.club_name }}
+                        {% if not station.approved %}
+                        &nbsp; <span class="badge text-bg-danger" style="position: relative; top: -0.2em;">Pending approval</span>
+                        {% end %}</a></li>
                     {% end %}
                     {% else %}
                     <li class="nav-item px-3 py-2">None</li>

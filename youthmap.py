@@ -10,6 +10,7 @@ from tornado.web import StaticFileHandler
 from core.config import HTTP_PORT
 from database import Database
 from requesthandlers.admin import AdminHandler
+from requesthandlers.adminapproval import AdminApprovalHandler
 from requesthandlers.adminevent import AdminEventHandler
 from requesthandlers.adminevents import AdminEventsHandler
 from requesthandlers.adminstationperm import AdminStationPermHandler
@@ -61,6 +62,7 @@ class YouthMap(tornado.web.Application):
             (r"/admin/events", AdminEventsHandler),
             (r"/admin/event/([^/]+)", AdminEventHandler),
             (r"/admin/stations", AdminStationsHandler),
+            (r"/admin/approval", AdminApprovalHandler),
             (r"/admin/station/temp/([^/]+)", AdminStationTempHandler),
             (r"/admin/station/perm/([^/]+)", AdminStationPermHandler),
             # Uploads area
