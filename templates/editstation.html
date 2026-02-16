@@ -5,7 +5,7 @@
 {% if station_type == "perm" %}
 <h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}</h2>
 {% else %}
-<h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}{% if station.event %} at {{station.event.name}}{% end
+<h2 class="mb-5">{{ station.callsign }} {{ station.club_name }}{% if station_event %} at {{station_event.name}}{% end
     %}</h2>
 {% end %}
 
@@ -69,28 +69,15 @@
                     {% if station_type == "temp" %}
                     <div class="row mb-2">
                         <div class="col-sm-4">
-                            <label for="event" class="form-label mt-2">Event (optional):</label>
-                        </div>
-                        <div class="col-sm-8">
-                            <select name="event" id="event" class="form-control">
-                                <option value=""></option>
-                                {% for event in all_events %}
-                                <option value="{{ event.id }}" {% if station.event_id== event.id
-                                        %}selected{% end %}>{{ event.name }}
-                                </option>
-                                {% end %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row mb-2">
-                        <div class="col-sm-4">
                             <label for="start_time" class="form-label mt-2">Start time (UTC):</label>
                         </div>
                         <div class="col-sm-8">
                             <input id="start_time" class="form-control" name="start_time" type="datetime-local"
                                    value="{{ station.start_time.strftime('%Y-%m-%dT%H:%M') }}"
-                                   required/>
+                                   {% if station_event %}
+                                   min="{{ station_event.start_time.strftime('%Y-%m-%dT%H:%M') }}"
+                                   max="{{ station_event.end_time.strftime('%Y-%m-%dT%H:%M') }}"
+                                   {% end %} required/>
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -100,7 +87,10 @@
                         <div class="col-sm-8">
                             <input id="end_time" class="form-control" name="end_time" type="datetime-local"
                                    value="{{ station.end_time.strftime('%Y-%m-%dT%H:%M') }}"
-                                   required/>
+                                   {% if station_event %}
+                                   min="{{ station_event.start_time.strftime('%Y-%m-%dT%H:%M') }}"
+                                   max="{{ station_event.end_time.strftime('%Y-%m-%dT%H:%M') }}"
+                                   {% end %} required/>
                         </div>
                     </div>
 
@@ -113,12 +103,14 @@
                             <span style="display:inline-block; min-width:5em;">
                     <input type="checkbox" id="band-{{ band.id }}" class="form-check-input" name="bands[]"
                            value="{{ band.id }}"
-                           {% if band.id in [x.id for x in station.bands] %}checked{% end %}/>&nbsp;
+                           {% if band.id in [x.id for x in station.bands] %}checked
+                           {% elif station_event and not band.id in [x.id for x in station_event.bands] %}disabled
+                           {% end %}/>&nbsp;
                     <label for="band-{{ band.id }}" class="form-check-label">{{ band.name }}</label>
                     </span>
                             {% end %}
                             <a href="#/" class="ms-4 link-underline link-underline-opacity-0"
-                               onclick="$(':input:checkbox[name=\'bands[]\']').prop('checked', true);">All</a>
+                               onclick="$(':input:checkbox[name=\'bands[]\']').not(':disabled').prop('checked', true);">All</a>
                             <a href="#/" class="ms-2 link-underline link-underline-opacity-0"
                                onclick="$(':input:checkbox[name=\'bands[]\']').prop('checked', false);">None</a>
                         </div>
@@ -132,7 +124,9 @@
                             <span style="display:inline-block; min-width:5em;">
                     <input type="checkbox" id="mode-{{ mode.id }}" class="form-check-input" name="modes[]"
                            value="{{ mode.id }}"
-                           {% if mode.id in [x.id for x in station.modes] %}checked{% end %}/>&nbsp;
+                           {% if mode.id in [x.id for x in station.modes] %}checked
+                           {% elif station_event and not band.id in [x.id for x in station_event.bands] %}disabled
+                           {% end %}/>&nbsp;
                     <label for="mode-{{ mode.id }}" class="form-check-label">{{ mode.name }}</label>
                     </span>
                             {% end %}
@@ -245,13 +239,18 @@
 
                     {% module Template("widgets/form-result.html") %}
 
-                    <!-- lat/long fields updated by dragging the map marker; user_edit_password provided by GET param -->
+                    <!-- lat/long fields updated by dragging the map marker; user_edit_password provided by GET param.
+                     Event is hidden at this point, once a user has set the event their station is for, if cannot be
+                     changed except by an admin with their separate form. -->
                     <input type="hidden" id="latitude_degrees" class="form-control" name="latitude_degrees"
                            value="{{ station.latitude_degrees }}" required/>
                     <input type="hidden" id="longitude_degrees" class="form-control" name="longitude_degrees"
                            value="{{ station.longitude_degrees }}" required/>
                     <input type="hidden" id="user_edit_password" class="form-control" name="user_edit_password"
                            value="{{ user_edit_password }}" required/>
+                    {% if station_type == "temp" %}
+                    <input type="hidden" name="event" id="event" class="form-control" value="{{ station.event_id }}"/>
+                    {% end %}
 
                     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalTitle"
                          aria-hidden="true">
@@ -286,7 +285,7 @@
     let icon = "{{ station.icon }}";
     let default_zoom = 12;
 </script>
-<script type="module" src="/static/js/map-editstation.js?v=1771247787"></script>
-<script src="/static/js/form-post-handler.js?v=1771247787"></script>
+<script type="module" src="/static/js/map-editstation.js?v=1771249142"></script>
+<script src="/static/js/form-post-handler.js?v=1771249142"></script>
 
 {% end %}
