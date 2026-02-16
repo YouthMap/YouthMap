@@ -222,9 +222,9 @@
                            style="max-width: 12em; display:inline-block;"
                            value="{{ user_edit_password if user_edit_password else '' }}" required/>
                     <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Edit')" value="Edit"
-                           style="margin-top: -0.25em;">
+                           style="margin-top: -0.25em !important;">
                     <button type="button" class="btn btn-danger my-2 my-sm-0" data-bs-toggle="modal"
-                            data-bs-target="#deleteModal" style="margin-top: -0.25em;">Delete
+                            data-bs-target="#deleteModal" style="margin-top: -0.25em !important;">Delete
                     </button>
 
                     {% module Template("widgets/form-result.html") %}
@@ -263,7 +263,7 @@
     let color = "{{ station.color }}";
     let icon = "{{ station.icon }}";
 </script>
-<script type="module" src="/static/js/map-viewstation.js?v=1771246797"></script>
-<script src="/static/js/form-post-handler.js?v=1771246797"></script>
+<script type="module" src="/static/js/map-viewstation.js?v=1771247694"></script>
+<script src="/static/js/form-post-handler.js?v=1771247694"></script>
 
 {% end %}

@@ -141,7 +141,7 @@ class CreateStationHandler(BaseHandler):
                     return
 
             # Check for sensible times
-            if start_time > end_time:
+            if perm_or_temp_slug == "temp" and start_time and end_time and start_time > end_time:
                 self.set_status(400)
                 self.write(json.dumps({
                     "message": "Your station cannot start running after it ends. Please check your time entries carefully."}))

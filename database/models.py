@@ -55,7 +55,7 @@ class PermanentStationType(Base):
     default_data = [
         {"name": "School", "icon": "school.png", "color": "yellow"},
         {"name": "University", "icon": "uni.png", "color": "orange"},
-        {"name": "Cadet", "icon": "cadets.png", "color": "light-blue"}
+        {"name": "Cadet", "icon": "cadets.png", "color": "lightblue"}
     ]
 
     @classmethod
