@@ -8,7 +8,9 @@ function setUpMap() {
     const map = new Map("map", {
         zoomControl: false,
         minZoom: 2,
-        maxZoom: 16
+        maxZoom: 16,
+        maxBounds: [[-90, -180],[90, 180]],
+        maxBoundsViscosity: 1.0
     });
 
     // Add basemap
