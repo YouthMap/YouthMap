@@ -24,6 +24,9 @@
                         {% if station.event %} at {{ station.event.name }}{% else %} (SES){% end %}
                         {% if not station.approved %}
                         &nbsp; <span class="badge text-bg-danger" style="position: relative; top: -0.2em;">Pending approval</span>
+                        {% end %}
+                        {% if station.rsgb_attending %}
+                        &nbsp; <span class="badge text-bg-light" style="position: relative; top: -0.2em;">RSGB</span>
                         {% end %}</a></li>
                     {% end %}
                     {% else %}

@@ -51,7 +51,7 @@
             <div class="col-auto">
                 <select name="event" id="event" class="form-control" style="min-width: 12rem;">
                     <option value=""></option>
-                    {% for event in all_events %}
+                    {% for event in all_public_future_events %}
                     <option value="{{ event.id }}">{{ event.name }}</option>
                     {% end %}
                 </select>

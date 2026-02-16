@@ -29,9 +29,20 @@ class CreateStationHandler(BaseHandler):
         if self.get_argument("type", None):
             type_id = int(self.get_argument("type"))
 
-        # Check lat/lon were supplied
+        # Check lat/lon were supplied and other fields are consistent with what the user could reasonably select
         if not lat or not lon or (event_id == 0 and type_id == 0):
             self.write("Required parameters not provided, user did not get to this page via normal means.")
+            return
+        if perm_or_temp_slug == "temp" and event_id:
+            event = self.application.db.get_event(event_id)
+            if not event or not event.public or event.end_time <= datetime.now():
+                self.write("Event ID was provided for a non-existent or non-public event, or one that has already finished, user did not get to this page via normal means.")
+                return
+        if perm_or_temp_slug == "perm":
+            if not self.application.db.get_permanent_station_type(type_id):
+                self.write("Type ID was provided for a non-existent type, user did not get to this page via normal means.")
+                return
+
 
         # Derive color/icon. We have to do this manually because we don't have a real station object yet, but for a nice
         # display for the user we want to use the real marker icon and colour at this point.
@@ -107,6 +118,23 @@ class CreateStationHandler(BaseHandler):
             email = email if email else ""
             phone_number = self.get_argument("phone_number", None)
             phone_number = phone_number if phone_number else ""
+
+            # Check lat/lon were supplied and other fields are consistent with what the user could reasonably select
+            if not latitude_degrees or not latitude_degrees or (not event_id and not type_id):
+                self.set_status(400)
+                self.write(json.dumps({"message": "Required parameters were not provided. Please contact the administrators (TODO) for help.'"}))
+                return
+            if perm_or_temp_slug == "temp" and event_id:
+                event = self.application.db.get_event(event_id)
+                if not event or not event.public or event.end_time <= datetime.now():
+                    self.set_status(400)
+                    self.write(json.dumps({"message": "Event ID was provided for a non-existent or non-public event, or one that has already finished. Please contact the administrators (TODO) for help.'"}))
+                    return
+            if perm_or_temp_slug == "perm":
+                if not self.application.db.get_permanent_station_type(type_id):
+                    self.set_status(400)
+                    self.write(json.dumps({"message": "Type ID was provided for a non-existent type. Please contact the administrators (TODO) for help.'"}))
+                    return
 
             # Now create the station, taking into account its type
             new_station_id = None
