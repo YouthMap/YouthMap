@@ -30,12 +30,12 @@ class CreateStationHandler(BaseHandler):
             type_id = int(self.get_argument("type"))
 
         # Check lat/lon were supplied and other fields are consistent with what the user could reasonably select
-        if not lat or not lon or (event_id == 0 and type_id == 0):
+        if not lat or not lon:
             self.write("Required parameters not provided, user did not get to this page via normal means.")
             return
         if perm_or_temp_slug == "temp" and event_id:
             event = self.application.db.get_event(event_id)
-            if not event or not event.public or event.end_time <= datetime.now():
+            if event and (not event.public or event.end_time <= datetime.now()):
                 self.write(
                     "Event ID was provided for a non-existent or non-public event, or one that has already finished, user did not get to this page via normal means.")
                 return

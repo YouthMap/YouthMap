@@ -98,7 +98,7 @@
                     </span>
                             {% end %}
                             <a href="#/" class="ms-4 link-underline link-underline-opacity-0"
-                               onClick="$(':input:checkbox[name=\'bands[]\']').prop('checked', true);">All</a>
+                               onClick="$(':input:checkbox[name=\'bands[]\']').not(':disabled').prop('checked', true);">All</a>
                             <a href="#/" class="ms-2 link-underline link-underline-opacity-0"
                                onClick="$(':input:checkbox[name=\'bands[]\']').prop('checked', false);">None</a>
                         </div>
@@ -284,26 +284,47 @@
     let events = JSON.parse({% raw json_encode(all_events_json) %});
 </script>
 <script>
-    // As the user changes events, populate the rest of the page
-    $("#event").change(function(e) {
+    // As the user changes events, set constraints on selections in the rest of the page, and populate the notes field.
+    function constrainFields() {
         const eventID = $("#event").val();
         if (eventID) {
             events.forEach(e => {
                 if (e.id == eventID) {
                     $("#start_time").val(e.start_time);
+                    $("#start_time").attr("min", e.start_time);
+                    $("#start_time").attr("max", e.end_time);
                     $("#end_time").val(e.end_time);
+                    $("#end_time").attr("min", e.start_time);
+                    $("#end_time").attr("max", e.end_time);
                     $("#notes").val(e.notes_template);
-                    $(".band-checkbox").prop('checked', false);
-                    e.band_ids.forEach(id => $("#band-" + id).prop('checked', true));
-                    $(".mode-checkbox").prop('checked', false);
-                    e.mode_ids.forEach(id => $("#mode-" + id).prop('checked', true));
+                    $(".band-checkbox").prop("disabled", true);
+                    $(".band-checkbox").prop("checked", false);
+                    e.band_ids.forEach(id => $("#band-" + id).prop("disabled", false));
+                    e.band_ids.forEach(id => $("#band-" + id).prop("checked", true));
+                    $(".mode-checkbox").prop("disabled", true);
+                    $(".mode-checkbox").prop("checked", false);
+                    e.mode_ids.forEach(id => $("#mode-" + id).prop("disabled", false));
+                    e.mode_ids.forEach(id => $("#mode-" + id).prop("checked", true));
                 }
             });
+        } else {
+            $("#start_time").attr("min", "1970-01-01T00:00:00");
+            $("#start_time").attr("max", "2099-12-31T23:59:59");
+            $("#end_time").attr("min", "1970-01-01T00:00:00");
+            $("#end_time").attr("max", "2099-12-31T23:59:59");
+            $(".band-checkbox").prop("disabled", false);
+            $(".mode-checkbox").prop("disabled", false);
         }
+    }
+    $("#event").change(function(e) {
+        constrainFields();
+    });
+    $(document).ready(function() {
+        constrainFields();
     });
 </script>
-<script type="module" src="/static/js/map-editstation.js?v=1771234244"></script>
-<script src="/static/js/form-post-handler.js?v=1771234244"></script>
-<script src="/static/js/password-generator.js?v=1771234244"></script>
+<script type="module" src="/static/js/map-editstation.js?v=1771235712"></script>
+<script src="/static/js/form-post-handler.js?v=1771235712"></script>
+<script src="/static/js/password-generator.js?v=1771235712"></script>
 
 {% end %}
