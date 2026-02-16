@@ -5,7 +5,8 @@ from sqlalchemy.orm import sessionmaker
 
 from core.config import DATABASE_DIR
 from .base import Base
-from .models import User, UserSession, Event, TemporaryStation, PermanentStation, Band, Mode, PermanentStationType
+from .models import User, UserSession, Event, TemporaryStation, PermanentStation, Band, Mode, PermanentStationType, \
+    Config
 from .operations import DatabaseOperations
 
 
@@ -26,9 +27,8 @@ class Database(DatabaseOperations):
         # Initialize the database
         self.init_db()
 
-        # Populate with default content
+        # Populate with default content if necessary
         self.ensure_default_content()
-        self.ensure_default_user()
 
     def init_db(self):
         """Initialize database with required tables."""
@@ -37,27 +37,19 @@ class Database(DatabaseOperations):
 
     def ensure_default_content(self):
         """Ensure all default content exists in the database.
-        This sets up the enum-like tables such as bands, modes and permanent station types."""
+        This sets up a default config for the application, plus the enum-like tables such as bands, modes and permanent
+        station types."""
 
         session = self.SessionLocal()
         try:
+            Config.initialize(session)
+            User.initialize(session)
             PermanentStationType.initialize(session)
             Band.initialize(session)
             Mode.initialize(session)
         finally:
             session.close()
 
-    def ensure_default_user(self):
-        """Check if users table is empty and create a default admin user if so.
-        This provides something that the user can log in with on first run, before they create proper accounts."""
 
-        session = self.SessionLocal()
-        try:
-            if session.query(User).count() == 0:
-                self.add_user("admin", "password", None, True)
-        finally:
-            session.close()
-
-
-__all__ = ['Database', 'User', 'UserSession', 'Event', 'TemporaryStation', 'PermanentStation', 'Band', 'Mode',
+__all__ = ['Database', 'Config', 'User', 'UserSession', 'Event', 'TemporaryStation', 'PermanentStation', 'Band', 'Mode',
            'PermanentStationType']

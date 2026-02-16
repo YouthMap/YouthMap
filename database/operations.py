@@ -9,7 +9,7 @@ from .models import (
     User, UserSession,
     Event,
     TemporaryStation, PermanentStation,
-    Band, Mode, PermanentStationType
+    Band, Mode, PermanentStationType, Config
 )
 from .utils import hash_password, generate_password
 
@@ -20,6 +20,47 @@ class DatabaseOperations:
     def __init__(self, session_factory):
         """Initialize with a SQLAlchemy session factory"""
         self.SessionLocal = session_factory
+
+    def get_config(self):
+        """Get the site's config from the database."""
+
+        session = self.SessionLocal()
+        try:
+            return session.query(Config).first()
+        finally:
+            session.close()
+
+    def update_config(self, enable_mail=None, mail_sender=None, mail_password=None, mail_server=None,
+                      enable_captcha=None, recaptcha_key=None):
+        """Update the site config. Only provided fields will be updated. Returns True if successful."""
+
+        session = self.SessionLocal()
+        try:
+            config = session.query(Config).first()
+            if not config:
+                return False
+
+            if enable_mail is not None:
+                config.enable_mail = enable_mail
+            if mail_sender is not None:
+                config.mail_sender = mail_sender
+            if mail_password is not None:
+                config.mail_password = mail_password
+            if mail_server is not None:
+                config.mail_server = mail_server
+            if enable_captcha is not None:
+                config.enable_captcha = enable_captcha
+            if recaptcha_key is not None:
+                config.recaptcha_key = recaptcha_key
+
+            session.commit()
+            return True
+        except IntegrityError as e:
+            logging.error("Error when updating config", e)
+            session.rollback()
+            return False
+        finally:
+            session.close()
 
     def add_user(self, username, password, email, super_admin):
         """Create a new user"""
@@ -210,7 +251,7 @@ class DatabaseOperations:
                 id=type_id).first()
         finally:
             session.close()
-            
+
     def add_event(self, name, start_time, end_time, icon, color, notes_template, band_ids, mode_ids,
                   url_slug=None, public=True, rsgb_event=False):
         """Create a new event. Returns the event ID if one was created."""

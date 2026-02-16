@@ -1,9 +1,37 @@
+import secrets
 from datetime import datetime, timedelta
 
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Numeric
 from sqlalchemy.orm import relationship
 
 from .base import Base, temporary_station_bands, temporary_station_modes, event_bands, event_modes
+from .utils import hash_password
+
+
+class Config(Base):
+    """Application config model. Stores things like SMTP credentials, reCAPTCHA key, etc. Implemented in the database
+    rather than in plain config files to allow the config to be edited without messing with config files, which gets
+    messy in Docker-based setups. However, note that some information (e.g. the HTTP port and path to the database) must
+    still be implemented in file-based config, as they are needed before the user could get to modify this."""
+
+    __tablename__ = 'config'
+
+    id = Column(Integer, primary_key=True)
+    enable_mail = Column(Boolean, nullable=False)
+    mail_sender = Column(String, nullable=True)
+    mail_password = Column(String, nullable=True)
+    mail_server = Column(String, nullable=True)
+    enable_captcha = Column(Boolean, nullable=False)
+    recaptcha_key = Column(String, nullable=True)
+
+    @classmethod
+    def initialize(cls, session):
+        """Initialize the database with a config row if one doesn't exist"""
+
+        existing = session.query(cls).first()
+        if not existing:
+            session.add(cls(enable_mail=False, enable_captcha=False))
+        session.commit()
 
 
 class User(Base):
@@ -22,6 +50,14 @@ class User(Base):
     # the 'cascade' parameter here so that if we delete a user, all orphaned sessions that were linked to that user will
     # be deleted too.
     sessions = relationship('UserSession', back_populates='user', cascade='all, delete-orphan')
+
+    @classmethod
+    def initialize(cls, session):
+        """Initialize the database with a default admin user (password 'password') if no users exist"""
+        if session.query(cls).count() == 0:
+            salt = secrets.token_hex(32)
+            password_hash = hash_password("password", salt)
+            session.add(cls(username="admin", password_hash=password_hash, salt=salt, super_admin=True))
 
 
 class UserSession(Base):

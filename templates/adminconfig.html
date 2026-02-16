@@ -1,0 +1,92 @@
+{% extends "base-std.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownAttribute, HtmlUnknownTarget , HtmlUnknownAnchorTarget -->
+<h2 class="mb-5">Configure Site</h2>
+
+<div class="card mx-auto bg-body-tertiary" style="max-width: 40rem;">
+    <div class="card-header">
+        <h5 class="mb-0 card-title">Configuration</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" id="form">
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                </div>
+                <div class="col-sm-8">
+                    <input type="checkbox" id="enable_mail" class="form-check-input" name="enable_mail" value="true"
+                           {% if config.enable_mail %}checked{% end %}>
+                    <label for="enable_mail" class="form-check-label">Enable sending email</label>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="mail_server" class="form-label mt-2">SMTP server:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="mail_server" class="form-control" name="mail_server"
+                           value="{{ config.mail_server if config.mail_server else '' }}"/>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="mail_sender" class="form-label mt-2">Sender address:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="mail_sender" class="form-control" name="mail_sender"
+                           value="{{ config.mail_sender if config.mail_sender else '' }}"/>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="mail_password" class="form-label mt-2">Password:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="password" id="mail_password" class="form-control" name="mail_password"
+                           value="{{ config.mail_password if config.mail_password else '' }}"/>
+                </div>
+            </div>
+            <div class="row mb-2 mt-4">
+                <div class="col-sm-4">
+                </div>
+                <div class="col-sm-8">
+                    <input type="checkbox" id="enable_captcha" class="form-check-input" name="enable_captcha"
+                           value="true" {% if config.enable_captcha %}checked{% end %}>
+                    <label for="enable_captcha" class="form-check-label">Enable CAPTCHA</label>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="recaptcha_key" class="form-label mt-2">reCAPTCHA key:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="recaptcha_key" class="form-control" name="recaptcha_key"
+                           value="{{ config.recaptcha_key if config.recaptcha_key else '' }}"/>
+                </div>
+            </div>
+
+            <div class="row mb-2 mt-4">
+                <div class="col-sm-4">
+                </div>
+                <div class="col-sm-8">
+                    <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Update')"
+                           value="Update">
+                    <a href="/admin" class="btn btn-secondary" role="button">Cancel</a>
+                </div>
+            </div>
+
+            {% module Template("widgets/form-result.html") %}
+        </form>
+    </div>
+    <div class="card-footer text-muted">
+        <ul class="nav flex-row">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script src="/static/js/form-post-handler.js?v=1771264896"></script>
+
+{% end %}

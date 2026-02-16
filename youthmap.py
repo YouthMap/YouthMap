@@ -11,6 +11,7 @@ from core.config import HTTP_PORT
 from database import Database
 from requesthandlers.admin import AdminHandler
 from requesthandlers.adminapproval import AdminApprovalHandler
+from requesthandlers.adminconfig import AdminConfigHandler
 from requesthandlers.adminevent import AdminEventHandler
 from requesthandlers.adminevents import AdminEventsHandler
 from requesthandlers.adminexport import AdminExportHandler
@@ -58,6 +59,7 @@ class YouthMap(tornado.web.Application):
             (r"/logout", LogoutHandler),
             # Admin dashboard and management pages
             (r"/admin", AdminHandler),
+            (r"/admin/config", AdminConfigHandler),
             (r"/admin/users", AdminUsersHandler),
             (r"/admin/user/([^/]+)", AdminUserHandler),
             (r"/admin/events", AdminEventsHandler),
