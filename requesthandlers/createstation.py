@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 
 from core.utils import TEMP_STATION_NO_EVENT_COLOR, TEMP_STATION_NO_EVENT_ICON, get_default_event_start_time, \
-    get_default_event_end_time
+    get_default_event_end_time, humanize_start_end
 from requesthandlers.base import BaseHandler
 
 
@@ -36,13 +36,14 @@ class CreateStationHandler(BaseHandler):
         if perm_or_temp_slug == "temp" and event_id:
             event = self.application.db.get_event(event_id)
             if not event or not event.public or event.end_time <= datetime.now():
-                self.write("Event ID was provided for a non-existent or non-public event, or one that has already finished, user did not get to this page via normal means.")
+                self.write(
+                    "Event ID was provided for a non-existent or non-public event, or one that has already finished, user did not get to this page via normal means.")
                 return
         if perm_or_temp_slug == "perm":
             if not self.application.db.get_permanent_station_type(type_id):
-                self.write("Type ID was provided for a non-existent type, user did not get to this page via normal means.")
+                self.write(
+                    "Type ID was provided for a non-existent type, user did not get to this page via normal means.")
                 return
-
 
         # Derive color/icon. We have to do this manually because we don't have a real station object yet, but for a nice
         # display for the user we want to use the real marker icon and colour at this point.
@@ -120,21 +121,53 @@ class CreateStationHandler(BaseHandler):
             phone_number = phone_number if phone_number else ""
 
             # Check lat/lon were supplied and other fields are consistent with what the user could reasonably select
-            if not latitude_degrees or not latitude_degrees or (not event_id and not type_id):
+            if not latitude_degrees or not latitude_degrees or (event_id == 0 and type_id == 0):
                 self.set_status(400)
-                self.write(json.dumps({"message": "Required parameters were not provided. Please contact the administrators (TODO) for help.'"}))
+                self.write(json.dumps({
+                    "message": "Required parameters were not provided. Please contact the administrators (TODO) for help."}))
                 return
-            if perm_or_temp_slug == "temp" and event_id:
+            if perm_or_temp_slug == "temp" and event_id > 0:
                 event = self.application.db.get_event(event_id)
                 if not event or not event.public or event.end_time <= datetime.now():
                     self.set_status(400)
-                    self.write(json.dumps({"message": "Event ID was provided for a non-existent or non-public event, or one that has already finished. Please contact the administrators (TODO) for help.'"}))
+                    self.write(json.dumps({
+                        "message": "Event ID was provided for a non-existent or non-public event, or one that has already finished. Please contact the administrators (TODO) for help."}))
                     return
             if perm_or_temp_slug == "perm":
                 if not self.application.db.get_permanent_station_type(type_id):
                     self.set_status(400)
-                    self.write(json.dumps({"message": "Type ID was provided for a non-existent type. Please contact the administrators (TODO) for help.'"}))
+                    self.write(json.dumps({
+                        "message": "Type ID was provided for a non-existent type. Please contact the administrators (TODO) for help."}))
                     return
+
+            # Check for sensible times
+            if start_time > end_time:
+                self.set_status(400)
+                self.write(json.dumps({
+                    "message": "Your station cannot start running after it ends. Please check your time entries carefully."}))
+                return
+
+            # Check the times, bands and modes are consistent with the event, if there is one.
+            if perm_or_temp_slug == "temp" and event_id > 0:
+                event = self.application.db.get_event(event_id)
+                if event:
+                    if start_time < event.start_time or end_time > event.end_time:
+                        self.set_status(400)
+                        self.write(json.dumps({"message": event.name + " runs " + humanize_start_end(event.start_time,
+                                                                                                     event.end_time) + ". Please adjust your station times to be within this period."}))
+                        return
+                    if any(band_id not in [band.id for band in event.bands] for band_id in band_ids):
+                        self.set_status(400)
+                        self.write(json.dumps({"message": event.name + " allows only the following bands: " + (
+                            ", ".join([band.name for band in
+                                       event.bands])) + ". Please remove any other bands you have selected for your station."}))
+                        return
+                    if any(mode_id not in [mode.id for mode in event.modes] for mode_id in mode_ids):
+                        self.set_status(400)
+                        self.write(json.dumps({"message": event.name + " allows only the following modes: " + (
+                            ", ".join([mode.name for mode in
+                                       event.modes])) + ". Please remove any other modes you have selected for your station."}))
+                        return
 
             # Now create the station, taking into account its type
             new_station_id = None
@@ -177,7 +210,8 @@ class CreateStationHandler(BaseHandler):
                 return
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to create the station. Please contact the administrators (TODO) for help."}))
+                self.write(json.dumps(
+                    {"message": "Failed to create the station. Please contact the administrators (TODO) for help."}))
                 return
 
         else:

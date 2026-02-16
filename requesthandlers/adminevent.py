@@ -81,6 +81,13 @@ class AdminEventHandler(BaseHandler):
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
+            # Check for sensible times
+            if start_time > end_time:
+                self.set_status(400)
+                self.write(json.dumps({
+                    "message": "Your event cannot start after it ends. Please check your time entries carefully."}))
+                return
+
             # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
             other_events = [e for e in self.application.db.get_all_events() if e.id != event_id]
             if any(e.name.lower() == name.lower() for e in other_events):
@@ -127,6 +134,13 @@ class AdminEventHandler(BaseHandler):
             url_slug = self.get_argument("url_slug")
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
+
+            # Check for sensible times
+            if start_time > end_time:
+                self.set_status(400)
+                self.write(json.dumps({
+                    "message": "Your event cannot start after it ends. Please check your time entries carefully."}))
+                return
 
             # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
             other_events = self.application.db.get_all_events()

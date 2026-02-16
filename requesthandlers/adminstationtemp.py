@@ -3,7 +3,8 @@ from datetime import datetime
 
 import tornado
 
-from core.utils import get_default_event_end_time, get_default_event_start_time, populate_derived_fields_temp_station
+from core.utils import get_default_event_end_time, get_default_event_start_time, populate_derived_fields_temp_station, \
+    humanize_start_end
 from requesthandlers.base import BaseHandler
 
 
@@ -59,11 +60,13 @@ class AdminStationTempHandler(BaseHandler):
             if ok:
                 # Delete OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station deleted. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
+                self.write(json.dumps({"message": "Station deleted. Returning you to the stations list...",
+                                       "redirect_url": "/admin/stations"}))
                 return
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to delete the station. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to delete the station. Please check the logs for more details."}))
                 return
 
         # Check for Update action
@@ -100,6 +103,35 @@ class AdminStationTempHandler(BaseHandler):
             approved = True if self.get_argument("approved", None) else False
             edit_password = self.get_argument("edit_password")
 
+            # Check for sensible times
+            if start_time > end_time:
+                self.set_status(400)
+                self.write(json.dumps({
+                    "message": "Your station cannot start running after it ends. Please check your time entries carefully."}))
+                return
+
+            # Check the times, bands and modes are consistent with the event, if there is one.
+            if event_id > 0:
+                event = self.application.db.get_event(event_id)
+                if event:
+                    if start_time < event.start_time or end_time > event.end_time:
+                        self.set_status(400)
+                        self.write(json.dumps({"message": event.name + " runs " + humanize_start_end(event.start_time,
+                                                                                                     event.end_time) + ". Please adjust your station times to be within this period."}))
+                        return
+                    if any(band_id not in [band.id for band in event.bands] for band_id in band_ids):
+                        self.set_status(400)
+                        self.write(json.dumps({"message": event.name + " allows only the following bands: " + (
+                            ", ".join([band.name for band in
+                                       event.bands])) + ". Please remove any other bands you have selected for your station."}))
+                        return
+                    if any(mode_id not in [mode.id for mode in event.modes] for mode_id in mode_ids):
+                        self.set_status(400)
+                        self.write(json.dumps({"message": event.name + " allows only the following modes: " + (
+                            ", ".join([mode.name for mode in
+                                       event.modes])) + ". Please remove any other modes you have selected for your station."}))
+                        return
+
             # Process the update
             ok = self.application.db.update_temporary_station(station_id, callsign=callsign, club_name=club_name,
                                                               event_id=event_id, start_time=start_time,
@@ -115,11 +147,13 @@ class AdminStationTempHandler(BaseHandler):
             if ok:
                 # Update OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station updated. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
+                self.write(json.dumps({"message": "Station updated. Returning you to the stations list...",
+                                       "redirect_url": "/admin/stations"}))
                 return
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to update the station. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to update the station. Please check the logs for more details."}))
                 return
 
         # Check for Create action
@@ -129,7 +163,7 @@ class AdminStationTempHandler(BaseHandler):
             club_name = self.get_argument("club_name")
             event_id = 0
             if self.get_argument("event", None):
-                event_id = self.get_argument("event", None)
+                event_id = int(self.get_argument("event", None))
             start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
             end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
             latitude_degrees = float(self.get_argument("latitude_degrees"))
@@ -155,6 +189,35 @@ class AdminStationTempHandler(BaseHandler):
             rsgb_attending = True if self.get_argument("rsgb_attending", None) else False
             approved = True if self.get_argument("approved", None) else False
 
+            # Check for sensible times
+            if start_time > end_time:
+                self.set_status(400)
+                self.write(json.dumps({
+                    "message": "Your station cannot start running after it ends. Please check your time entries carefully."}))
+                return
+
+            # Check the times, bands and modes are consistent with the event, if there is one.
+            if event_id > 0:
+                event = self.application.db.get_event(event_id)
+                if event:
+                    if start_time < event.start_time or end_time > event.end_time:
+                        self.set_status(400)
+                        self.write(json.dumps({"message": event.name + " runs " + humanize_start_end(event.start_time,
+                                                                                                     event.end_time) + ". Please adjust your station times to be within this period."}))
+                        return
+                    if any(band_id not in [band.id for band in event.bands] for band_id in band_ids):
+                        self.set_status(400)
+                        self.write(json.dumps({"message": event.name + " allows only the following bands: " + (
+                            ", ".join([band.name for band in
+                                       event.bands])) + ". Please remove any other bands you have selected for your station."}))
+                        return
+                    if any(mode_id not in [mode.id for mode in event.modes] for mode_id in mode_ids):
+                        self.set_status(400)
+                        self.write(json.dumps({"message": event.name + " allows only the following modes: " + (
+                            ", ".join([mode.name for mode in
+                                       event.modes])) + ". Please remove any other modes you have selected for your station."}))
+                        return
+
             # Process the create action
             new_station_id = self.application.db.add_temporary_station(callsign=callsign, club_name=club_name,
                                                                        event_id=event_id, start_time=start_time,
@@ -172,18 +235,19 @@ class AdminStationTempHandler(BaseHandler):
             if new_station_id:
                 # Create OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station created. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
+                self.write(json.dumps({"message": "Station created. Returning you to the stations list...",
+                                       "redirect_url": "/admin/stations"}))
                 return
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to create the station. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to create the station. Please check the logs for more details."}))
                 return
 
         else:
             self.set_status(400)
             self.write(json.dumps({"message": "Invalid action '" + action + "'"}))
             return
-
 
     def get_events_js(self):
         """Get data for events, mutated to be suitable for the admin temporary station page. This includes:
