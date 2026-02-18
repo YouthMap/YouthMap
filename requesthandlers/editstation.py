@@ -2,6 +2,8 @@ import json
 from datetime import datetime
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
+from mail.mailer import notify_admins_user_updated_approved_station, notify_admins_user_updated_unapproved_station, \
+    notify_admins_user_updated_station
 from requesthandlers.base import BaseHandler
 
 
@@ -116,6 +118,7 @@ class EditStationHandler(BaseHandler):
 
             # Now update the station, taking into account its type
             ok = False
+            station = None
             if perm_or_temp_slug == "perm":
                 ok = self.application.db.update_permanent_station(station_id, callsign=callsign, club_name=club_name,
                                                                   type_id=type_id,
@@ -126,6 +129,8 @@ class EditStationHandler(BaseHandler):
                                                                   notes=notes, website_url=website_url, qrz_url=qrz_url,
                                                                   social_media_url=social_media_url, email=email,
                                                                   phone_number=phone_number)
+                station = self.application.db.get_permanent_station(station_id)
+
             elif perm_or_temp_slug == "temp":
                 ok = self.application.db.update_temporary_station(station_id, callsign=callsign, club_name=club_name,
                                                                   event_id=event_id, start_time=start_time,
@@ -137,12 +142,14 @@ class EditStationHandler(BaseHandler):
                                                                   notes=notes, website_url=website_url, qrz_url=qrz_url,
                                                                   social_media_url=social_media_url, email=email,
                                                                   phone_number=phone_number)
+                station = self.application.db.get_temporary_station(station_id)
 
             if ok:
-                # Update OK, go back to the view station page to show new data
+                # Update OK, go back to the view station page to show new data. Also email the admins to let them know.
                 self.set_status(200)
                 self.write(json.dumps({"message": "Your station has been updated. Taking you back there...",
                                        "redirect_url": "/view/station/" + perm_or_temp_slug + "/" + station_id_slug}))
+                notify_admins_user_updated_station(self.application.db, station)
                 return
             else:
                 self.set_status(500)

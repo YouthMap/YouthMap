@@ -10,24 +10,15 @@ def notify_admins_user_added_station(db, new_station):
 
     site_base_url = db.get_config().base_url
     station_type = "perm" if hasattr(new_station, "type") else "temp"
-    subject = "New station awaiting approval"
+    subject = "[Youth Map] New station awaiting approval"
     html_content = f"""\
     <html>
       <body>
         <p>A new station has been added to Youth Map by a user. This is now awaiting your approval. Please review the details below and either approve or delete the station. Please note that this email has been sent to all administrators of the site.</p>
-        <p>Callsign: <strong>{new_station.callsign}</strong></p>
-        <p>Name: <strong>{new_station.club_name}</strong></p>
-        {("<p>Event: <strong>" + new_station.event.name + "</strong></p>") if hasattr(new_station, "event") else ""}
-        {("<p>Type: <strong>" + new_station.type.name + "</strong></p>") if hasattr(new_station, "type") else ""}
-        {("<p>Meeting: " + new_station.meeting_when + "</p>") if hasattr(new_station, "meeting_when") else ""}
-        {("<p>Meeting: " + new_station.meeting_where + "</p>") if hasattr(new_station, "meeting_where") else ""}
-        {("<p>Notes: " + new_station.notes + "</p>") if new_station.notes else ""}
-        {("<p>Email: " + new_station.email + "</p>") if new_station.email else ""}
-        {("<p>Phone: " + new_station.phone_number + "</p>") if new_station.phone_number else ""}
-        {("<p>Website: <a href='" + new_station.website_url + "'>" + new_station.website_url + "</a></p>") if new_station.website_url else ""}
-        {("<p>Social media: <a href='" + new_station.social_media_url + "'>" + new_station.social_media_url + "</a></p>") if new_station.social_media_url else ""}
-        {("<p>QRZ page: <a href='" + new_station.qrz_url + "'>" + new_station.qrz_url + "</a></p>") if new_station.qrz_url else ""}
-        <p><br/><a href="{site_base_url}/admin/handleemaillink?action=delete&type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
+
+        {get_station_details_for_email(new_station)}
+
+        <p><br/><a href="{site_base_url}/admin/handleemaillink?action=approve&type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
         <a href="{site_base_url}/admin/station/{station_type}/{new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Review</a>
         <a href="{site_base_url}/admin/handleemaillink?action=delete&type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
       </body>
@@ -35,6 +26,85 @@ def notify_admins_user_added_station(db, new_station):
     """
 
     return send_mail_to_all_admins(db, subject, html_content)
+
+
+def notify_admins_user_updated_station(db, station):
+    """Generic function that sends mail to all administrators when a user updates an event. The form it takes and the
+    actions that are available depend on whether the station is already approved or not, so first we check that, then
+    delegate to another function as necessary."""
+
+    if station.approved:
+        notify_admins_user_updated_approved_station(db, station)
+    else:
+        notify_admins_user_updated_unapproved_station(db, station)
+
+
+def notify_admins_user_updated_approved_station(db, station):
+    """Send mail to all administrators, letting them know that a user has updated an existing station which is still
+    approved and visible, but has been shown to admins as a check to prevent griefing."""
+
+    site_base_url = db.get_config().base_url
+    station_type = "perm" if hasattr(station, "type") else "temp"
+    subject = "[Youth Map] Information updated for approved station"
+    html_content = f"""\
+    <html>
+      <body>
+        <p>An existing station has been updated by a user. It is still approved and live in the system. Please review the details below ensure that it has not been maliciously edited. Please note that this email has been sent to all administrators of the site.</p>
+        
+        {get_station_details_for_email(station)}
+        
+        <p><br/><a href="{site_base_url}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em;">Review</a>
+        <a href="{site_base_url}/admin/handleemaillink?action=unapprove&type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Unapprove</a>
+        <a href="{site_base_url}/admin/handleemaillink?action=delete&type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
+      </body>
+    </html>
+    """
+
+    return send_mail_to_all_admins(db, subject, html_content)
+
+
+def notify_admins_user_updated_unapproved_station(db, station):
+    """Send mail to all administrators, letting them know that a user has updated a station which is still waiting in
+    the approval queue, but now has new details."""
+
+    site_base_url = db.get_config().base_url
+    station_type = "perm" if hasattr(station, "type") else "temp"
+    subject = "[Youth Map] Information updated for station in approval queue"
+    html_content = f"""\
+    <html>
+      <body>
+        <p>A station in the approval queue has been updated by a user. It is still waiting for admin approval, we are just updating you to show the new information. Please review the details below and either approve or delete the station. Please note that this email has been sent to all administrators of the site.</p>
+        
+        {get_station_details_for_email(station)}
+        
+        <p><br/><a href="{site_base_url}/admin/handleemaillink?action=approve&type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
+        <a href="{site_base_url}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Review</a>
+        <a href="{site_base_url}/admin/handleemaillink?action=delete&type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
+      </body>
+    </html>
+    """
+
+    return send_mail_to_all_admins(db, subject, html_content)
+
+
+def get_station_details_for_email(station):
+    """Get a string providing a description of the station, in HTML format, for email. This is common between "user
+    created a station" and "user updated a station" so has been extracted into a separate method."""
+
+    return f"""\
+        <p>Callsign: <strong>{station.callsign}</strong></p>
+        <p>Name: <strong>{station.club_name}</strong></p>
+        {("<p>Event: <strong>" + station.event.name + "</strong></p>") if hasattr(station, "event") else ""}
+        {("<p>Type: <strong>" + station.type.name + "</strong></p>") if hasattr(station, "type") else ""}
+        {("<p>Meeting: " + station.meeting_when + "</p>") if hasattr(station, "meeting_when") else ""}
+        {("<p>Meeting: " + station.meeting_where + "</p>") if hasattr(station, "meeting_where") else ""}
+        {("<p>Notes: " + station.notes + "</p>") if station.notes else ""}
+        {("<p>Email: " + station.email + "</p>") if station.email else ""}
+        {("<p>Phone: " + station.phone_number + "</p>") if station.phone_number else ""}
+        {("<p>Website: <a href='" + station.website_url + "'>" + station.website_url + "</a></p>") if station.website_url else ""}
+        {("<p>Social media: <a href='" + station.social_media_url + "'>" + station.social_media_url + "</a></p>") if station.social_media_url else ""}
+        {("<p>QRZ page: <a href='" + station.qrz_url + "'>" + station.qrz_url + "</a></p>") if station.qrz_url else ""}
+    """
 
 
 def send_mail_to_all_admins(db, subject, html_content):
