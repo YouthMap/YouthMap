@@ -25,6 +25,7 @@ class MapHandler(BaseHandler):
             # If it didn't match anything, that's invalid so redirect back to home
             if not preselect_type and not preselect_event:
                 self.redirect("/")
+                return
 
         # Get other data we need to include in the template. Convert to JSON here so we can load it straight up in JS.
         temp_stations_json = json.dumps(self.get_temporary_stations_js())

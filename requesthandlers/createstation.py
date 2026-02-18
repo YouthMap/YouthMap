@@ -3,6 +3,7 @@ from datetime import datetime
 
 from core.utils import TEMP_STATION_NO_EVENT_COLOR, TEMP_STATION_NO_EVENT_ICON, get_default_event_start_time, \
     get_default_event_end_time, humanize_start_end
+from mail.mailer import notify_admins_user_added_station
 from requesthandlers.base import BaseHandler
 
 
@@ -170,7 +171,7 @@ class CreateStationHandler(BaseHandler):
                         return
 
             # Now create the station, taking into account its type
-            new_station_id = None
+            new_station = None
             edit_password = None
             if perm_or_temp_slug == "perm":
                 new_station_id = self.application.db.add_permanent_station(callsign=callsign, club_name=club_name,
@@ -184,7 +185,9 @@ class CreateStationHandler(BaseHandler):
                                                                            social_media_url=social_media_url,
                                                                            email=email,
                                                                            phone_number=phone_number)
-                edit_password = self.application.db.get_permanent_station(new_station_id).edit_password
+                new_station = self.application.db.get_permanent_station(new_station_id)
+                edit_password = new_station.edit_password
+
             elif perm_or_temp_slug == "temp":
                 new_station_id = self.application.db.add_temporary_station(callsign=callsign, club_name=club_name,
                                                                            event_id=event_id, start_time=start_time,
@@ -198,15 +201,18 @@ class CreateStationHandler(BaseHandler):
                                                                            social_media_url=social_media_url,
                                                                            email=email,
                                                                            phone_number=phone_number)
-                edit_password = self.application.db.get_temporary_station(new_station_id).edit_password
+                new_station = self.application.db.get_temporary_station(new_station_id)
+                edit_password = new_station.edit_password
 
-            if new_station_id:
+            if new_station:
                 # Create OK, go back to the view station page to show the data. Include the edit password in the GET
-                # params here, which will cause the view station page to show it to the user.
+                # params here, which will cause the view station page to show it to the user. Also email administrators
+                # to let them know that a new station is awaiting their approval.
                 self.set_status(200)
                 self.write(json.dumps({"message": "Your new station has been created. Taking you there...",
                                        "redirect_url": "/view/station/" + perm_or_temp_slug + "/" + str(
-                                           new_station_id) + "?edit_password=" + edit_password}))
+                                           new_station.id) + "?edit_password=" + edit_password}))
+                notify_admins_user_added_station(self.application.db, new_station)
                 return
             else:
                 self.set_status(500)
