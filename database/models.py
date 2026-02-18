@@ -17,10 +17,13 @@ class Config(Base):
     __tablename__ = 'config'
 
     id = Column(Integer, primary_key=True)
+    base_url = Column(String, nullable=True)
     enable_mail = Column(Boolean, nullable=False)
     mail_sender = Column(String, nullable=True)
+    mail_username = Column(String, nullable=True)
     mail_password = Column(String, nullable=True)
-    mail_server = Column(String, nullable=True)
+    mail_server_host = Column(String, nullable=True)
+    mail_server_port = Column(Integer, nullable=True)
     enable_captcha = Column(Boolean, nullable=False)
     recaptcha_key = Column(String, nullable=True)
 

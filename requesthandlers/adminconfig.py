@@ -39,19 +39,24 @@ class AdminConfigHandler(BaseHandler):
             return
 
         # Get request arguments
+        base_url = self.get_argument("base_url", None)
+
         enable_mail = True if self.get_argument("enable_mail", None) else False
-        mail_sender = self.get_argument("mail_sender", None)
+        mail_server_host = self.get_argument("mail_server_host", None)
+        mail_server_port = int(self.get_argument("mail_server_port", "0"))
+        mail_username = self.get_argument("mail_username", None)
         mail_password = self.get_argument("mail_password", None)
-        mail_server = self.get_argument("mail_server", None)
+        mail_sender = self.get_argument("mail_sender", None)
 
         enable_captcha = True if self.get_argument("enable_captcha", None) else False
         recaptcha_key = self.get_argument("recaptcha_key", None)
 
         # Check for validity
-        if enable_mail and not (mail_sender and mail_password and mail_server):
+        if enable_mail and not (
+                mail_sender and mail_username and mail_password and mail_server_host and mail_server_port > 0):
             self.set_status(400)
             self.write(json.dumps({
-                "message": "You must supply SMTP credentials if you want to enable email supprt."}))
+                "message": "You must supply a full set of SMTP server information and credentials if you want to enable email supprt."}))
             return
         if enable_captcha and not recaptcha_key:
             self.set_status(400)
@@ -60,8 +65,9 @@ class AdminConfigHandler(BaseHandler):
             return
 
         # Process the update
-        ok = self.application.db.update_config(enable_mail=enable_mail, mail_sender=mail_sender,
-                                               mail_password=mail_password, mail_server=mail_server,
+        ok = self.application.db.update_config(base_url=base_url, enable_mail=enable_mail, mail_sender=mail_sender,
+                                               mail_username=mail_username, mail_password=mail_password,
+                                               mail_server_host=mail_server_host, mail_server_port=mail_server_port,
                                                enable_captcha=enable_captcha, recaptcha_key=recaptcha_key)
         if ok:
             # Update OK

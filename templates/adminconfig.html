@@ -12,6 +12,18 @@
         <form method="post" id="form">
             <div class="row mb-2">
                 <div class="col-sm-4">
+                    <label for="mail_server" class="form-label mt-2">Base URL:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="base_url" class="form-control" name="base_url"
+                           value="{{ config.base_url if config.base_url else '' }}"/>
+                </div>
+            </div>
+            <div class="row mt-4 mb-0">
+                <h4>Email Settings</h4>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
                 </div>
                 <div class="col-sm-8">
                     <input type="checkbox" id="enable_mail" class="form-check-input" name="enable_mail" value="true"
@@ -21,20 +33,30 @@
             </div>
             <div class="row mb-2">
                 <div class="col-sm-4">
-                    <label for="mail_server" class="form-label mt-2">SMTP server:</label>
+                    <label for="mail_server_host" class="form-label mt-2">SMTP server:</label>
                 </div>
                 <div class="col-sm-8">
-                    <input type="text" id="mail_server" class="form-control" name="mail_server"
-                           value="{{ config.mail_server if config.mail_server else '' }}"/>
+                    <input type="text" id="mail_server_host" class="form-control" name="mail_server_host"
+                           value="{{ config.mail_server_host if config.mail_server_host else '' }}"/>
                 </div>
             </div>
             <div class="row mb-2">
                 <div class="col-sm-4">
-                    <label for="mail_sender" class="form-label mt-2">Sender address:</label>
+                    <label for="mail_server_port" class="form-label mt-2">SMTP port:</label>
                 </div>
                 <div class="col-sm-8">
-                    <input type="text" id="mail_sender" class="form-control" name="mail_sender"
-                           value="{{ config.mail_sender if config.mail_sender else '' }}"/>
+                    <input type="number" id="mail_server_port" class="form-control" name="mail_server_port"
+                           value="{{ config.mail_server_port if config.mail_server_port else '0' }}" min="0" max="65535"
+                           step="1"/>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="mail_username" class="form-label mt-2">Username:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="mail_username" class="form-control" name="mail_username"
+                           value="{{ config.mail_username if config.mail_username else '' }}"/>
                 </div>
             </div>
             <div class="row mb-2">
@@ -46,7 +68,19 @@
                            value="{{ config.mail_password if config.mail_password else '' }}"/>
                 </div>
             </div>
-            <div class="row mb-2 mt-4">
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="mail_sender" class="form-label mt-2">Sender address:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="mail_sender" class="form-control" name="mail_sender"
+                           value="{{ config.mail_sender if config.mail_sender else '' }}"/>
+                </div>
+            </div>
+            <div class="row mt-4 mb-0">
+                <h4>CAPTCHA Settings</h4>
+            </div>
+            <div class="row mb-2">
                 <div class="col-sm-4">
                 </div>
                 <div class="col-sm-8">
@@ -87,6 +121,6 @@
     </div>
 </div>
 
-<script src="/static/js/form-post-handler.js?v=1771411699"></script>
+<script src="/static/js/form-post-handler.js?v=1771430074"></script>
 
 {% end %}
