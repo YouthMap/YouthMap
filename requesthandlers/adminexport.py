@@ -13,12 +13,6 @@ class AdminExportHandler(BaseHandler):
 
     @tornado.web.authenticated
     def get(self):
-        # Deny access if we are not a super-admin
-        user = self.application.db.get_user(self.current_user)
-        if not user.super_admin:
-            self.write("You do not have permission to access this page.")
-            return
-
         # Figure out if we have no GET params (in which case this is a request for the HTML page itself) or if we have
         # them, in which case this is a request for data
         data = self.get_argument("data", None)
