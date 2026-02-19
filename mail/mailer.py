@@ -28,6 +28,24 @@ def notify_admins_user_added_station(db, new_station):
     return send_mail_to_all_admins(db, subject, html_content)
 
 
+def notify_admins_user_deleted_station(db, station):
+    """Send mail to all administrators, letting them know that a user has deleted a station."""
+
+    subject = "[Youth Map] Station deleted"
+    html_content = f"""\
+    <html>
+      <body>
+        <p>A station has been deleted from Youth Map by a user. There is nothing required from you at this point, this is just for your information. The details of the deleted station were as follows.</p>
+
+        {get_station_details_for_email(station)}
+        
+      </body>
+    </html>
+    """
+
+    return send_mail_to_all_admins(db, subject, html_content)
+
+
 def notify_admins_user_updated_station(db, station):
     """Generic function that sends mail to all administrators when a user updates an event. The form it takes and the
     actions that are available depend on whether the station is already approved or not, so first we check that, then

@@ -3,7 +3,7 @@ from datetime import datetime
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
 from mail.mailer import notify_admins_user_updated_approved_station, notify_admins_user_updated_unapproved_station, \
-    notify_admins_user_updated_station
+    notify_admins_user_updated_station, notify_admins_user_deleted_station
 from requesthandlers.base import BaseHandler
 
 
@@ -158,16 +158,23 @@ class EditStationHandler(BaseHandler):
 
         # Check for Delete action
         elif action == "Delete":
+            # Delete the station, but first get a copy of it so we can include its details when we email administrators.
             ok = False
+            station = None
             if perm_or_temp_slug == "perm":
+                station = self.application.db.get_permanent_station(station_id)
                 ok = self.application.db.delete_permanent_station(station_id)
             elif perm_or_temp_slug == "temp":
+                station = self.application.db.get_temporary_station(station_id)
                 ok = self.application.db.delete_temporary_station(station_id)
 
             if ok:
+                # Delete station and email administrators
                 self.set_status(200)
                 self.write(json.dumps({"message": "Your station has been deleted. Taking you back home...",
                                        "redirect_url": "/" }))
+                if station:
+                    notify_admins_user_deleted_station(self.application.db, station)
                 return
             else:
                 self.set_status(500)
