@@ -25,8 +25,11 @@ class AdminStationPermHandler(BaseHandler):
         all_perm_station_types = self.application.db.get_all_permanent_station_types()
 
         # Render the template
-        self.render("adminstationperm.html", station=station, creating_new=creating_new,
-                    all_perm_station_types=all_perm_station_types)
+        if station:
+            self.render("adminstationperm.html", station=station, creating_new=creating_new,
+                        all_perm_station_types=all_perm_station_types)
+        else:
+            self.write("Station not found.")
 
     @tornado.web.authenticated
     def post(self, slug):

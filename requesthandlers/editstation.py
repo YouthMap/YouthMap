@@ -39,9 +39,12 @@ class EditStationHandler(BaseHandler):
 
         # Render the template. Supply the user password as well, this will be included in the form as a hidden field,
         # so we can check it again when it comes back to us in the POST.
-        self.render("editstation.html", station_type=perm_or_temp_slug, station=station,
-                    all_perm_station_types=all_perm_station_types, station_event=station_event,
-                    all_bands=all_bands, all_modes=all_modes, user_edit_password=user_edit_password)
+        if station:
+            self.render("editstation.html", station_type=perm_or_temp_slug, station=station,
+                        all_perm_station_types=all_perm_station_types, station_event=station_event,
+                        all_bands=all_bands, all_modes=all_modes, user_edit_password=user_edit_password)
+        else:
+            self.write("Station not found.")
 
     def post(self, perm_or_temp_slug, station_id_slug):
         """Handle the user filling in the form and clicking Update or Delete. This supports two 'actions' depending

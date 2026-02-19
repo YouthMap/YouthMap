@@ -34,9 +34,12 @@ class AdminStationTempHandler(BaseHandler):
         all_events_json = json.dumps(self.get_events_js())
 
         # Render the template
-        self.render("adminstationtemp.html", station=station, creating_new=creating_new, all_events=all_events,
-                    all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end,
-                    all_events_json=all_events_json)
+        if station:
+            self.render("adminstationtemp.html", station=station, creating_new=creating_new, all_events=all_events,
+                        all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end,
+                        all_events_json=all_events_json)
+        else:
+            self.write("Station not found.")
 
     @tornado.web.authenticated
     def post(self, slug):

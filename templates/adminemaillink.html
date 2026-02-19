@@ -1,0 +1,25 @@
+{% extends "base-std.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownAttribute, HtmlUnknownTarget , HtmlUnknownAnchorTarget -->
+{% if success %}
+<div class="alert alert-success mb-5" role="alert">
+    <p class="mb-0">{{ message }}</p>
+</div>
+{% else %}
+<div class="alert alert-danger mb-5" role="alert">
+    <p class="mb-0">{{ message }}</p>
+</div>
+{% end %}
+
+
+<ul class="nav flex-row">
+    <li class="nav-item">
+        <a class="nav-link" href="/admin/stations">&laquo; Go to station list</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/admin">&laquo; Go to dashboard</a>
+    </li>
+</ul>
+
+{% end %}

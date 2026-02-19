@@ -33,7 +33,10 @@ class AdminUserHandler(BaseHandler):
             return
 
         # Render the template
-        self.render("adminuser.html", user=user, current_user=current_user, creating_new=creating_new)
+        if user:
+            self.render("adminuser.html", user=user, current_user=current_user, creating_new=creating_new)
+        else:
+            self.write("User not found.")
 
     @tornado.web.authenticated
     def post(self, slug):

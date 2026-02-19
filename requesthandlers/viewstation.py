@@ -32,8 +32,11 @@ class ViewStationHandler(BaseHandler):
             edit_password_good = station.edit_password == user_edit_password
 
         # Render the template.
-        self.render("viewstation.html", type=perm_or_temp_slug, station=station,
+        if station:
+            self.render("viewstation.html", type=perm_or_temp_slug, station=station,
                     user_edit_password=user_edit_password if edit_password_good else None)
+        else:
+            self.write("Station not found.")
 
     def post(self, perm_or_temp_slug, station_id_slug):
         """Handle the user entering an edit password and clicking Edit or Delete. This supports two 'actions' depending

@@ -18,9 +18,9 @@ def notify_admins_user_added_station(db, new_station):
 
         {get_station_details_for_email(new_station)}
 
-        <p><br/><a href="{site_base_url}/admin/handleemaillink?action=approve&type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
+        <p><br/><a href="{site_base_url}/admin/emaillink?action=approve&station_type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
         <a href="{site_base_url}/admin/station/{station_type}/{new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Review</a>
-        <a href="{site_base_url}/admin/handleemaillink?action=delete&type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
+        <a href="{site_base_url}/admin/emaillink?action=delete&station_type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
       </body>
     </html>
     """
@@ -72,8 +72,8 @@ def notify_admins_user_updated_approved_station(db, station):
         {get_station_details_for_email(station)}
         
         <p><br/><a href="{site_base_url}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em;">Review</a>
-        <a href="{site_base_url}/admin/handleemaillink?action=unapprove&type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Unapprove</a>
-        <a href="{site_base_url}/admin/handleemaillink?action=delete&type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
+        <a href="{site_base_url}/admin/emaillink?action=unapprove&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Unapprove</a>
+        <a href="{site_base_url}/admin/emaillink?action=delete&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
       </body>
     </html>
     """
@@ -95,9 +95,9 @@ def notify_admins_user_updated_unapproved_station(db, station):
         
         {get_station_details_for_email(station)}
         
-        <p><br/><a href="{site_base_url}/admin/handleemaillink?action=approve&type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
+        <p><br/><a href="{site_base_url}/admin/emaillink?action=approve&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
         <a href="{site_base_url}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Review</a>
-        <a href="{site_base_url}/admin/handleemaillink?action=delete&type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
+        <a href="{site_base_url}/admin/emaillink?action=delete&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
       </body>
     </html>
     """
