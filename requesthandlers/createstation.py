@@ -216,7 +216,8 @@ class CreateStationHandler(BaseHandler):
                 self.set_status(200)
                 self.write(json.dumps({"message": "Your new station has been created. Taking you there...",
                                        "redirect_url": "/view/station/" + perm_or_temp_slug + "/" + str(
-                                           new_station.id) + "?edit_password=" + edit_password + "?emailed=" + emailed}))
+                                           new_station.id) + "?edit_password=" + edit_password + "&emailed=" + str(
+                                           emailed)}))
                 return
             else:
                 self.set_status(500)

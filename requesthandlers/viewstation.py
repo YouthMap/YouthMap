@@ -16,25 +16,29 @@ class ViewStationHandler(BaseHandler):
 
         # If "edit_password" was provided as a GET parameter, and it matches, include that in the template. This will
         # cause the password to be displayed. We use this on the first return to this page after the user has created
-        # the station, to display that password and remind them to note it down.
+        # the station, to display that password and remind them to note it down. Also include the "emailed" flag which
+        # lets the user know whether this password has been emailed to their registered email address or not.
         user_edit_password = self.get_argument("edit_password", None)
+        emailed = "True" == self.get_argument("emailed", None)
 
         # Get data we need to include in the template
         station = None
         edit_password_good = False
         if perm_or_temp_slug == "perm":
             station = self.application.db.get_permanent_station(station_id)
-            populate_derived_fields_perm_station(station)
-            edit_password_good = station.edit_password == user_edit_password
+            if station:
+                populate_derived_fields_perm_station(station)
+                edit_password_good = station.edit_password == user_edit_password
         elif perm_or_temp_slug == "temp":
             station = self.application.db.get_temporary_station(station_id)
-            populate_derived_fields_temp_station(station)
-            edit_password_good = station.edit_password == user_edit_password
+            if station:
+                populate_derived_fields_temp_station(station)
+                edit_password_good = station.edit_password == user_edit_password
 
         # Render the template.
         if station:
             self.render("viewstation.html", type=perm_or_temp_slug, station=station,
-                    user_edit_password=user_edit_password if edit_password_good else None)
+                    user_edit_password=user_edit_password if edit_password_good else None, emailed=emailed)
         else:
             self.write("Station not found.")
 
