@@ -2,6 +2,7 @@ import json
 import tornado
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
+from mail.mailer import notify_owner_station_approved, notify_owner_station_deleted
 from requesthandlers.base import BaseHandler
 
 
@@ -25,8 +26,8 @@ class AdminApprovalHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self):
-        """Handle the administrator clicking Approve or Deny. This supports two 'actions' depending on whether the
-         Approve or Deny button was clicked. Approve sets the "approved" flag to True and Deny deletes the station."""
+        """Handle the administrator clicking Approve or Delete. This supports two 'actions' depending on whether the
+         Approve or Delete button was clicked. Approve sets the "approved" flag to True and Delete deletes the station."""
 
         self.set_header("Content-Type", "application/json")
 
@@ -39,14 +40,18 @@ class AdminApprovalHandler(BaseHandler):
         # Check for Approve action
         if action == "Approve":
             ok = False
+            station = None
             if station_type == "perm":
                 ok = self.application.db.update_permanent_station(station_id, approved=True)
+                station = self.application.db.get_permanent_station(station_id)
             elif station_type == "temp":
                 ok = self.application.db.update_temporary_station(station_id, approved=True)
+                station = self.application.db.get_temporary_station(station_id)
             if ok:
-                # Update OK, refresh the page
+                # Update OK, refresh the page and email the owner.
                 self.set_status(200)
                 self.write(json.dumps({"message": "Station approved.", "redirect_url": "/admin/approval"}))
+                notify_owner_station_approved(self.application.db, station)
                 return
             else:
                 self.set_status(500)
@@ -54,17 +59,21 @@ class AdminApprovalHandler(BaseHandler):
                     json.dumps({"message": "Failed to update the station. Please check the logs for more details."}))
                 return
 
-        # Check for Deny action
-        elif action == "Deny":
+        # Check for Delete action
+        elif action == "Delete":
             ok = False
+            station = None
             if station_type == "perm":
+                station = self.application.db.get_permanent_station(station_id)
                 ok = self.application.db.delete_permanent_station(station_id)
             elif station_type == "temp":
+                station = self.application.db.get_temporary_station(station_id)
                 ok = self.application.db.delete_temporary_station(station_id)
             if ok:
-                # Update OK, refresh the page
+                # Update OK, refresh the page and email the owner.
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station delected.", "redirect_url": "/admin/approval"}))
+                self.write(json.dumps({"message": "Station deleted.", "redirect_url": "/admin/approval"}))
+                notify_owner_station_deleted(self.application.db, station)
                 return
             else:
                 self.set_status(500)

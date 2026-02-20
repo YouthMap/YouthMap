@@ -5,6 +5,8 @@ import tornado
 
 from core.utils import get_default_event_end_time, get_default_event_start_time, populate_derived_fields_temp_station, \
     humanize_start_end
+from mail.mailer import notify_owner_station_approved, notify_owner_station_approval_revoked, \
+    notify_owner_station_deleted
 from requesthandlers.base import BaseHandler
 
 
@@ -59,12 +61,16 @@ class AdminStationTempHandler(BaseHandler):
         # Check for Delete action
         if action == "Delete":
             # Process the delete action
+            station = self.application.db.get_temporary_station(station_id)
             ok = self.application.db.delete_temporary_station(station_id)
             if ok:
                 # Delete OK
                 self.set_status(200)
                 self.write(json.dumps({"message": "Station deleted. Returning you to the stations list...",
                                        "redirect_url": "/admin/stations"}))
+
+                # Email the owner to let them know
+                notify_owner_station_deleted(self.application.db, station)
                 return
             else:
                 self.set_status(500)
@@ -135,6 +141,11 @@ class AdminStationTempHandler(BaseHandler):
                                        event.modes])) + ". Please remove any other modes you have selected for your station."}))
                         return
 
+            # Check for approval changes to email the owner
+            station = self.application.db.get_temporary_station(station_id)
+            approval_happened = approved and not station.approved
+            approval_revoked = station.approved and not approved
+
             # Process the update
             ok = self.application.db.update_temporary_station(station_id, callsign=callsign, club_name=club_name,
                                                               event_id=event_id, start_time=start_time,
@@ -152,6 +163,12 @@ class AdminStationTempHandler(BaseHandler):
                 self.set_status(200)
                 self.write(json.dumps({"message": "Station updated. Returning you to the stations list...",
                                        "redirect_url": "/admin/stations"}))
+
+                # Email the station owner if the approval status changed.
+                if approval_happened:
+                    notify_owner_station_approved(self.application.db, station)
+                elif approval_revoked:
+                    notify_owner_station_approval_revoked(self.application.db, station)
                 return
             else:
                 self.set_status(500)

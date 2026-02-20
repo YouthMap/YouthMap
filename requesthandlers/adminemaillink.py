@@ -1,7 +1,7 @@
-from datetime import datetime
-
 import tornado
 
+from mail.mailer import notify_owner_station_approved, notify_owner_station_approval_revoked, \
+    notify_owner_station_deleted
 from requesthandlers.base import BaseHandler
 
 
@@ -10,7 +10,10 @@ class AdminEmailLinkHandler(BaseHandler):
     deleting stations. Since we can't POST from an email, these are implemented with a get request which takes three
     arguments: action, station_type (perm or temp) and id. The user must be authenticated, so when they click the link
     in their email it will open a browser window, and if they're not authenticated in that session they will get bounced
-    to the login page."""
+    to the login page. Because visitors to this page may have been clicking links from emails that are old, and because
+    there can be several administrators reacting to emails at the same time, this page performs a number of checks that
+    most pages don't - e.g. when approving a station, it checks that it is not already approved. This saves the station
+    owners from receiving multiple emails to tell them different administrators have done the same thing."""
 
     @tornado.web.authenticated
     def get(self):
@@ -35,18 +38,21 @@ class AdminEmailLinkHandler(BaseHandler):
         if not station:
             if action == "delete":
                 self.set_status(409)
-                self.render("adminemaillink.html", success=True, message="The station has already been deleted. Perhaps another administrator got there first?")
+                self.render("adminemaillink.html", success=True,
+                            message="The station has already been deleted. Perhaps another administrator got there first?")
                 return
             else:
                 self.set_status(400)
-                self.render("adminemaillink.html", success=False, message="The station does not exist. Perhaps it was already deleted by someone else?")
+                self.render("adminemaillink.html", success=False,
+                            message="The station does not exist. Perhaps it was already deleted by someone else?")
                 return
 
         # Process the action
         if action == "approve":
             if station.approved:
                 self.set_status(409)
-                self.render("adminemaillink.html", success=True, message="The station was already approved. Perhaps another administrator got there first?")
+                self.render("adminemaillink.html", success=True,
+                            message="The station was already approved. Perhaps another administrator got there first?")
                 return
 
             ok = False
@@ -55,18 +61,22 @@ class AdminEmailLinkHandler(BaseHandler):
             elif station_type == "temp":
                 ok = self.application.db.update_temporary_station(station_id, approved=True)
             if ok:
+                # Show success page and email the station owner
                 self.set_status(200)
                 self.render("adminemaillink.html", success=True, message="You have successfully approved this station.")
+                notify_owner_station_approved(self.application.db, station)
                 return
             else:
                 self.set_status(500)
-                self.render("adminemaillink.html", success=False, message="An error occurred while approving this station. Please check the logs for more details.")
+                self.render("adminemaillink.html", success=False,
+                            message="An error occurred while approving this station. Please check the logs for more details.")
                 return
 
         if action == "unapprove":
             if not station.approved:
                 self.set_status(409)
-                self.render("adminemaillink.html", success=True, message="The station was not approved anyway. Perhaps another administrator got there first?")
+                self.render("adminemaillink.html", success=True,
+                            message="The station was not approved anyway. Perhaps another administrator got there first?")
                 return
 
             ok = False
@@ -75,12 +85,16 @@ class AdminEmailLinkHandler(BaseHandler):
             elif station_type == "temp":
                 ok = self.application.db.update_temporary_station(station_id, approved=False)
             if ok:
+                # Show success page and email the station owner
                 self.set_status(200)
-                self.render("adminemaillink.html", success=True, message="You have successfully revoked the approved state of this station.")
+                self.render("adminemaillink.html", success=True,
+                            message="You have successfully revoked the approved state of this station.")
+                notify_owner_station_approval_revoked(self.application.db, station)
                 return
             else:
                 self.set_status(500)
-                self.render("adminemaillink.html", success=False, message="An error occurred while revoking the approved state of this station. Please check the logs for more details.")
+                self.render("adminemaillink.html", success=False,
+                            message="An error occurred while revoking the approved state of this station. Please check the logs for more details.")
                 return
 
         if action == "delete":
@@ -90,10 +104,13 @@ class AdminEmailLinkHandler(BaseHandler):
             elif station_type == "temp":
                 ok = self.application.db.delete_temporary_station(station_id)
             if ok:
+                # Show success page and email the station owner
                 self.set_status(200)
                 self.render("adminemaillink.html", success=True, message="You have successfully deleted the station.")
+                notify_owner_station_deleted(self.application.db, station)
                 return
             else:
                 self.set_status(500)
-                self.render("adminemaillink.html", success=False, message="An error occurred while deleting the station. Please check the logs for more details.")
+                self.render("adminemaillink.html", success=False,
+                            message="An error occurred while deleting the station. Please check the logs for more details.")
                 return

@@ -1,5 +1,6 @@
 import logging
 import smtplib
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -103,6 +104,98 @@ def notify_admins_user_updated_unapproved_station(db, station):
     """
 
     return send_mail_to_all_admins(db, subject, html_content)
+
+
+def notify_owner_station_approved(db, station):
+    """Send mail to the registered contact address for a station, to let them know that their station was approved."""
+
+    if station.email:
+        subject = "[Youth Map] Station approved"
+        html_content = f"""\
+        <html>
+          <body>
+            <p>We are pleased to say that an administrator has approved your station (details below). It is now publicly visible on the Youth Map website. If you need to edit anything, locate your station on the map and edit it using the password you were given at account creation.</p>
+    
+            {get_station_details_for_email(station)}
+          </body>
+        </html>
+        """
+
+        return send_mail(db, [station.email], subject, html_content)
+    return None
+
+
+def notify_owner_station_approval_revoked(db, station):
+    """Send mail to the registered contact address for a station, to let them know that their station's approval was
+    revoked."""
+
+    if station.email:
+        subject = "[Youth Map] Station approval revoked"
+        html_content = f"""\
+        <html>
+          <body>
+            <p>An administrator has revoked the approval of your station (details below). It is now hidden from visitors to website. This could have been due to inaccurate information or an edit that looked malicious. Please contact the administrators of the site (TODO) if you require clarification.</p>
+    
+            {get_station_details_for_email(station)}
+          </body>
+        </html>
+        """
+
+        return send_mail(db, [station.email], subject, html_content)
+    return None
+
+
+def notify_owner_station_deleted(db, station):
+    """Generic function that sends mail to the owner of a station when it is deleted. The form it takes depends on
+    whether the station is an expired temporary station or not, so first we check that, then delegate to another
+    function as necessary."""
+
+    station_type = "perm" if hasattr(station, "type") else "temp"
+    if station_type == "temp" and station.end_time <= datetime.now():
+        notify_owner_station_deleted_past(db, station)
+    else:
+        notify_owner_station_deleted_current(db, station)
+
+
+def notify_owner_station_deleted_current(db, station):
+    """Send mail to the registered contact address for a station, to let them know that their station, although still
+    "current" (i.e. a permanent station or temporary station that has not yet finished), has been deleted by an
+    administrator."""
+
+    if station.email:
+        subject = "[Youth Map] Station deleted"
+        html_content = f"""\
+        <html>
+          <body>
+            <p>An administrator has made the decision to delete your station (details below). This could have been due to inaccurate information or an edit that looked malicious. Please contact the administrators of the site (TODO) if you require clarification.</p>
+    
+            {get_station_details_for_email(station)}
+          </body>
+        </html>
+        """
+
+        return send_mail(db, [station.email], subject, html_content)
+    return None
+
+
+def notify_owner_station_deleted_past(db, station):
+    """Send mail to the registered contact address for a station, to let them know that their station, which is temporary
+    and has finished, has been deleted by an administrator."""
+
+    if station.email:
+        subject = "[Youth Map] Expired station deleted"
+        html_content = f"""\
+        <html>
+          <body>
+            <p>An administrator has deleted the following station, which was for an event or time that has now completed. Thank you for advertising your station through Youth Map, and we hope you will list future event stations here again soon.</p>
+    
+            {get_station_details_for_email(station)}
+          </body>
+        </html>
+        """
+
+        return send_mail(db, [station.email], subject, html_content)
+    return None
 
 
 def get_station_details_for_email(station):
