@@ -5,6 +5,29 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 
+def notify_user_account_created(db, email, username, password):
+    """Send mail to the email address associated with a user, to let them know that their account has been created, and
+    provide them first-time credentials.."""
+
+    site_base_url = db.get_config().base_url
+    subject = "[Youth Map] Account created"
+    html_content = f"""\
+    <html>
+      <body>
+        <p>An account has been created for you at Youth Map. Your credentials are as follows:</p>
+
+        <p>Username: <strong>{username}</strong></p>
+        <p>Password: <strong style="font-family: monospace;">{password}</strong></p>
+        
+        <p><a href="{site_base_url}/login">Click here to log in</a>. Please change this automatically-generated password to a new password of your choice immediately on first login.</p>
+        
+        <p>If you did not expect to receive this email, or to be set up with an account on this website, please ignore this email or contact the administrators (TODO) to notify them of the error.
+      </body>
+    </html>
+    """
+
+    return send_mail(db, email, subject, html_content)
+
 def notify_admins_user_added_station(db, new_station):
     """Send mail to all administrators, letting them know that a user has created a new station which is now awaiting
     their approval."""

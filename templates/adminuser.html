@@ -28,11 +28,16 @@
                     <label for="password" class="form-label mt-2">Password:</label>
                 </div>
                 <div class="col-sm-8">
-                    <input type="password" id="password" class="form-control" name="password" {% if creating_new
-                           %}required{% end %}>
+                    {% if creating_new and mail_enabled %}
+                    <small class="form-text text-muted">You are creating a new user. A password will be automatically
+                        generated and emailed directly to them.</small>
+                    {% else %}
+                    <input type="password" id="password" class="form-control" name="password"
+                           aria-describedby="passwordHelp" {% if creating_new %}required{% end %}>
                     {% if not creating_new %}
-                    <p>Updating the password is optional. Leave the field blank if you do not wish to change the
-                        password.</p>
+                    <small id="passwordHelp" class="form-text text-muted">Updating the password is optional. Leave the
+                        field blank if you do not wish to change the password.</small>
+                    {% end %}
                     {% end %}
                 </div>
             </div>
@@ -109,6 +114,6 @@
     </div>
 </div>
 
-<script src="/static/js/form-post-handler.js?v=1771603864"></script>
+<script src="/static/js/form-post-handler.js?v=1771605394"></script>
 
 {% end %}

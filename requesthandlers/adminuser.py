@@ -2,6 +2,8 @@ import json
 
 import tornado
 
+from database.utils import generate_password
+from mail.mailer import notify_user_account_created
 from requesthandlers.base import BaseHandler
 
 
@@ -32,9 +34,13 @@ class AdminUserHandler(BaseHandler):
             self.write("You are not permitted to use this page for anything other than editing your own user account.")
             return
 
+        # Check if mail is enabled, if not we need to set the user's password manually on creation
+        mail_enabled = self.application.db.get_config().enable_mail
+
         # Render the template
-        if user:
-            self.render("adminuser.html", user=user, current_user=current_user, creating_new=creating_new)
+        if user or creating_new:
+            self.render("adminuser.html", user=user, current_user=current_user, creating_new=creating_new,
+                        mail_enabled=mail_enabled)
         else:
             self.write("User not found.")
 
@@ -133,10 +139,11 @@ class AdminUserHandler(BaseHandler):
 
         # Check for Create action
         elif action == "Create":
-            # Get request arguments. For a create action we need username, password, email and optionally super_admin
+            # Get request arguments. For a create action we need username, email and optionally super_admin
             # (the POST only contains the super_admin flag if the checkbox is ticked, otherwise it is not sent.)
+            # A password will now be auto-generated and emailed to the user.
             username = self.get_argument("username")
-            password = self.get_argument("password")
+            password = self.get_argument("password", generate_password())
             email = self.get_argument("email")
             super_admin = True if self.get_argument("super_admin", None) else False
 
@@ -152,7 +159,8 @@ class AdminUserHandler(BaseHandler):
             new_user_id = self.application.db.add_user(username=username, password=password, email=email,
                                                        super_admin=super_admin)
             if new_user_id:
-                # Create OK
+                # Create OK. Email the user their details.
+                notify_user_account_created(self.application.db, email, username, password)
                 self.set_status(200)
                 self.write(json.dumps(
                     {"message": "User created. Returning you to the user list...", "redirect_url": "/admin/users"}))
