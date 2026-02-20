@@ -21,7 +21,10 @@
     <p>Please review the details you have entered and make sure they are correct. If not, click the "Is this your
         station?" link and edit or delete it.</p>
     <p><strong>Important:</strong> If you want to edit or delete your station in future, you will need the "edit
-        password", which has been automatically generated for you. <strong>Make a note of this password now.</strong>
+        password", which has been automatically generated for you {% if emailed %}and emailed to you{% end %}.
+        {% if emailed %}Please check your inbox. If the email has not arrived, we recommend that you
+        <strong>make a note of this password now</strong>.{% else %}
+        <strong>Make a note of this password now.</strong>{% end %}
     </p>
     <p>You could also <strong>bookmark this page</strong>, which will allow you to come right back here and will also
         remember your password for you.</p>
@@ -266,7 +269,7 @@
     let color = "{{ station.color }}";
     let icon = "{{ station.icon }}";
 </script>
-<script type="module" src="/static/js/map-viewstation.js?v=1771599965"></script>
-<script src="/static/js/form-post-handler.js?v=1771599965"></script>
+<script type="module" src="/static/js/map-viewstation.js?v=1771602539"></script>
+<script src="/static/js/form-post-handler.js?v=1771602539"></script>
 
 {% end %}

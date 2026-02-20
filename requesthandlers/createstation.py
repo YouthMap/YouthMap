@@ -3,7 +3,7 @@ from datetime import datetime
 
 from core.utils import TEMP_STATION_NO_EVENT_COLOR, TEMP_STATION_NO_EVENT_ICON, get_default_event_start_time, \
     get_default_event_end_time, humanize_start_end
-from mail.mailer import notify_admins_user_added_station
+from mail.mailer import notify_admins_user_added_station, notify_owner_station_created
 from requesthandlers.base import BaseHandler
 
 
@@ -205,14 +205,18 @@ class CreateStationHandler(BaseHandler):
                 edit_password = new_station.edit_password
 
             if new_station:
-                # Create OK, go back to the view station page to show the data. Include the edit password in the GET
-                # params here, which will cause the view station page to show it to the user. Also email administrators
-                # to let them know that a new station is awaiting their approval.
+                # Create OK. Email administrators to let the know a new station is awaiting their approval, and email
+                # the station owner (if they provided an email address) to give them the edit password. If emailing was
+                # successful, we include that in the redirect URL so we can customise the message the user sees. The
+                # redirect URL sends them back to the view station page to show the data. We also include the edit
+                # password in the GET params here, which will cause the view station page to show it to the user, and
+                # they could also bookmark the URL as a way of preserving it.
+                notify_admins_user_added_station(self.application.db, new_station)
+                emailed = notify_owner_station_created(self.application.db, new_station)
                 self.set_status(200)
                 self.write(json.dumps({"message": "Your new station has been created. Taking you there...",
                                        "redirect_url": "/view/station/" + perm_or_temp_slug + "/" + str(
-                                           new_station.id) + "?edit_password=" + edit_password}))
-                notify_admins_user_added_station(self.application.db, new_station)
+                                           new_station.id) + "?edit_password=" + edit_password + "?emailed=" + emailed}))
                 return
             else:
                 self.set_status(500)

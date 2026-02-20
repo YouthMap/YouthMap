@@ -53,9 +53,9 @@ def notify_admins_user_updated_station(db, station):
     delegate to another function as necessary."""
 
     if station.approved:
-        notify_admins_user_updated_approved_station(db, station)
+        return notify_admins_user_updated_approved_station(db, station)
     else:
-        notify_admins_user_updated_unapproved_station(db, station)
+        return notify_admins_user_updated_unapproved_station(db, station)
 
 
 def notify_admins_user_updated_approved_station(db, station):
@@ -106,6 +106,28 @@ def notify_admins_user_updated_unapproved_station(db, station):
     return send_mail_to_all_admins(db, subject, html_content)
 
 
+def notify_owner_station_created(db, station):
+    """Send mail to the registered contact address for a station, to give them the edit password on station creation."""
+
+    if station.email:
+        subject = "[Youth Map] Station created"
+        html_content = f"""\
+        <html>
+          <body>
+            <p>Your station has been created on Youth Map, and the details you submitted are below. Please note that before this station is made visible on the map, it requires approval by a site administrator. We'll send another email when that happens.</p>
+            <p>In the mean time, if you need to edit your station, you will require the "edit password". The password for this station is:</p>
+            <p style="font-size: 2em; font-family=monospace">{station.edit_password}</p>
+            <p>Station details follow. Thanks for adding your station to Youth Map!</p>
+    
+            {get_station_details_for_email(station)}
+          </body>
+        </html>
+        """
+
+        return send_mail(db, [station.email], subject, html_content)
+    return False
+
+
 def notify_owner_station_approved(db, station):
     """Send mail to the registered contact address for a station, to let them know that their station was approved."""
 
@@ -122,7 +144,7 @@ def notify_owner_station_approved(db, station):
         """
 
         return send_mail(db, [station.email], subject, html_content)
-    return None
+    return False
 
 
 def notify_owner_station_approval_revoked(db, station):
@@ -142,7 +164,7 @@ def notify_owner_station_approval_revoked(db, station):
         """
 
         return send_mail(db, [station.email], subject, html_content)
-    return None
+    return False
 
 
 def notify_owner_station_deleted(db, station):
@@ -152,9 +174,9 @@ def notify_owner_station_deleted(db, station):
 
     station_type = "perm" if hasattr(station, "type") else "temp"
     if station_type == "temp" and station.end_time <= datetime.now():
-        notify_owner_station_deleted_past(db, station)
+        return notify_owner_station_deleted_past(db, station)
     else:
-        notify_owner_station_deleted_current(db, station)
+        return notify_owner_station_deleted_current(db, station)
 
 
 def notify_owner_station_deleted_current(db, station):
@@ -175,7 +197,7 @@ def notify_owner_station_deleted_current(db, station):
         """
 
         return send_mail(db, [station.email], subject, html_content)
-    return None
+    return False
 
 
 def notify_owner_station_deleted_past(db, station):
@@ -195,7 +217,7 @@ def notify_owner_station_deleted_past(db, station):
         """
 
         return send_mail(db, [station.email], subject, html_content)
-    return None
+    return False
 
 
 def get_station_details_for_email(station):
