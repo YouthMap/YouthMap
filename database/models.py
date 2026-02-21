@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean, Numeric
 from sqlalchemy.orm import relationship
 
+from core.utils import hash_password
 from .base import Base, temporary_station_bands, temporary_station_modes, event_bands, event_modes
-from .utils import hash_password
 
 
 class Config(Base):

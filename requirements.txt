@@ -2,3 +2,4 @@ tornado~=6.5.4
 sqlalchemy~=2.1.0b1
 pyyaml~=6.0.3
 pytz~=2025.2
+email-validator~=2.3.0

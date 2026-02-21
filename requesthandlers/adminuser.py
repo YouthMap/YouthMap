@@ -2,7 +2,8 @@ import json
 
 import tornado
 
-from database.utils import generate_password
+from core.utils import generate_password
+from core.validation import validate_free_text, validate_email_address
 from mail.mailer import notify_user_account_created
 from requesthandlers.base import BaseHandler
 
@@ -93,16 +94,23 @@ class AdminUserHandler(BaseHandler):
 
         # Check for Update action
         elif action == "Update":
-            # Get request arguments. For an update we need username and email; optionally also password and
-            # super_admin. (The POST only contains the super_admin flag if the checkbox is ticked, otherwise it is not
-            # sent.)
-            username = self.get_argument("username")
+            # Get and validate request arguments. For an update we need username and email; optionally also password
+            # and super_admin.
+            username, err_username = validate_free_text(self.get_argument("username"), "username", max_length=100)
+            email, err_email = validate_email_address(self.get_argument("email"))
+
+            err = next((x for x in [err_username, err_email] if x is not None), None)
+            if err:
+                self.set_status(400)
+                self.write(json.dumps({"message": err}))
+                return
+
+            # Get request arguments that don't need separate validation
             password = self.get_argument("password", None)
-            email = self.get_argument("email")
             super_admin = True if self.get_argument("super_admin", None) else False
 
             # Check for a change that would change the current user's own super-admin status. Adding it when they don't
-            # have it is priviledge escalation, and removing it when they have it could leave the site with no
+            # have it is privilege escalation, and removing it when they have it could leave the site with no
             # super-admins, so bail out.
             if is_me and ((current_user.super_admin and not super_admin)
                           or (not current_user.super_admin and super_admin)):
@@ -117,10 +125,6 @@ class AdminUserHandler(BaseHandler):
                 self.write(json.dumps({
                     "message": "Another user is already called '" + username + "'. User names must be unique, and are not case sensitive."}))
                 return
-
-            # Password is optional, so if we got a blank string, set the value to None so that we don't update that
-            # aspect of the user.
-            password = password if password != "" else None
 
             # Process the update
             ok = self.application.db.update_user(user_id, username=username, password=password, email=email,
@@ -139,12 +143,19 @@ class AdminUserHandler(BaseHandler):
 
         # Check for Create action
         elif action == "Create":
-            # Get request arguments. For a create action we need username, email and optionally super_admin
-            # (the POST only contains the super_admin flag if the checkbox is ticked, otherwise it is not sent.)
-            # A password will now be auto-generated and emailed to the user.
-            username = self.get_argument("username")
+            # Get and validate request arguments.
+            username, err_username = validate_free_text(self.get_argument("username"), "username", max_length=100)
+            email, err_email = validate_email_address(self.get_argument("email"))
+
+            err = next((x for x in [err_username, err_email] if x is not None), None)
+            if err:
+                self.set_status(400)
+                self.write(json.dumps({"message": err}))
+                return
+
+            # Get request arguments that don't need separate validation
+            # Use a provided password or fall back to an auto-generated one
             password = self.get_argument("password", generate_password())
-            email = self.get_argument("email")
             super_admin = True if self.get_argument("super_admin", None) else False
 
             # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this

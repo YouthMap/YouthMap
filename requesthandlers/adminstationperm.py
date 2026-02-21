@@ -3,6 +3,7 @@ import json
 import tornado
 
 from core.utils import populate_derived_fields_perm_station
+from core.validation import validate_callsign, validate_free_text, validate_url, validate_phone, validate_email_address
 from mail.mailer import notify_owner_station_approved, notify_owner_station_approval_revoked, \
     notify_owner_station_deleted
 from requesthandlers.base import BaseHandler
@@ -56,42 +57,52 @@ class AdminStationPermHandler(BaseHandler):
             if ok:
                 # Delete OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station deleted. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
+                self.write(json.dumps({"message": "Station deleted. Returning you to the stations list...",
+                                       "redirect_url": "/admin/stations"}))
 
                 # Email the owner to let them know
                 notify_owner_station_deleted(self.application.db, station)
                 return
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to delete the station. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to delete the station. Please check the logs for more details."}))
                 return
 
         # Check for Update action
         elif action == "Update":
-            # Get request arguments
-            callsign = self.get_argument("callsign")
-            club_name = self.get_argument("club_name")
+            # Get and validate request arguments
+            callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
+            club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
+            meeting_when, err_when = validate_free_text(self.get_argument("meeting_when", "") or "", "Meeting times",
+                                                        max_length=1000)
+            meeting_where, err_where = validate_free_text(self.get_argument("meeting_where", "") or "", "Meeting place",
+                                                          max_length=1000)
+            website_url, err_website = validate_url(self.get_argument("website_url", "") or "", "Website")
+            qrz_url, err_qrz = validate_url(self.get_argument("qrz_url", "") or "", "QRZ page")
+            social_media_url, err_social = validate_url(self.get_argument("social_media_url", "") or "",
+                                                        "Social media")
+            email, err_email = validate_email_address(self.get_argument("email", "") or "")
+            phone_number, err_phone = validate_phone(self.get_argument("phone_number", "") or "")
+            edit_password, err_pw = validate_free_text(self.get_argument("edit_password"), "edit password",
+                                                       max_length=200)
+
+            err = next((x for x in
+                        [err_callsign, err_club, err_notes, err_when, err_where, err_website, err_qrz, err_social,
+                         err_email, err_phone, err_pw] if x is not None), None)
+            if err:
+                self.set_status(400)
+                self.write(json.dumps({"message": err}))
+                return
+
+            # Get request arguments that don't need separate validation
             type_id = 0
             if self.get_argument("type", None):
                 type_id = int(self.get_argument("type"))
             latitude_degrees = float(self.get_argument("latitude_degrees"))
             longitude_degrees = float(self.get_argument("longitude_degrees"))
-            meeting_when = self.get_argument("meeting_when")
-            meeting_where = self.get_argument("meeting_where")
-            notes = self.get_argument("notes", None)
-            notes = notes if notes else ""
-            website_url = self.get_argument("website_url", None)
-            website_url = website_url if website_url else ""
-            qrz_url = self.get_argument("qrz_url", None)
-            qrz_url = qrz_url if qrz_url else ""
-            social_media_url = self.get_argument("social_media_url", None)
-            social_media_url = social_media_url if social_media_url else ""
-            email = self.get_argument("email", None)
-            email = email if email else ""
-            phone_number = self.get_argument("phone_number", None)
-            phone_number = phone_number if phone_number else ""
             approved = True if self.get_argument("approved", None) else False
-            edit_password = self.get_argument("edit_password")
 
             # Check for approval changes to email the owner
             station = self.application.db.get_permanent_station(station_id)
@@ -112,7 +123,8 @@ class AdminStationPermHandler(BaseHandler):
             if ok:
                 # Update OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station updated. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
+                self.write(json.dumps({"message": "Station updated. Returning you to the stations list...",
+                                       "redirect_url": "/admin/stations"}))
 
                 # Email the station owner if the approval status changed.
                 if approval_happened:
@@ -122,33 +134,41 @@ class AdminStationPermHandler(BaseHandler):
                 return
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to update the station. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to update the station. Please check the logs for more details."}))
                 return
 
-            # Check for Create action
+        # Check for Create action
         elif action == "Create":
-            # Get request arguments
-            callsign = self.get_argument("callsign")
-            club_name = self.get_argument("club_name")
+            # Get and validate request arguments
+            callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
+            club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
+            meeting_when, err_when = validate_free_text(self.get_argument("meeting_when", "") or "", "Meeting times",
+                                                        max_length=200)
+            meeting_where, err_where = validate_free_text(self.get_argument("meeting_where", "") or "", "Meeting place",
+                                                          max_length=200)
+            website_url, err_website = validate_url(self.get_argument("website_url", "") or "", "Website")
+            qrz_url, err_qrz = validate_url(self.get_argument("qrz_url", "") or "", "QRZ page")
+            social_media_url, err_social = validate_url(self.get_argument("social_media_url", "") or "",
+                                                        "Social media")
+            email, err_email = validate_email_address(self.get_argument("email", "") or "")
+            phone_number, err_phone = validate_phone(self.get_argument("phone_number", "") or "")
+
+            err = next((x for x in
+                        [err_callsign, err_club, err_notes, err_when, err_where, err_website, err_qrz, err_social,
+                         err_email, err_phone] if x is not None), None)
+            if err:
+                self.set_status(400)
+                self.write(json.dumps({"message": err}))
+                return
+
+            # Get request arguments that don't need separate validation
             type_id = 0
             if self.get_argument("type", None):
                 type_id = int(self.get_argument("type"))
             latitude_degrees = float(self.get_argument("latitude_degrees"))
             longitude_degrees = float(self.get_argument("longitude_degrees"))
-            meeting_when = self.get_argument("meeting_when")
-            meeting_where = self.get_argument("meeting_where")
-            notes = self.get_argument("notes", None)
-            notes = notes if notes else ""
-            website_url = self.get_argument("website_url", None)
-            website_url = website_url if website_url else ""
-            qrz_url = self.get_argument("qrz_url", None)
-            qrz_url = qrz_url if qrz_url else ""
-            social_media_url = self.get_argument("social_media_url", None)
-            social_media_url = social_media_url if social_media_url else ""
-            email = self.get_argument("email", None)
-            email = email if email else ""
-            phone_number = self.get_argument("phone_number", None)
-            phone_number = phone_number if phone_number else ""
             approved = True if self.get_argument("approved", None) else False
 
             # Process the create action
@@ -166,11 +186,13 @@ class AdminStationPermHandler(BaseHandler):
             if new_station_id:
                 # Create OK
                 self.set_status(200)
-                self.write(json.dumps({"message": "Station created. Returning you to the stations list...", "redirect_url": "/admin/stations"}))
+                self.write(json.dumps({"message": "Station created. Returning you to the stations list...",
+                                       "redirect_url": "/admin/stations"}))
                 return
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to create the station. Please check the logs for more details."}))
+                self.write(
+                    json.dumps({"message": "Failed to create the station. Please check the logs for more details."}))
                 return
 
         else:

@@ -1,7 +1,4 @@
-import json
-
-from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
-from database.utils import to_json_sanitized
+from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station, to_json_sanitized
 from requesthandlers.base import BaseHandler
 
 

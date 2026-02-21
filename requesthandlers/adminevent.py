@@ -4,6 +4,7 @@ from datetime import datetime
 import tornado
 
 from core.utils import get_all_icons, get_default_event_start_time, get_default_event_end_time
+from core.validation import validate_free_text, validate_url_slug
 from requesthandlers.base import BaseHandler
 
 
@@ -66,8 +67,26 @@ class AdminEventHandler(BaseHandler):
 
         # Check for Update action
         elif action == "Update":
-            # Get request arguments
-            name = self.get_argument("name")
+            # Get and validate request arguments
+            raw_name = self.get_argument("name")
+            raw_notes_template = self.get_argument("notes_template", "") or ""
+            raw_url_slug = self.get_argument("url_slug")
+            raw_icon = self.get_argument("icon")
+            raw_color = self.get_argument("color")
+
+            name, err_name = validate_free_text(raw_name, "Event name", max_length=200)
+            notes_template, err_notes = validate_free_text(raw_notes_template, "Notes template", max_length=5000)
+            url_slug, err_slug = validate_url_slug(raw_url_slug)
+            icon, err_icon = validate_free_text(raw_icon, "Icon", max_length=100)
+            color, err_color = validate_free_text(raw_color, "Color", max_length=20)
+
+            err = next((x for x in [err_name, err_notes, err_slug, err_icon, err_color] if x is not None), None)
+            if err:
+                self.set_status(400)
+                self.write(json.dumps({"message": err}))
+                return
+
+            # Get request arguments that don't need separate validation
             start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
             end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
             band_ids = []
@@ -76,11 +95,6 @@ class AdminEventHandler(BaseHandler):
             mode_ids = []
             if self.get_argument("modes[]", None):
                 mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
-            icon = self.get_argument("icon")
-            color = self.get_argument("color")
-            notes_template = self.get_argument("notes_template", None)
-            notes_template = notes_template if notes_template else ""
-            url_slug = self.get_argument("url_slug")
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
 
@@ -120,8 +134,26 @@ class AdminEventHandler(BaseHandler):
 
         # Check for Create action
         elif action == "Create":
-            # Get request arguments.
-            name = self.get_argument("name")
+            # Get and validate request arguments
+            raw_name = self.get_argument("name")
+            raw_notes_template = self.get_argument("notes_template", "") or ""
+            raw_url_slug = self.get_argument("url_slug")
+            raw_icon = self.get_argument("icon")
+            raw_color = self.get_argument("color")
+
+            name, err_name = validate_free_text(raw_name, "Event name", max_length=200)
+            notes_template, err_notes = validate_free_text(raw_notes_template, "Notes template", max_length=5000)
+            url_slug, err_slug = validate_url_slug(raw_url_slug)
+            icon, err_icon = validate_free_text(raw_icon, "Icon", max_length=100)
+            color, err_color = validate_free_text(raw_color, "Color", max_length=20)
+
+            err = next((x for x in [err_name, err_notes, err_slug, err_icon, err_color] if x is not None), None)
+            if err:
+                self.set_status(400)
+                self.write(json.dumps({"message": err}))
+                return
+
+            # Get request arguments that don't need separate validation
             start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
             end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
             band_ids = []
@@ -130,11 +162,6 @@ class AdminEventHandler(BaseHandler):
             mode_ids = []
             if self.get_argument("modes[]", None):
                 mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
-            icon = self.get_argument("icon")
-            color = self.get_argument("color")
-            notes_template = self.get_argument("notes_template", None)
-            notes_template = notes_template if notes_template else ""
-            url_slug = self.get_argument("url_slug")
             public = True if self.get_argument("public", None) else False
             rsgb_event = True if self.get_argument("rsgb_event", None) else False
 

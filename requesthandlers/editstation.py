@@ -2,8 +2,9 @@ import json
 from datetime import datetime
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
-from mail.mailer import notify_admins_user_updated_approved_station, notify_admins_user_updated_unapproved_station, \
-    notify_admins_user_updated_station, notify_admins_user_deleted_station
+from core.validation import validate_callsign, validate_free_text, validate_phone, validate_url, \
+    validate_email_address
+from mail.mailer import notify_admins_user_updated_station, notify_admins_user_deleted_station
 from requesthandlers.base import BaseHandler
 
 
@@ -76,22 +77,37 @@ class EditStationHandler(BaseHandler):
 
         # Check for Edit action
         if action == "Update":
-            # Get request arguments. These could be for either a permanent or a temporary station at this point, so
-            # get the arguments for both if they exist.
-            callsign = self.get_argument("callsign")
-            club_name = self.get_argument("club_name")
+            # Get and validate request arguments. These could be for either a permanent or a temporary station at this
+            # point, so get and validate the arguments for both if they exist.
+            callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
+            club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
+            meeting_when, err_when = validate_free_text(self.get_argument("meeting_when", "") or "", "Meeting times",
+                                                        max_length=1000)
+            meeting_where, err_where = validate_free_text(self.get_argument("meeting_where", "") or "", "Meeting place",
+                                                          max_length=1000)
+            website_url, err_website = validate_url(self.get_argument("website_url", "") or "", "Website")
+            qrz_url, err_qrz = validate_url(self.get_argument("qrz_url", "") or "", "QRZ page")
+            social_media_url, err_social = validate_url(self.get_argument("social_media_url", "") or "",
+                                                        "Social media")
+            email, err_email = validate_email_address(self.get_argument("email", "") or "")
+            phone_number, err_phone = validate_phone(self.get_argument("phone_number", "") or "")
+
+            err = next((x for x in
+                        [err_callsign, err_club, err_notes, err_when, err_where, err_website, err_qrz, err_social,
+                         err_email, err_phone] if x is not None), None)
+            if err:
+                self.set_status(400)
+                self.write(json.dumps({"message": err}))
+                return
+
+            # Get request arguments that don't need separate validation
             event_id = 0
             if self.get_argument("event", None):
                 event_id = int(self.get_argument("event", None))
             type_id = 0
             if self.get_argument("type", None):
                 type_id = int(self.get_argument("type"))
-            meeting_when = None
-            if self.get_argument("meeting_when", None):
-                meeting_when = self.get_argument("meeting_when")
-            meeting_where = None
-            if self.get_argument("meeting_where", None):
-                meeting_where = self.get_argument("meeting_where")
             start_time = None
             if self.get_argument("start_time", None):
                 start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
@@ -106,18 +122,6 @@ class EditStationHandler(BaseHandler):
             mode_ids = []
             if self.get_argument("modes[]", None):
                 mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
-            notes = self.get_argument("notes", None)
-            notes = notes if notes else ""
-            website_url = self.get_argument("website_url", None)
-            website_url = website_url if website_url else ""
-            qrz_url = self.get_argument("qrz_url", None)
-            qrz_url = qrz_url if qrz_url else ""
-            social_media_url = self.get_argument("social_media_url", None)
-            social_media_url = social_media_url if social_media_url else ""
-            email = self.get_argument("email", None)
-            email = email if email else ""
-            phone_number = self.get_argument("phone_number", None)
-            phone_number = phone_number if phone_number else ""
 
             # Now update the station, taking into account its type
             ok = False
@@ -156,7 +160,8 @@ class EditStationHandler(BaseHandler):
                 return
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to update the station. Please contact the administrators (TODO) for help."}))
+                self.write(json.dumps(
+                    {"message": "Failed to update the station. Please contact the administrators (TODO) for help."}))
                 return
 
         # Check for Delete action
@@ -175,13 +180,14 @@ class EditStationHandler(BaseHandler):
                 # Delete station and email administrators
                 self.set_status(200)
                 self.write(json.dumps({"message": "Your station has been deleted. Taking you back home...",
-                                       "redirect_url": "/" }))
+                                       "redirect_url": "/"}))
                 if station:
                     notify_admins_user_deleted_station(self.application.db, station)
                 return
             else:
                 self.set_status(500)
-                self.write(json.dumps({"message": "Failed to delete the station. Please contact the administrators (TODO) for help."}))
+                self.write(json.dumps(
+                    {"message": "Failed to delete the station. Please contact the administrators (TODO) for help."}))
                 return
 
         else:

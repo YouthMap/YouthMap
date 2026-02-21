@@ -4,8 +4,8 @@ from datetime import datetime
 import tornado
 
 from core.utils import get_default_event_end_time, get_default_event_start_time, populate_derived_fields_temp_station, \
-    humanize_start_end
-from database.utils import to_json_sanitized
+    humanize_start_end, to_json_sanitized
+from core.validation import validate_callsign, validate_free_text, validate_url, validate_phone, validate_email_address
 from mail.mailer import notify_owner_station_approved, notify_owner_station_approval_revoked, \
     notify_owner_station_deleted
 from requesthandlers.base import BaseHandler
@@ -81,9 +81,28 @@ class AdminStationTempHandler(BaseHandler):
 
         # Check for Update action
         elif action == "Update":
-            # Get request arguments
-            callsign = self.get_argument("callsign")
-            club_name = self.get_argument("club_name")
+            # Get and validate request arguments
+            callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
+            club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
+            website_url, err_website = validate_url(self.get_argument("website_url", "") or "", "Website")
+            qrz_url, err_qrz = validate_url(self.get_argument("qrz_url", "") or "", "QRZ page")
+            social_media_url, err_social = validate_url(self.get_argument("social_media_url", "") or "",
+                                                        "Social media")
+            email, err_email = validate_email_address(self.get_argument("email", "") or "")
+            phone_number, err_phone = validate_phone(self.get_argument("phone_number", "") or "")
+            edit_password, err_pw = validate_free_text(self.get_argument("edit_password"), "edit password",
+                                                       max_length=200)
+
+            err = next((x for x in
+                        [err_callsign, err_club, err_notes, err_website, err_qrz, err_social, err_email, err_phone,
+                         err_pw] if x is not None), None)
+            if err:
+                self.set_status(400)
+                self.write(json.dumps({"message": err}))
+                return
+
+            # Get request arguments that don't need separate validation
             event_id = 0
             if self.get_argument("event", None):
                 event_id = int(self.get_argument("event", None))
@@ -97,21 +116,8 @@ class AdminStationTempHandler(BaseHandler):
             mode_ids = []
             if self.get_argument("modes[]", None):
                 mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
-            notes = self.get_argument("notes", None)
-            notes = notes if notes else ""
-            website_url = self.get_argument("website_url", None)
-            website_url = website_url if website_url else ""
-            qrz_url = self.get_argument("qrz_url", None)
-            qrz_url = qrz_url if qrz_url else ""
-            social_media_url = self.get_argument("social_media_url", None)
-            social_media_url = social_media_url if social_media_url else ""
-            email = self.get_argument("email", None)
-            email = email if email else ""
-            phone_number = self.get_argument("phone_number", None)
-            phone_number = phone_number if phone_number else ""
             rsgb_attending = True if self.get_argument("rsgb_attending", None) else False
             approved = True if self.get_argument("approved", None) else False
-            edit_password = self.get_argument("edit_password")
 
             # Check for sensible times
             if start_time > end_time:
@@ -179,9 +185,26 @@ class AdminStationTempHandler(BaseHandler):
 
         # Check for Create action
         elif action == "Create":
-            # Get request arguments.
-            callsign = self.get_argument("callsign")
-            club_name = self.get_argument("club_name")
+            # Get and validate request arguments
+            callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
+            club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
+            website_url, err_website = validate_url(self.get_argument("website_url", "") or "", "Website")
+            qrz_url, err_qrz = validate_url(self.get_argument("qrz_url", "") or "", "QRZ page")
+            social_media_url, err_social = validate_url(self.get_argument("social_media_url", "") or "",
+                                                        "Social media")
+            email, err_email = validate_email_address(self.get_argument("email", "") or "")
+            phone_number, err_phone = validate_phone(self.get_argument("phone_number", "") or "")
+
+            err = next((x for x in
+                        [err_callsign, err_club, err_notes, err_website, err_qrz, err_social, err_email, err_phone] if
+                        x is not None), None)
+            if err:
+                self.set_status(400)
+                self.write(json.dumps({"message": err}))
+                return
+
+            # Get request arguments that don't need separate validation
             event_id = 0
             if self.get_argument("event", None):
                 event_id = int(self.get_argument("event", None))
@@ -195,18 +218,6 @@ class AdminStationTempHandler(BaseHandler):
             mode_ids = []
             if self.get_argument("modes[]", None):
                 mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
-            notes = self.get_argument("notes", None)
-            notes = notes if notes else ""
-            website_url = self.get_argument("website_url", None)
-            website_url = website_url if website_url else ""
-            qrz_url = self.get_argument("qrz_url", None)
-            qrz_url = qrz_url if qrz_url else ""
-            social_media_url = self.get_argument("social_media_url", None)
-            social_media_url = social_media_url if social_media_url else ""
-            email = self.get_argument("email", None)
-            email = email if email else ""
-            phone_number = self.get_argument("phone_number", None)
-            phone_number = phone_number if phone_number else ""
             rsgb_attending = True if self.get_argument("rsgb_attending", None) else False
             approved = True if self.get_argument("approved", None) else False
 

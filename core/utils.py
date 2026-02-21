@@ -1,4 +1,8 @@
 import calendar
+import hashlib
+import json
+import secrets
+import string
 from datetime import datetime, timedelta
 from os import listdir
 from os.path import isfile, join
@@ -110,3 +114,36 @@ def get_default_event_end_time():
     start = datetime.now(pytz.UTC).replace(day=1) + timedelta(days=32)
     days_in_month = calendar.monthrange(start.year, start.month)[1]
     return start.replace(day=days_in_month, hour=23, minute=59, second=59, tzinfo=pytz.UTC)
+
+
+def generate_password():
+    """Generate a password-like string. This is used to generate both the 'edit password' that visitors are given to
+    allow them to edit stations they submitted, and when a super-admin creates a new account for someome else. The
+    generated password is 10 characters long and contains at least one lowercase letter, uppercase letter, and number."""
+
+    alphabet = string.ascii_letters + string.digits
+    while True:
+        password = ''.join(secrets.choice(alphabet) for _ in range(10))
+        if (any(c.islower() for c in password)
+                and any(c.isupper() for c in password)
+                and sum(c.isdigit() for c in password) >= 3):
+            return password
+
+
+def hash_password(password, salt):
+    """Hash the given password with the given salt. A hex version of the hash will be returned. Used in all database
+    calls for setting/storing user passwords"""
+
+    return hashlib.pbkdf2_hmac(
+        'sha256',
+        password.encode('utf-8'),
+        salt.encode('utf-8'),
+        100000
+    ).hex()
+
+
+def to_json_sanitized(o):
+    """Converts an object to a JSON serialized string, removing any constructs that look like they could be used to
+    escape a <script> block. This should make them safe to include with "raw" in JS."""
+
+    return json.dumps(o).replace("</", r"<\/").replace("<!--", r"<\!--")
