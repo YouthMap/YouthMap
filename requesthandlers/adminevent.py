@@ -27,7 +27,7 @@ class AdminEventHandler(BaseHandler):
         default_end = get_default_event_end_time()
 
         # Render the template
-        if event:
+        if event or creating_new:
             self.render("adminevent.html", event=event, creating_new=creating_new, all_bands=all_bands,
                         all_modes=all_modes, all_icons=all_icons, default_start=default_start, default_end=default_end)
         else:

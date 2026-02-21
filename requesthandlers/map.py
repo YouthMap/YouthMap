@@ -1,6 +1,7 @@
 import json
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
+from database.utils import to_json_sanitized
 from requesthandlers.base import BaseHandler
 
 
@@ -28,11 +29,11 @@ class MapHandler(BaseHandler):
                 return
 
         # Get other data we need to include in the template. Convert to JSON here so we can load it straight up in JS.
-        temp_stations_json = json.dumps(self.get_temporary_stations_js())
-        perm_stations_json = json.dumps(self.get_permanent_stations_js())
+        temp_stations_json = to_json_sanitized(self.get_temporary_stations_js())
+        perm_stations_json = to_json_sanitized(self.get_permanent_stations_js())
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
-        all_events_json = json.dumps(self.get_events_js())
+        all_events_json = to_json_sanitized(self.get_events_js())
 
         # Render the template
         self.render("map.html", temp_stations_json=temp_stations_json, perm_stations_json=perm_stations_json,

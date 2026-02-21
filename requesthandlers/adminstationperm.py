@@ -27,7 +27,7 @@ class AdminStationPermHandler(BaseHandler):
         all_perm_station_types = self.application.db.get_all_permanent_station_types()
 
         # Render the template
-        if station:
+        if station or creating_new:
             self.render("adminstationperm.html", station=station, creating_new=creating_new,
                         all_perm_station_types=all_perm_station_types)
         else:

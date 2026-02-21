@@ -1,4 +1,5 @@
 import hashlib
+import json
 import secrets
 import string
 
@@ -27,3 +28,10 @@ def hash_password(password, salt):
         salt.encode('utf-8'),
         100000
     ).hex()
+
+
+def to_json_sanitized(object):
+    """Converts an object to a JSON serialized string, removing any constructs that look like they could be used to
+    escape a <script> block. This should make them safe to include with "raw" in JS."""
+
+    return json.dumps(object).replace("</", r"<\/").replace("<!--", r"<\!--")

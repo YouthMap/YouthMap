@@ -5,6 +5,7 @@ import tornado
 
 from core.utils import get_default_event_end_time, get_default_event_start_time, populate_derived_fields_temp_station, \
     humanize_start_end
+from database.utils import to_json_sanitized
 from mail.mailer import notify_owner_station_approved, notify_owner_station_approval_revoked, \
     notify_owner_station_deleted
 from requesthandlers.base import BaseHandler
@@ -33,10 +34,10 @@ class AdminStationTempHandler(BaseHandler):
         default_end = get_default_event_end_time()
         # Include a JSON version of all events. This allows us to pull out the start/end times, notes template, bands
         # and modes from the event in real time via JS when the user selects an event from the drop-down.
-        all_events_json = json.dumps(self.get_events_js())
+        all_events_json = to_json_sanitized(self.get_events_js())
 
         # Render the template
-        if station:
+        if station or creating_new:
             self.render("adminstationtemp.html", station=station, creating_new=creating_new, all_events=all_events,
                         all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end,
                         all_events_json=all_events_json)

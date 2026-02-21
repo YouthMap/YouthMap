@@ -160,9 +160,9 @@
 {% module Template("widgets/import-map.html") %}
 <script>
     // Load JSON data from the backend for the map
-    let perm_stations = JSON.parse({% raw json_encode(perm_stations_json) %});
-    let temp_stations = JSON.parse({% raw json_encode(temp_stations_json) %});
-    let events = JSON.parse({% raw json_encode(all_events_json) %});
+    let perm_stations = {% raw perm_stations_json %};
+    let temp_stations = {% raw temp_stations_json %};
+    let events = {% raw all_events_json %};
 </script>
-<script type="module" src="/static/js/map.js?v=1771605394"></script>
+<script type="module" src="/static/js/map.js?v=1771683902"></script>
 {% end %}
