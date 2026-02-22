@@ -110,9 +110,11 @@ class CreateStationHandler(BaseHandler):
             email, err_email = validate_email_address(self.get_argument("email", "") or "")
             phone_number, err_phone = validate_phone(self.get_argument("phone_number", "") or "")
 
-            err = next((x for x in
-                        [err_callsign, err_club, err_notes, err_when, err_where, err_website, err_qrz, err_social,
-                         err_email, err_phone] if x is not None), None)
+            check_field_validity_errors = [err_callsign, err_club, err_notes, err_website, err_qrz, err_social,
+                         err_email, err_phone]
+            if perm_or_temp_slug == "perm":
+                check_field_validity_errors.extend([err_when, err_where])
+            err = next((x for x in check_field_validity_errors if x is not None), None)
             if err:
                 self.set_status(400)
                 self.write(json.dumps({"message": err}))
@@ -141,10 +143,10 @@ class CreateStationHandler(BaseHandler):
                 mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
 
             # Check lat/lon were supplied and other fields are consistent with what the user could reasonably select
-            if not latitude_degrees or not latitude_degrees or (event_id == 0 and type_id == 0):
+            if not latitude_degrees or not latitude_degrees:
                 self.set_status(400)
                 self.write(json.dumps({
-                    "message": "Required parameters were not provided. Please contact the administrators (TODO) for help."}))
+                    "message": "A location was not provided. Please contact the administrators (TODO) for help."}))
                 return
             if perm_or_temp_slug == "temp" and event_id > 0:
                 event = self.application.db.get_event(event_id)

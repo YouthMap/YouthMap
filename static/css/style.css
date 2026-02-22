@@ -75,3 +75,7 @@ div#map {
 div.form-result {
     display: none;
 }
+
+.grecaptcha-badge {
+    visibility: hidden;
+}

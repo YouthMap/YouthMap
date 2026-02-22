@@ -250,7 +250,7 @@ def get_station_details_for_email(station):
     return f"""\
         <p>Callsign: <strong>{station.callsign}</strong></p>
         <p>Name: <strong>{station.club_name}</strong></p>
-        {("<p>Event: <strong>" + station.event.name + "</strong></p>") if hasattr(station, "event") else ""}
+        {("<p>Event: <strong>" + station.event.name + "</strong></p>") if hasattr(station, "event") and station.event else ""}
         {("<p>Type: <strong>" + station.type.name + "</strong></p>") if hasattr(station, "type") else ""}
         {("<p>Meeting: " + station.meeting_when + "</p>") if hasattr(station, "meeting_when") else ""}
         {("<p>Meeting: " + station.meeting_where + "</p>") if hasattr(station, "meeting_where") else ""}

@@ -4,9 +4,15 @@
 {% if insecure_user_present %}
 <!--suppress HtmlUnknownTarget -->
 <div class="alert alert-danger mb-5" role="alert">
-    <h5 class="alert-heading"><svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg> This site has not been secured</h5>
-    <p class="mb-0">The default login is username "admin", password "password". Please ensure this user is renamed or replaced
-    before this site goes live.</p>
+    <h5 class="alert-heading">
+        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Warning:">
+            <use xlink:href="#exclamation-triangle-fill"/>
+        </svg>
+        This site has not been secured
+    </h5>
+    <p class="mb-0">The default login is username "admin", password "password". Please ensure this user is renamed or
+        replaced
+        before this site goes live.</p>
 </div>
 {% end %}
 
@@ -24,8 +30,14 @@
                 <label class="form-label" for="password">Password</label>
                 <input type="password" class="form-control" id="password" name="password" required>
             </div>
-            <input type="hidden" name="next" value="{{ next }}">
-            <button type="submit" class="btn btn-primary" onclick="submitForm('')">Login</button>
+            <div class="mb-2">
+                <input type="hidden" name="next" value="{{ next }}">
+                <button type="submit" class="btn btn-primary" onclick="submitForm('')">Login</button>
+            </div>
+
+            <div class="form-text opacity-50">This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms">Terms of Service</a> apply.</div>
 
             {% module Template("widgets/form-result.html") %}
         </form>
@@ -36,6 +48,6 @@
 <script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}"></script>
 <script>captchaOnThisPage = true; recaptchaSiteKey = "{{ recaptcha_site_key }}";</script>
 {% end %}
-<script src="/static/js/form-post-handler.js?v=1771778908"></script>
+<script src="/static/js/form-post-handler.js?v=1771781175"></script>
 
 {% end %}

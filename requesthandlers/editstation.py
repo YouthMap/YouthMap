@@ -90,7 +90,7 @@ class EditStationHandler(BaseHandler):
         # Get the action we have been asked to do
         action = self.get_argument("action")
 
-        # Check for Edit action
+        # Check for Update action
         if action == "Update":
             # Get and validate request arguments. These could be for either a permanent or a temporary station at this
             # point, so get and validate the arguments for both if they exist.
@@ -108,9 +108,11 @@ class EditStationHandler(BaseHandler):
             email, err_email = validate_email_address(self.get_argument("email", "") or "")
             phone_number, err_phone = validate_phone(self.get_argument("phone_number", "") or "")
 
-            err = next((x for x in
-                        [err_callsign, err_club, err_notes, err_when, err_where, err_website, err_qrz, err_social,
-                         err_email, err_phone] if x is not None), None)
+            check_field_validity_errors = [err_callsign, err_club, err_notes, err_website, err_qrz, err_social,
+                         err_email, err_phone]
+            if perm_or_temp_slug == "perm":
+                check_field_validity_errors.extend([err_when, err_where])
+            err = next((x for x in check_field_validity_errors if x is not None), None)
             if err:
                 self.set_status(400)
                 self.write(json.dumps({"message": err}))

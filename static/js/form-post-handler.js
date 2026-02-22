@@ -2,10 +2,14 @@
 // elements. If a reCAPTCHA element is on the page, it will call its code as part of the submission process,
 function submitForm(action) {
     event.preventDefault();
+
+    // Display status on the form as "in progress"
     $("#form-progress").show();
     $("#form-success").hide();
     $("#form-error").hide();
+    $("#form-progress").get(0).scrollIntoView({behavior: 'smooth'});
 
+    // Determine if we should use CAPTCHA or not when submitting the form
     if (typeof captchaOnThisPage !== 'undefined' && captchaOnThisPage) {
         grecaptcha.ready(function() {
           grecaptcha.execute(recaptchaSiteKey, {action: 'submit'}).then(function(token) {

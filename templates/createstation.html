@@ -183,7 +183,8 @@
                             <label for="email" class="form-label mt-2">Email address (optional):</label>
                         </div>
                         <div class="col-sm-8">
-                            <input type="text" id="email" class="form-control" aria-describedby="emailHelp" name="email"/>
+                            <input type="text" id="email" class="form-control" aria-describedby="emailHelp"
+                                   name="email"/>
                             <small id="emailHelp" class="form-text text-muted">If you enter an email address, we'll also
                                 email you when the status of your station is updated.</small>
                         </div>
@@ -205,6 +206,11 @@
                             <a href="/create/station/type?lat={{ latitude_degrees }}&lon={{ longitude_degrees }}"
                                class="btn btn-secondary" role="button">Back</a>
                             <a href="/" class="btn btn-secondary" role="button">Cancel</a>
+
+                            <div class="form-text opacity-50 mt-2">This site is protected by reCAPTCHA and the Google
+                                <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+                                <a href="https://policies.google.com/terms">Terms of Service</a> apply.
+                            </div>
                         </div>
                     </div>
 
@@ -231,11 +237,11 @@
     let icon = "{{ icon }}";
     let default_zoom = 12;
 </script>
-<script type="module" src="/static/js/map-editstation.js?v=1771778908"></script>
+<script type="module" src="/static/js/map-editstation.js?v=1771781175"></script>
 {% if enable_captcha %}
 <script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}"></script>
 <script>captchaOnThisPage = true; recaptchaSiteKey = "{{ recaptcha_site_key }}";</script>
 {% end %}
-<script src="/static/js/form-post-handler.js?v=1771778908"></script>
+<script src="/static/js/form-post-handler.js?v=1771781175"></script>
 
 {% end %}

@@ -57,7 +57,7 @@ class LoginHandler(BaseHandler):
             session_token = self.application.db.create_user_session(user_id)
             self.set_secure_cookie("session_token", session_token)
             self.set_status(200)
-            self.write(json.dumps({"message": "Logged in successfully.", "redirect_url": next_url}))
+            self.write(json.dumps({"redirect_url": next_url}))
             return
         else:
             self.set_status(401)
