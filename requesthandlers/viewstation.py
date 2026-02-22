@@ -1,4 +1,5 @@
 import json
+from time import sleep
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
 from mail.mailer import notify_admins_user_deleted_station
@@ -47,6 +48,9 @@ class ViewStationHandler(BaseHandler):
          on whether the Edit or Delete button was clicked,and provides the user's edit password to compare against the
          station. Two slugs are provided here. The first is "perm" or "temp", and the second is the station ID within that
         category, so e.g. the URL can be /view/station/temp/1 to view permanent station 1."""
+
+        # Brief delay to make spamming attacks less viable
+        sleep(1)
 
         self.set_header("Content-Type", "application/json")
 

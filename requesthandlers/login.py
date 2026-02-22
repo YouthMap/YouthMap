@@ -1,4 +1,5 @@
 import json
+from time import sleep
 
 from requesthandlers.base import BaseHandler
 
@@ -26,6 +27,9 @@ class LoginHandler(BaseHandler):
     def post(self):
         """Handles POST requests for login page. If successful a session token will be created, stored in a cookie, and
         the user will be redirected to the admin page."""
+
+        # Brief delay to make spamming attacks less viable
+        sleep(1)
 
         self.set_header("Content-Type", "application/json")
 

@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from time import sleep
 
 from core.utils import TEMP_STATION_NO_EVENT_COLOR, TEMP_STATION_NO_EVENT_ICON, get_default_event_start_time, \
     get_default_event_end_time, humanize_start_end
@@ -71,6 +72,9 @@ class CreateStationHandler(BaseHandler):
 
     def post(self, perm_or_temp_slug):
         """Handle the user filling in the form and clicking Create. The "perm" or "temp" slug is provided here as well."""
+
+        # Brief delay to make spamming attacks less viable
+        sleep(1)
 
         self.set_header("Content-Type", "application/json")
 
