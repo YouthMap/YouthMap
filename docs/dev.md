@@ -81,4 +81,16 @@ Each `post()` method in the Python code handles the form submission and replies 
 
 The JSON response contains two fields, `message` and `redirect_url`, of which one or both will be populated.
 
-If `message` is provided, this will be displayed on the submitting page in an "OK" or Error message according to the status code. If `redirect_url` is provided, the JavaScript code will cause the browser to redirect the user to that URL. This can be immediate if no `message` is provided, but if a `message` is provided, a timeout will be used to give the user chance to read the message. `redirect_url` should generally only be used for success messages; for error messages the user should generally remain on the source page. 
+If `message` is provided, this will be displayed on the submitting page in an "OK" or Error message according to the status code. If `redirect_url` is provided, the JavaScript code will cause the browser to redirect the user to that URL. This can be immediate if no `message` is provided, but if a `message` is provided, a timeout will be used to give the user chance to read the message. `redirect_url` should generally only be used for success messages; for error messages the user should generally remain on the source page.
+
+### Mail
+
+Mail settings can be configured from the "Configure Site" super-admin page and are stored in the database. User-driven events such as creating and editing stations will cause an email to be sent to administrators. An administrator approving/unapproving/deleting an event then emails the user that created it. Passwords are also sent to new administrators via email on account creation. Note that this feature is off by default and requires an external account supporting SMTP.
+
+### CAPTCHA
+
+CAPTCHA settings can be configured from the "Configure Site" super-admin page and are stored in the database. Currently only reCAPTCHA is supported. Note that this feature is off by default and requires an external Google account.
+
+The following pages have an embedded reCAPTCHA v3 script and require the check to be passed on POST, if CAPTCHA is turned on: login, create station, edit station, view station (when entering the edit password).
+
+Admin forms do not require CAPTCHA.

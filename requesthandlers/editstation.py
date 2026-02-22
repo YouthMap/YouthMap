@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from time import sleep
 
-from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
+from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station, verify_recaptcha
 from core.validation import validate_callsign, validate_free_text, validate_phone, validate_url, \
     validate_email_address
 from mail.mailer import notify_admins_user_updated_station, notify_admins_user_deleted_station
@@ -31,6 +31,8 @@ class EditStationHandler(BaseHandler):
         all_bands = self.application.db.get_all_bands()
         all_modes = self.application.db.get_all_modes()
         all_perm_station_types = self.application.db.get_all_permanent_station_types()
+        enable_captcha = self.application.db.get_config().enable_captcha
+        recaptcha_site_key = self.application.db.get_config().recaptcha_site_key
 
         # Check edit password is supplied and correct
         user_edit_password = self.get_argument("edit_password")
@@ -44,7 +46,8 @@ class EditStationHandler(BaseHandler):
         if station:
             self.render("editstation.html", station_type=perm_or_temp_slug, station=station,
                         all_perm_station_types=all_perm_station_types, station_event=station_event,
-                        all_bands=all_bands, all_modes=all_modes, user_edit_password=user_edit_password)
+                        all_bands=all_bands, all_modes=all_modes, user_edit_password=user_edit_password,
+                        enable_captcha=enable_captcha, recaptcha_site_key=recaptcha_site_key)
         else:
             self.write("Station not found.")
 
@@ -58,6 +61,14 @@ class EditStationHandler(BaseHandler):
         sleep(1)
 
         self.set_header("Content-Type", "application/json")
+
+        # Check CAPTCHA if required
+        if self.application.db.get_config().enable_captcha:
+            recaptcha_token = self.get_argument("recaptcha_token", None)
+            if not verify_recaptcha(self.application.db.get_config().recaptcha_secret_key, recaptcha_token):
+                self.set_status(401)
+                self.write(json.dumps({"message": "CAPTCHA verification failed."}))
+                return
 
         station_id = int(station_id_slug)
         user_edit_password = self.get_argument("user_edit_password")

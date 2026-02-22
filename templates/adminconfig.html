@@ -91,11 +91,20 @@
             </div>
             <div class="row mb-2">
                 <div class="col-sm-4">
-                    <label for="recaptcha_key" class="form-label mt-2">reCAPTCHA key:</label>
+                    <label for="recaptcha_site_key" class="form-label mt-2">reCAPTCHA site key:</label>
                 </div>
                 <div class="col-sm-8">
-                    <input type="text" id="recaptcha_key" class="form-control" name="recaptcha_key"
-                           value="{{ config.recaptcha_key if config.recaptcha_key else '' }}"/>
+                    <input type="text" id="recaptcha_site_key" class="form-control" name="recaptcha_site_key"
+                           value="{{ config.recaptcha_site_key if config.recaptcha_site_key else '' }}"/>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-sm-4">
+                    <label for="recaptcha_secret_key" class="form-label mt-2">reCAPTCHA secret key:</label>
+                </div>
+                <div class="col-sm-8">
+                    <input type="text" id="recaptcha_secret_key" class="form-control" name="recaptcha_secret_key"
+                           value="{{ config.recaptcha_secret_key if config.recaptcha_secret_key else '' }}"/>
                 </div>
             </div>
 
@@ -121,6 +130,6 @@
     </div>
 </div>
 
-<script src="/static/js/form-post-handler.js?v=1771774815"></script>
+<script src="/static/js/form-post-handler.js?v=1771778908"></script>
 
 {% end %}

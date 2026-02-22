@@ -31,7 +31,8 @@ class DatabaseOperations:
             session.close()
 
     def update_config(self, base_url=None, enable_mail=None, mail_sender=None, mail_username=None, mail_password=None,
-                      mail_server_host=None, mail_server_port=None, enable_captcha=None, recaptcha_key=None):
+                      mail_server_host=None, mail_server_port=None, enable_captcha=None, recaptcha_site_key=None,
+                      recaptcha_secret_key=None):
         """Update the site config. Only provided fields will be updated. Returns True if successful."""
 
         session = self.SessionLocal()
@@ -56,8 +57,10 @@ class DatabaseOperations:
                 config.mail_server_port = mail_server_port
             if enable_captcha is not None:
                 config.enable_captcha = enable_captcha
-            if recaptcha_key is not None:
-                config.recaptcha_key = recaptcha_key
+            if recaptcha_site_key is not None:
+                config.recaptcha_site_key = recaptcha_site_key
+            if recaptcha_secret_key is not None:
+                config.recaptcha_secret_key = recaptcha_secret_key
 
             session.commit()
             return True

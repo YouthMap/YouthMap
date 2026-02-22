@@ -1,7 +1,7 @@
 import json
 from time import sleep
 
-from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
+from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station, verify_recaptcha
 from mail.mailer import notify_admins_user_deleted_station
 from requesthandlers.base import BaseHandler
 
@@ -35,11 +35,14 @@ class ViewStationHandler(BaseHandler):
             if station:
                 populate_derived_fields_temp_station(station)
                 edit_password_good = station.edit_password == user_edit_password
+        enable_captcha = self.application.db.get_config().enable_captcha
+        recaptcha_site_key = self.application.db.get_config().recaptcha_site_key
 
         # Render the template.
         if station:
             self.render("viewstation.html", type=perm_or_temp_slug, station=station,
-                    user_edit_password=user_edit_password if edit_password_good else None, emailed=emailed)
+                    user_edit_password=user_edit_password if edit_password_good else None, emailed=emailed,
+                    enable_captcha=enable_captcha, recaptcha_site_key=recaptcha_site_key)
         else:
             self.write("Station not found.")
 
@@ -53,6 +56,14 @@ class ViewStationHandler(BaseHandler):
         sleep(1)
 
         self.set_header("Content-Type", "application/json")
+
+        # Check CAPTCHA if required
+        if self.application.db.get_config().enable_captcha:
+            recaptcha_token = self.get_argument("recaptcha_token", None)
+            if not verify_recaptcha(self.application.db.get_config().recaptcha_secret_key, recaptcha_token):
+                self.set_status(401)
+                self.write(json.dumps({"message": "CAPTCHA verification failed."}))
+                return
 
         station_id = int(station_id_slug)
         user_edit_password = self.get_argument("user_edit_password")

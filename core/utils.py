@@ -8,6 +8,7 @@ from os import listdir
 from os.path import isfile, join
 
 import pytz
+import requests
 
 from core.config import UPLOAD_DIR
 
@@ -147,3 +148,19 @@ def to_json_sanitized(o):
     escape a <script> block. This should make them safe to include with "raw" in JS."""
 
     return json.dumps(o).replace("</", r"<\/").replace("<!--", r"<\!--")
+
+
+def verify_recaptcha(secret_key, token):
+    """Verify a reCAPTCHA v3 token with Google's verification service."""
+
+    if not secret_key or not token:
+        return False
+
+    response = requests.post("https://www.google.com/recaptcha/api/siteverify",
+                             data={
+                                 "secret": secret_key,
+                                 "response": token,
+                             })
+    response.raise_for_status()
+    result = response.json()
+    return result.get("success") and result.get("score", 0.0) >= 0.5

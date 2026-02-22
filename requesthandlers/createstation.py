@@ -3,7 +3,7 @@ from datetime import datetime
 from time import sleep
 
 from core.utils import TEMP_STATION_NO_EVENT_COLOR, TEMP_STATION_NO_EVENT_ICON, get_default_event_start_time, \
-    get_default_event_end_time, humanize_start_end
+    get_default_event_end_time, humanize_start_end, verify_recaptcha
 from core.validation import validate_free_text, validate_callsign, validate_url, validate_phone, validate_email_address
 from mail.mailer import notify_admins_user_added_station, notify_owner_station_created
 from requesthandlers.base import BaseHandler
@@ -31,6 +31,8 @@ class CreateStationHandler(BaseHandler):
         type_id = 0
         if self.get_argument("type", None):
             type_id = int(self.get_argument("type"))
+        enable_captcha = self.application.db.get_config().enable_captcha
+        recaptcha_site_key = self.application.db.get_config().recaptcha_site_key
 
         # Check lat/lon were supplied and other fields are consistent with what the user could reasonably select
         if not lat or not lon:
@@ -68,7 +70,8 @@ class CreateStationHandler(BaseHandler):
         # so we can check it again when it comes back to us in the POST.
         self.render("createstation.html", station_type=perm_or_temp_slug, latitude_degrees=lat, longitude_degrees=lon,
                     event=event, event_id=event_id, type=perm_station_type, type_id=type_id, color=color, icon=icon,
-                    all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end)
+                    all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end,
+                    enable_captcha=enable_captcha, recaptcha_site_key=recaptcha_site_key)
 
     def post(self, perm_or_temp_slug):
         """Handle the user filling in the form and clicking Create. The "perm" or "temp" slug is provided here as well."""
@@ -77,6 +80,14 @@ class CreateStationHandler(BaseHandler):
         sleep(1)
 
         self.set_header("Content-Type", "application/json")
+
+        # Check CAPTCHA if required
+        if self.application.db.get_config().enable_captcha:
+            recaptcha_token = self.get_argument("recaptcha_token", None)
+            if not verify_recaptcha(self.application.db.get_config().recaptcha_secret_key, recaptcha_token):
+                self.set_status(401)
+                self.write(json.dumps({"message": "CAPTCHA verification failed."}))
+                return
 
         # Get the action we have been asked to do
         action = self.get_argument("action")

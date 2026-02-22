@@ -49,7 +49,8 @@ class AdminConfigHandler(BaseHandler):
         mail_sender = self.get_argument("mail_sender", None)
 
         enable_captcha = True if self.get_argument("enable_captcha", None) else False
-        recaptcha_key = self.get_argument("recaptcha_key", None)
+        recaptcha_site_key = self.get_argument("recaptcha_site_key", None)
+        recaptcha_secret_key = self.get_argument("recaptcha_secret_key", None)
 
         # Check for validity
         if enable_mail and not (
@@ -58,17 +59,18 @@ class AdminConfigHandler(BaseHandler):
             self.write(json.dumps({
                 "message": "You must supply a full set of SMTP server information and credentials if you want to enable email supprt."}))
             return
-        if enable_captcha and not recaptcha_key:
+        if enable_captcha and (not recaptcha_site_key or not recaptcha_secret_key):
             self.set_status(400)
             self.write(json.dumps({
-                "message": "You must supply a reCAPTCHA key if you want to enable CAPTCHA supprt."}))
+                "message": "You must supply reCAPTCHA keys if you want to enable CAPTCHA supprt."}))
             return
 
         # Process the update
         ok = self.application.db.update_config(base_url=base_url, enable_mail=enable_mail, mail_sender=mail_sender,
                                                mail_username=mail_username, mail_password=mail_password,
                                                mail_server_host=mail_server_host, mail_server_port=mail_server_port,
-                                               enable_captcha=enable_captcha, recaptcha_key=recaptcha_key)
+                                               enable_captcha=enable_captcha, recaptcha_site_key=recaptcha_site_key,
+                                               recaptcha_secret_key=recaptcha_secret_key)
         if ok:
             # Update OK
             self.set_status(200)
