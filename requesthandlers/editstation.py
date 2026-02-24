@@ -1,7 +1,9 @@
+import asyncio
 import json
 import secrets
 from datetime import datetime
-from time import sleep
+
+import tornado
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station, verify_recaptcha
 from core.validation import validate_callsign, validate_free_text, validate_phone, validate_url, \
@@ -13,31 +15,38 @@ from requesthandlers.base import BaseHandler
 class EditStationHandler(BaseHandler):
     """Handler for station edit page"""
 
-    def get(self, perm_or_temp_slug, station_id_slug):
+    async def get(self, perm_or_temp_slug, station_id_slug):
         """Two slugs are provided here. The first is "perm" or "temp", and the second is the station ID within that
         category, so e.g. the URL can be /edit/station/temp/1 to edit permanent station 1."""
 
         station_id = int(station_id_slug)
 
         # Get data we need to include in the template
+        executor = tornado.ioloop.IOLoop.current()
         station = None
         station_event = None
         if perm_or_temp_slug == "perm":
-            station = self.application.db.get_permanent_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_permanent_station(station_id))
             populate_derived_fields_perm_station(station)
         elif perm_or_temp_slug == "temp":
-            station = self.application.db.get_temporary_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_temporary_station(station_id))
             populate_derived_fields_temp_station(station)
-            station_event = self.application.db.get_event(station.event_id)
-        all_bands = self.application.db.get_all_bands()
-        all_modes = self.application.db.get_all_modes()
-        all_perm_station_types = self.application.db.get_all_permanent_station_types()
-        enable_captcha = self.application.db.get_config().enable_captcha
-        recaptcha_site_key = self.application.db.get_config().recaptcha_site_key
+            station_event = await executor.run_in_executor(None, lambda: self.application.db.get_event(
+                station.event_id))
+        all_bands = await executor.run_in_executor(None, lambda: self.application.db.get_all_bands())
+        all_modes = await executor.run_in_executor(None, lambda: self.application.db.get_all_modes())
+        all_perm_station_types = await executor.run_in_executor(None,
+                                                                lambda: self.application.db.get_all_permanent_station_types())
+        config = await executor.run_in_executor(None, lambda: self.application.db.get_config())
+        enable_captcha = config.enable_captcha
+        recaptcha_site_key = config.recaptcha_site_key
 
         # Check edit password is supplied and correct
         user_edit_password = self.get_argument("edit_password")
-        edit_password_good = station.edit_password == user_edit_password
+        edit_password_good = secrets.compare_digest(station.edit_password,
+                                                    user_edit_password) if user_edit_password else False
         if not edit_password_good:
             self.write("Password incorrect")
             return
@@ -52,21 +61,25 @@ class EditStationHandler(BaseHandler):
         else:
             self.write("Station not found.")
 
-    def post(self, perm_or_temp_slug, station_id_slug):
+    async def post(self, perm_or_temp_slug, station_id_slug):
         """Handle the user filling in the form and clicking Update or Delete. This supports two 'actions' depending
         on whether the Update or Delete button was clicked. Two slugs are provided here. The first is "perm" or "temp",
         and the second is the station ID within that category, so e.g. the URL can be /edit/station/temp/1 to edit
         permanent station 1."""
 
         # Brief delay to make spamming attacks less viable
-        sleep(1)
+        await asyncio.sleep(1)
 
         self.set_header("Content-Type", "application/json")
+        executor = tornado.ioloop.IOLoop.current()
 
         # Check CAPTCHA if required
-        if self.application.db.get_config().enable_captcha:
+        config = await executor.run_in_executor(None, lambda: self.application.db.get_config())
+        if config.enable_captcha:
             recaptcha_token = self.get_argument("recaptcha_token", None)
-            if not verify_recaptcha(self.application.db.get_config().recaptcha_secret_key, recaptcha_token):
+            captcha_ok = await executor.run_in_executor(None, lambda: verify_recaptcha(
+                config.recaptcha_secret_key, recaptcha_token))
+            if not captcha_ok:
                 self.set_status(401)
                 self.write(json.dumps({"message": "CAPTCHA verification failed."}))
                 return
@@ -77,12 +90,15 @@ class EditStationHandler(BaseHandler):
         # Check the edit password
         station = None
         if perm_or_temp_slug == "perm":
-            station = self.application.db.get_permanent_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_permanent_station(station_id))
         elif perm_or_temp_slug == "temp":
-            station = self.application.db.get_temporary_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_temporary_station(station_id))
 
         if station:
-            edit_password_good = secrets.compare_digest(station.edit_password, user_edit_password)
+            edit_password_good = secrets.compare_digest(station.edit_password,
+                                                        user_edit_password) if user_edit_password else False
             if not edit_password_good:
                 self.set_status(401)
                 self.write(json.dumps({"message": "The password you provided was incorrect."}))
@@ -149,36 +165,48 @@ class EditStationHandler(BaseHandler):
             ok = False
             station = None
             if perm_or_temp_slug == "perm":
-                ok = self.application.db.update_permanent_station(station_id, callsign=callsign, club_name=club_name,
-                                                                  type_id=type_id,
-                                                                  latitude_degrees=latitude_degrees,
-                                                                  longitude_degrees=longitude_degrees,
-                                                                  meeting_when=meeting_when,
-                                                                  meeting_where=meeting_where,
-                                                                  notes=notes, website_url=website_url, qrz_url=qrz_url,
-                                                                  social_media_url=social_media_url, email=email,
-                                                                  phone_number=phone_number)
-                station = self.application.db.get_permanent_station(station_id)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.update_permanent_station(
+                                                        station_id, callsign=callsign,
+                                                        club_name=club_name,
+                                                        type_id=type_id,
+                                                        latitude_degrees=latitude_degrees,
+                                                        longitude_degrees=longitude_degrees,
+                                                        meeting_when=meeting_when,
+                                                        meeting_where=meeting_where,
+                                                        notes=notes, website_url=website_url,
+                                                        qrz_url=qrz_url,
+                                                        social_media_url=social_media_url, email=email,
+                                                        phone_number=phone_number))
+                station = await executor.run_in_executor(None,
+                                                         lambda: self.application.db.get_permanent_station(
+                                                             station_id))
 
             elif perm_or_temp_slug == "temp":
-                ok = self.application.db.update_temporary_station(station_id, callsign=callsign, club_name=club_name,
-                                                                  event_id=event_id, start_time=start_time,
-                                                                  end_time=end_time,
-                                                                  latitude_degrees=latitude_degrees,
-                                                                  longitude_degrees=longitude_degrees,
-                                                                  band_ids=band_ids,
-                                                                  mode_ids=mode_ids,
-                                                                  notes=notes, website_url=website_url, qrz_url=qrz_url,
-                                                                  social_media_url=social_media_url, email=email,
-                                                                  phone_number=phone_number)
-                station = self.application.db.get_temporary_station(station_id)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.update_temporary_station(
+                                                        station_id, callsign=callsign,
+                                                        club_name=club_name,
+                                                        event_id=event_id, start_time=start_time,
+                                                        end_time=end_time,
+                                                        latitude_degrees=latitude_degrees,
+                                                        longitude_degrees=longitude_degrees,
+                                                        band_ids=band_ids,
+                                                        mode_ids=mode_ids,
+                                                        notes=notes, website_url=website_url,
+                                                        qrz_url=qrz_url,
+                                                        social_media_url=social_media_url, email=email,
+                                                        phone_number=phone_number))
+                station = await executor.run_in_executor(None,
+                                                         lambda: self.application.db.get_temporary_station(
+                                                             station_id))
 
             if ok:
                 # Update OK, go back to the view station page to show new data. Also email the admins to let them know.
                 self.set_status(200)
                 self.write(json.dumps({"message": "Your station has been updated. Taking you back there...",
                                        "redirect_url": "/view/station/" + perm_or_temp_slug + "/" + station_id_slug}))
-                notify_admins_user_updated_station(self.application.db, station)
+                executor.run_in_executor(None, lambda: notify_admins_user_updated_station(self.application.db, station))
                 return
             else:
                 self.set_status(500)
@@ -192,11 +220,19 @@ class EditStationHandler(BaseHandler):
             ok = False
             station = None
             if perm_or_temp_slug == "perm":
-                station = self.application.db.get_permanent_station(station_id)
-                ok = self.application.db.delete_permanent_station(station_id)
+                station = await executor.run_in_executor(None,
+                                                         lambda: self.application.db.get_permanent_station(
+                                                             station_id))
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.delete_permanent_station(
+                                                        station_id))
             elif perm_or_temp_slug == "temp":
-                station = self.application.db.get_temporary_station(station_id)
-                ok = self.application.db.delete_temporary_station(station_id)
+                station = await executor.run_in_executor(None,
+                                                         lambda: self.application.db.get_temporary_station(
+                                                             station_id))
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.delete_temporary_station(
+                                                        station_id))
 
             if ok:
                 # Delete station and email administrators
@@ -204,7 +240,8 @@ class EditStationHandler(BaseHandler):
                 self.write(json.dumps({"message": "Your station has been deleted. Taking you back home...",
                                        "redirect_url": "/"}))
                 if station:
-                    notify_admins_user_deleted_station(self.application.db, station)
+                    executor.run_in_executor(None,
+                                             lambda: notify_admins_user_deleted_station(self.application.db, station))
                 return
             else:
                 self.set_status(500)

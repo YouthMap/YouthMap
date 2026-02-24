@@ -14,7 +14,7 @@ class AdminUserHandler(BaseHandler):
     create, update and delete other user accounts."""
 
     @tornado.web.authenticated
-    def get(self, slug=None):
+    async def get(self, slug=None):
         """The slug here is the user ID, so e.g. the URL can be /admin/user/1 to edit user 1. A special slug of 'new' is
          also allowed, which sets up the form to create a user rather than to edit one."""
 
@@ -22,12 +22,14 @@ class AdminUserHandler(BaseHandler):
         creating_new = (slug == "new")
 
         # Get data we need to include in the template
+        executor = tornado.ioloop.IOLoop.current()
         user = None
         is_me = False
         if not creating_new:
-            user = self.application.db.get_user(user_id)
+            user = await executor.run_in_executor(None, lambda: self.application.db.get_user(user_id))
             is_me = user_id == self.current_user
-        current_user = self.application.db.get_user(self.current_user)
+        current_user = await executor.run_in_executor(None, lambda: self.application.db.get_user(
+            self.current_user))
 
         # Bail out if the user is a non-super-admin and is editing a user that's not their own (or trying to create a
         # new one)
@@ -36,7 +38,8 @@ class AdminUserHandler(BaseHandler):
             return
 
         # Check if mail is enabled, if not we need to set the user's password manually on creation
-        mail_enabled = self.application.db.get_config().enable_mail
+        config = await executor.run_in_executor(None, lambda: self.application.db.get_config())
+        mail_enabled = config.enable_mail
 
         # Render the template
         if user or creating_new:
@@ -46,7 +49,7 @@ class AdminUserHandler(BaseHandler):
             self.write("User not found.")
 
     @tornado.web.authenticated
-    def post(self, slug):
+    async def post(self, slug):
         """Handles POST requests for user editing page. This supports three 'actions' depending on whether the Update
         or Delete button was clicked for an existing user, or the Create button was clicked for a new user, and provides
         the updated data to insert back into the database. This requires the current user to have super-admin permission.
@@ -54,12 +57,14 @@ class AdminUserHandler(BaseHandler):
         also allowed, which sets up the form to create a user rather than to edit one."""
 
         self.set_header("Content-Type", "application/json")
+        executor = tornado.ioloop.IOLoop.current()
 
         # Get the action we have been asked to do
         action = self.get_argument("action")
 
         # Check which user we are, and which user we are editing
-        current_user = self.application.db.get_user(self.current_user)
+        current_user = await executor.run_in_executor(None, lambda: self.application.db.get_user(
+            self.current_user))
         editing_user_id = 0
         if slug != "new":
             editing_user_id = current_user.id if (slug == "me") else int(slug)
@@ -80,7 +85,8 @@ class AdminUserHandler(BaseHandler):
         # Check for Delete action
         if action == "Delete":
             # Process the delete action
-            ok = self.application.db.delete_user(editing_user_id)
+            ok = await executor.run_in_executor(None, lambda: self.application.db.delete_user(
+                editing_user_id))
             if ok:
                 # Delete OK. If you were deleting yourself, go back to the home page, otherwise it was an admin
                 # deleting somebody else, so go back to the user management page.
@@ -128,7 +134,9 @@ class AdminUserHandler(BaseHandler):
                 return
 
             # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
-            other_users = [u for u in self.application.db.get_all_users() if u.id != editing_user_id]
+            all_users = await executor.run_in_executor(None,
+                                                       lambda: self.application.db.get_all_users())
+            other_users = [u for u in all_users if u.id != editing_user_id]
             if any(u.username.lower() == username.lower() for u in other_users):
                 self.set_status(400)
                 self.write(json.dumps({
@@ -136,8 +144,9 @@ class AdminUserHandler(BaseHandler):
                 return
 
             # Process the update
-            ok = self.application.db.update_user(editing_user_id, username=username, password=password, email=email,
-                                                 super_admin=super_admin)
+            ok = await executor.run_in_executor(None, lambda: self.application.db.update_user(
+                editing_user_id, username=username, password=password, email=email,
+                super_admin=super_admin))
             if ok:
                 # Update OK
                 self.set_status(200)
@@ -168,7 +177,8 @@ class AdminUserHandler(BaseHandler):
             super_admin = True if self.get_argument("super_admin", None) else False
 
             # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
-            other_users = self.application.db.get_all_users()
+            other_users = await executor.run_in_executor(None,
+                                                         lambda: self.application.db.get_all_users())
             if any(u.username.lower() == username.lower() for u in other_users):
                 self.set_status(400)
                 self.write(json.dumps({
@@ -176,11 +186,13 @@ class AdminUserHandler(BaseHandler):
                 return
 
             # Process the create action
-            new_user_id = self.application.db.add_user(username=username, password=password, email=email,
-                                                       super_admin=super_admin)
+            new_user_id = await executor.run_in_executor(None, lambda: self.application.db.add_user(
+                username=username, password=password, email=email,
+                super_admin=super_admin))
             if new_user_id:
                 # Create OK. Email the user their details.
-                notify_user_account_created(self.application.db, email, username, password)
+                executor.run_in_executor(None, lambda: notify_user_account_created(self.application.db, email, username,
+                                                                                   password))
                 self.set_status(200)
                 self.write(json.dumps(
                     {"message": "User created. Returning you to the user list...", "redirect_url": "/admin/users"}))

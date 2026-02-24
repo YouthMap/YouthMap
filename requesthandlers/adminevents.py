@@ -9,9 +9,11 @@ class AdminEventsHandler(BaseHandler):
     """Handler for admin event list page"""
 
     @tornado.web.authenticated
-    def get(self):
+    async def get(self):
         # Get data we need to include in the template
-        events = sorted(self.application.db.get_all_events(), key=lambda x: x.start_time)
+        executor = tornado.ioloop.IOLoop.current()
+        all_events = await executor.run_in_executor(None, lambda: self.application.db.get_all_events())
+        events = sorted(all_events, key=lambda x: x.start_time)
         events_by_type = {"Past": [x for x in events if datetime.now() > x.end_time],
                                  "Current": [x for x in events if x.start_time <= datetime.now() <= x.end_time],
                                  "Future": [x for x in events if datetime.now() < x.start_time]}

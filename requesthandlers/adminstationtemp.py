@@ -16,7 +16,7 @@ class AdminStationTempHandler(BaseHandler):
     """Handler for admin temporary station editing page"""
 
     @tornado.web.authenticated
-    def get(self, slug):
+    async def get(self, slug):
         """The slug here is the temporary station ID, so e.g. the URL can be /admin/station/temp/1 to edit temporary
         station 1. A special slug of 'new' is also allowed, which sets up the form to create a temporary station rather
         than to edit one."""
@@ -25,17 +25,21 @@ class AdminStationTempHandler(BaseHandler):
         creating_new = (slug == "new")
 
         # Get data we need to include in the template
-        station = self.application.db.get_temporary_station(station_id) if not creating_new else None
+        executor = tornado.ioloop.IOLoop.current()
+        station = await executor.run_in_executor(None,
+                                                 lambda: self.application.db.get_temporary_station(
+                                                     station_id)) if not creating_new else None
         if station:
             populate_derived_fields_temp_station(station)
-        all_bands = self.application.db.get_all_bands()
-        all_modes = self.application.db.get_all_modes()
-        all_events = self.application.db.get_all_events()
+        all_bands = await executor.run_in_executor(None, lambda: self.application.db.get_all_bands())
+        all_modes = await executor.run_in_executor(None, lambda: self.application.db.get_all_modes())
+        all_events = await executor.run_in_executor(None, lambda: self.application.db.get_all_events())
         default_start = get_default_event_start_time()
         default_end = get_default_event_end_time()
         # Include a JSON version of all events. This allows us to pull out the start/end times, notes template, bands
         # and modes from the event in real time via JS when the user selects an event from the drop-down.
-        all_events_json = to_json_sanitized(self.get_events_js())
+        all_events_json = to_json_sanitized(
+            await executor.run_in_executor(None, lambda: self.get_events_js()))
 
         # Render the template
         if station or creating_new:
@@ -46,7 +50,7 @@ class AdminStationTempHandler(BaseHandler):
             self.write("Station not found.")
 
     @tornado.web.authenticated
-    def post(self, slug):
+    async def post(self, slug):
         """Handles POST requests for temporary station editing page. This supports three 'actions' depending on whether
         the Update or Delete button was clicked for an existing station, or the Create button was clicked for a new
         station, and provides the updated data to insert back into the database. The slug here is the temporary station
@@ -54,6 +58,7 @@ class AdminStationTempHandler(BaseHandler):
         allowed, which sets up the form to create a temporary station rather than to edit one."""
 
         self.set_header("Content-Type", "application/json")
+        executor = tornado.ioloop.IOLoop.current()
 
         station_id = int(slug) if slug != "new" else None
 
@@ -63,8 +68,12 @@ class AdminStationTempHandler(BaseHandler):
         # Check for Delete action
         if action == "Delete":
             # Process the delete action
-            station = self.application.db.get_temporary_station(station_id)
-            ok = self.application.db.delete_temporary_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_temporary_station(
+                                                         station_id))
+            ok = await executor.run_in_executor(None,
+                                                lambda: self.application.db.delete_temporary_station(
+                                                    station_id))
             if ok:
                 # Delete OK
                 self.set_status(200)
@@ -72,7 +81,7 @@ class AdminStationTempHandler(BaseHandler):
                                        "redirect_url": "/admin/stations"}))
 
                 # Email the owner to let them know
-                notify_owner_station_deleted(self.application.db, station)
+                executor.run_in_executor(None, lambda: notify_owner_station_deleted(self.application.db, station))
                 return
             else:
                 self.set_status(500)
@@ -129,7 +138,8 @@ class AdminStationTempHandler(BaseHandler):
 
             # Check the times, bands and modes are consistent with the event, if there is one.
             if event_id > 0:
-                event = self.application.db.get_event(event_id)
+                event = await executor.run_in_executor(None,
+                                                       lambda: self.application.db.get_event(event_id))
                 if event:
                     if start_time < event.start_time or end_time > event.end_time:
                         self.set_status(400)
@@ -150,22 +160,29 @@ class AdminStationTempHandler(BaseHandler):
                         return
 
             # Check for approval changes to email the owner
-            station = self.application.db.get_temporary_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_temporary_station(
+                                                         station_id))
             approval_happened = approved and not station.approved
             approval_revoked = station.approved and not approved
 
             # Process the update
-            ok = self.application.db.update_temporary_station(station_id, callsign=callsign, club_name=club_name,
-                                                              event_id=event_id, start_time=start_time,
-                                                              end_time=end_time,
-                                                              latitude_degrees=latitude_degrees,
-                                                              longitude_degrees=longitude_degrees, band_ids=band_ids,
-                                                              mode_ids=mode_ids,
-                                                              notes=notes, website_url=website_url, qrz_url=qrz_url,
-                                                              social_media_url=social_media_url, email=email,
-                                                              phone_number=phone_number, rsgb_attending=rsgb_attending,
-                                                              approved=approved,
-                                                              edit_password=edit_password)
+            ok = await executor.run_in_executor(None,
+                                                lambda: self.application.db.update_temporary_station(
+                                                    station_id, callsign=callsign, club_name=club_name,
+                                                    event_id=event_id, start_time=start_time,
+                                                    end_time=end_time,
+                                                    latitude_degrees=latitude_degrees,
+                                                    longitude_degrees=longitude_degrees,
+                                                    band_ids=band_ids,
+                                                    mode_ids=mode_ids,
+                                                    notes=notes, website_url=website_url,
+                                                    qrz_url=qrz_url,
+                                                    social_media_url=social_media_url, email=email,
+                                                    phone_number=phone_number,
+                                                    rsgb_attending=rsgb_attending,
+                                                    approved=approved,
+                                                    edit_password=edit_password))
             if ok:
                 # Update OK
                 self.set_status(200)
@@ -174,9 +191,10 @@ class AdminStationTempHandler(BaseHandler):
 
                 # Email the station owner if the approval status changed.
                 if approval_happened:
-                    notify_owner_station_approved(self.application.db, station)
+                    executor.run_in_executor(None, lambda: notify_owner_station_approved(self.application.db, station))
                 elif approval_revoked:
-                    notify_owner_station_approval_revoked(self.application.db, station)
+                    executor.run_in_executor(None, lambda: notify_owner_station_approval_revoked(self.application.db,
+                                                                                                 station))
                 return
             else:
                 self.set_status(500)
@@ -231,7 +249,8 @@ class AdminStationTempHandler(BaseHandler):
 
             # Check the times, bands and modes are consistent with the event, if there is one.
             if event_id > 0:
-                event = self.application.db.get_event(event_id)
+                event = await executor.run_in_executor(None,
+                                                       lambda: self.application.db.get_event(event_id))
                 if event:
                     if start_time < event.start_time or end_time > event.end_time:
                         self.set_status(400)
@@ -252,19 +271,23 @@ class AdminStationTempHandler(BaseHandler):
                         return
 
             # Process the create action
-            new_station_id = self.application.db.add_temporary_station(callsign=callsign, club_name=club_name,
-                                                                       event_id=event_id, start_time=start_time,
-                                                                       end_time=end_time,
-                                                                       latitude_degrees=latitude_degrees,
-                                                                       longitude_degrees=longitude_degrees,
-                                                                       band_ids=band_ids,
-                                                                       mode_ids=mode_ids,
-                                                                       notes=notes, website_url=website_url,
-                                                                       qrz_url=qrz_url,
-                                                                       social_media_url=social_media_url, email=email,
-                                                                       phone_number=phone_number,
-                                                                       rsgb_attending=rsgb_attending,
-                                                                       approved=approved)
+            new_station_id = await executor.run_in_executor(None,
+                                                            lambda: self.application.db.add_temporary_station(
+                                                                callsign=callsign, club_name=club_name,
+                                                                event_id=event_id,
+                                                                start_time=start_time,
+                                                                end_time=end_time,
+                                                                latitude_degrees=latitude_degrees,
+                                                                longitude_degrees=longitude_degrees,
+                                                                band_ids=band_ids,
+                                                                mode_ids=mode_ids,
+                                                                notes=notes, website_url=website_url,
+                                                                qrz_url=qrz_url,
+                                                                social_media_url=social_media_url,
+                                                                email=email,
+                                                                phone_number=phone_number,
+                                                                rsgb_attending=rsgb_attending,
+                                                                approved=approved))
             if new_station_id:
                 # Create OK
                 self.set_status(200)

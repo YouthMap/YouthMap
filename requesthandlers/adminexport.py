@@ -12,14 +12,16 @@ class AdminExportHandler(BaseHandler):
     and it will return the HTML menu page, but GET /admin/export?data=stations will get you a CSV of all station data."""
 
     @tornado.web.authenticated
-    def get(self):
+    async def get(self):
         # Figure out if we have no GET params (in which case this is a request for the HTML page itself) or if we have
         # them, in which case this is a request for data
+        executor = tornado.ioloop.IOLoop.current()
         data = self.get_argument("data", None)
 
         if not data:
             # Return the HTML
-            events = sorted(self.application.db.get_all_events(), key=lambda x: x.start_time)
+            events = await executor.run_in_executor(None, lambda: self.application.db.get_all_events())
+            events = sorted(events, key=lambda x: x.start_time)
             self.render("adminexport.html", events=events)
 
         elif data == "stations":
@@ -28,15 +30,18 @@ class AdminExportHandler(BaseHandler):
 
             event_id = self.get_argument("event", None)
             if event_id:
-                self.write(self.get_csv_for_event_stations(event_id))
+                csv_data = await executor.run_in_executor(None, lambda: self.get_csv_for_event_stations(
+                    event_id))
             else:
-                self.write(self.get_csv_for_all_stations())
+                csv_data = await executor.run_in_executor(None, lambda: self.get_csv_for_all_stations())
+            self.write(csv_data)
 
         elif data == "events":
             self.set_status(200)
             self.set_header("Content-Type", "text/csv")
 
-            self.write(self.get_csv_for_all_events())
+            csv_data = await executor.run_in_executor(None, lambda: self.get_csv_for_all_events())
+            self.write(csv_data)
 
         else:
             self.set_status(400)

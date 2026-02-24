@@ -1,6 +1,8 @@
+import asyncio
 import json
 from datetime import datetime
-from time import sleep
+
+import tornado
 
 from core.utils import TEMP_STATION_NO_EVENT_COLOR, TEMP_STATION_NO_EVENT_ICON, get_default_event_start_time, \
     get_default_event_end_time, humanize_start_end, verify_recaptcha
@@ -14,14 +16,15 @@ class CreateStationHandler(BaseHandler):
     """Handler for the create station page (the full version where the user fills in the form, rather than the
     interstitial page where they set the type"""
 
-    def get(self, perm_or_temp_slug):
+    async def get(self, perm_or_temp_slug):
         """A slug is provided here, "perm" or "temp", depending on the type of station we want to create, which sets
         what's included in the form template. The form of the URL is /create/station/temp or /create/station/perm."""
 
         # Get data we need to include in the template. This is the list of bands and modes in case we are creating
         # a temporary station and need to set these, event and type IDs, and default start and end times for the event.
-        all_bands = self.application.db.get_all_bands()
-        all_modes = self.application.db.get_all_modes()
+        executor = tornado.ioloop.IOLoop.current()
+        all_bands = await executor.run_in_executor(None, lambda: self.application.db.get_all_bands())
+        all_modes = await executor.run_in_executor(None, lambda: self.application.db.get_all_modes())
         default_start = get_default_event_start_time()
         default_end = get_default_event_end_time()
         lat = self.get_argument("lat")
@@ -32,21 +35,24 @@ class CreateStationHandler(BaseHandler):
         type_id = 0
         if self.get_argument("type", None):
             type_id = int(self.get_argument("type"))
-        enable_captcha = self.application.db.get_config().enable_captcha
-        recaptcha_site_key = self.application.db.get_config().recaptcha_site_key
+        config = await executor.run_in_executor(None, lambda: self.application.db.get_config())
+        enable_captcha = config.enable_captcha
+        recaptcha_site_key = config.recaptcha_site_key
 
         # Check lat/lon were supplied and other fields are consistent with what the user could reasonably select
         if not lat or not lon:
             self.write("Required parameters not provided, user did not get to this page via normal means.")
             return
         if perm_or_temp_slug == "temp" and event_id:
-            event = self.application.db.get_event(event_id)
+            event = await executor.run_in_executor(None, lambda: self.application.db.get_event(event_id))
             if event and (not event.public or event.end_time <= datetime.now()):
                 self.write(
                     "Event ID was provided for a non-existent or non-public event, or one that has already finished, user did not get to this page via normal means.")
                 return
         if perm_or_temp_slug == "perm":
-            if not self.application.db.get_permanent_station_type(type_id):
+            perm_type = await executor.run_in_executor(None,
+                                                       lambda: self.application.db.get_permanent_station_type(type_id))
+            if not perm_type:
                 self.write(
                     "Type ID was provided for a non-existent type, user did not get to this page via normal means.")
                 return
@@ -58,11 +64,13 @@ class CreateStationHandler(BaseHandler):
         color = TEMP_STATION_NO_EVENT_COLOR
         icon = TEMP_STATION_NO_EVENT_ICON
         if perm_or_temp_slug == "perm":
-            perm_station_type = self.application.db.get_permanent_station_type(type_id)
+            perm_station_type = await executor.run_in_executor(None,
+                                                               lambda: self.application.db.get_permanent_station_type(
+                                                                   type_id))
             color = perm_station_type.color
             icon = perm_station_type.icon
         elif perm_or_temp_slug == "temp":
-            event = self.application.db.get_event(event_id)
+            event = await executor.run_in_executor(None, lambda: self.application.db.get_event(event_id))
             if event:
                 color = event.color
                 icon = event.icon
@@ -74,18 +82,22 @@ class CreateStationHandler(BaseHandler):
                     all_bands=all_bands, all_modes=all_modes, default_start=default_start, default_end=default_end,
                     enable_captcha=enable_captcha, recaptcha_site_key=recaptcha_site_key)
 
-    def post(self, perm_or_temp_slug):
+    async def post(self, perm_or_temp_slug):
         """Handle the user filling in the form and clicking Create. The "perm" or "temp" slug is provided here as well."""
 
         # Brief delay to make spamming attacks less viable
-        sleep(1)
+        await asyncio.sleep(1)
 
         self.set_header("Content-Type", "application/json")
+        executor = tornado.ioloop.IOLoop.current()
 
         # Check CAPTCHA if required
-        if self.application.db.get_config().enable_captcha:
+        config = await executor.run_in_executor(None, lambda: self.application.db.get_config())
+        if config.enable_captcha:
             recaptcha_token = self.get_argument("recaptcha_token", None)
-            if not verify_recaptcha(self.application.db.get_config().recaptcha_secret_key, recaptcha_token):
+            captcha_ok = await executor.run_in_executor(None, lambda: verify_recaptcha(
+                config.recaptcha_secret_key, recaptcha_token))
+            if not captcha_ok:
                 self.set_status(401)
                 self.write(json.dumps({"message": "CAPTCHA verification failed."}))
                 return
@@ -150,14 +162,16 @@ class CreateStationHandler(BaseHandler):
                     "message": "A location was not provided. Please contact the administrators (TODO) for help."}))
                 return
             if perm_or_temp_slug == "temp" and event_id > 0:
-                event = self.application.db.get_event(event_id)
+                event = await executor.run_in_executor(None, lambda: self.application.db.get_event(event_id))
                 if not event or not event.public or event.end_time <= datetime.now():
                     self.set_status(400)
                     self.write(json.dumps({
                         "message": "Event ID was provided for a non-existent or non-public event, or one that has already finished. Please contact the administrators (TODO) for help."}))
                     return
             if perm_or_temp_slug == "perm":
-                if not self.application.db.get_permanent_station_type(type_id):
+                perm_type = await executor.run_in_executor(None, lambda: self.application.db.get_permanent_station_type(
+                    type_id))
+                if not perm_type:
                     self.set_status(400)
                     self.write(json.dumps({
                         "message": "Type ID was provided for a non-existent type. Please contact the administrators (TODO) for help."}))
@@ -172,7 +186,8 @@ class CreateStationHandler(BaseHandler):
 
             # Check the times, bands and modes are consistent with the event, if there is one.
             if perm_or_temp_slug == "temp" and event_id > 0:
-                event = self.application.db.get_event(event_id)
+                event = await executor.run_in_executor(None,
+                                                       lambda: self.application.db.get_event(event_id))
                 if event:
                     if start_time < event.start_time or end_time > event.end_time:
                         self.set_status(400)
@@ -196,34 +211,45 @@ class CreateStationHandler(BaseHandler):
             new_station = None
             edit_password = None
             if perm_or_temp_slug == "perm":
-                new_station_id = self.application.db.add_permanent_station(callsign=callsign, club_name=club_name,
-                                                                           type_id=type_id,
-                                                                           latitude_degrees=latitude_degrees,
-                                                                           longitude_degrees=longitude_degrees,
-                                                                           meeting_when=meeting_when,
-                                                                           meeting_where=meeting_where,
-                                                                           notes=notes, website_url=website_url,
-                                                                           qrz_url=qrz_url,
-                                                                           social_media_url=social_media_url,
-                                                                           email=email,
-                                                                           phone_number=phone_number)
-                new_station = self.application.db.get_permanent_station(new_station_id)
+                new_station_id = await executor.run_in_executor(None,
+                                                                lambda: self.application.db.add_permanent_station(
+                                                                    callsign=callsign,
+                                                                    club_name=club_name,
+                                                                    type_id=type_id,
+                                                                    latitude_degrees=latitude_degrees,
+                                                                    longitude_degrees=longitude_degrees,
+                                                                    meeting_when=meeting_when,
+                                                                    meeting_where=meeting_where,
+                                                                    notes=notes,
+                                                                    website_url=website_url,
+                                                                    qrz_url=qrz_url,
+                                                                    social_media_url=social_media_url,
+                                                                    email=email,
+                                                                    phone_number=phone_number))
+                new_station = await executor.run_in_executor(None, lambda: self.application.db.get_permanent_station(
+                    new_station_id))
                 edit_password = new_station.edit_password
 
             elif perm_or_temp_slug == "temp":
-                new_station_id = self.application.db.add_temporary_station(callsign=callsign, club_name=club_name,
-                                                                           event_id=event_id, start_time=start_time,
-                                                                           end_time=end_time,
-                                                                           latitude_degrees=latitude_degrees,
-                                                                           longitude_degrees=longitude_degrees,
-                                                                           band_ids=band_ids,
-                                                                           mode_ids=mode_ids,
-                                                                           notes=notes, website_url=website_url,
-                                                                           qrz_url=qrz_url,
-                                                                           social_media_url=social_media_url,
-                                                                           email=email,
-                                                                           phone_number=phone_number)
-                new_station = self.application.db.get_temporary_station(new_station_id)
+                new_station_id = await executor.run_in_executor(None,
+                                                                lambda: self.application.db.add_temporary_station(
+                                                                    callsign=callsign,
+                                                                    club_name=club_name,
+                                                                    event_id=event_id,
+                                                                    start_time=start_time,
+                                                                    end_time=end_time,
+                                                                    latitude_degrees=latitude_degrees,
+                                                                    longitude_degrees=longitude_degrees,
+                                                                    band_ids=band_ids,
+                                                                    mode_ids=mode_ids,
+                                                                    notes=notes,
+                                                                    website_url=website_url,
+                                                                    qrz_url=qrz_url,
+                                                                    social_media_url=social_media_url,
+                                                                    email=email,
+                                                                    phone_number=phone_number))
+                new_station = await executor.run_in_executor(None, lambda: self.application.db.get_temporary_station(
+                    new_station_id))
                 edit_password = new_station.edit_password
 
             if new_station:
@@ -233,8 +259,11 @@ class CreateStationHandler(BaseHandler):
                 # redirect URL sends them back to the view station page to show the data. We also include the edit
                 # password in the GET params here, which will cause the view station page to show it to the user, and
                 # they could also bookmark the URL as a way of preserving it.
-                notify_admins_user_added_station(self.application.db, new_station)
-                emailed = notify_owner_station_created(self.application.db, new_station)
+                executor.run_in_executor(None,
+                                         lambda: notify_admins_user_added_station(self.application.db, new_station))
+                emailed = await executor.run_in_executor(None,
+                                                         lambda: notify_owner_station_created(self.application.db,
+                                                                                              new_station))
                 self.set_status(200)
                 self.write(json.dumps({"message": "Your new station has been created. Taking you there...",
                                        "redirect_url": "/view/station/" + perm_or_temp_slug + "/" + str(

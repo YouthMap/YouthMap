@@ -1,4 +1,5 @@
 import json
+
 import tornado
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station
@@ -10,12 +11,17 @@ class AdminApprovalHandler(BaseHandler):
     """Handler for admin approval queue page"""
 
     @tornado.web.authenticated
-    def get(self):
+    async def get(self):
         """Get the content of the page"""
 
         # Get data we need to include in the template, in this case stations of either type that are not yet approved.
-        temp_stations = [x for x in self.application.db.get_all_temporary_stations() if not x.approved]
-        perm_stations = [x for x in self.application.db.get_all_permanent_stations() if not x.approved]
+        executor = tornado.ioloop.IOLoop.current()
+        all_temp = await executor.run_in_executor(None,
+                                                  lambda: self.application.db.get_all_temporary_stations())
+        all_perm = await executor.run_in_executor(None,
+                                                  lambda: self.application.db.get_all_permanent_stations())
+        temp_stations = [x for x in all_temp if not x.approved]
+        perm_stations = [x for x in all_perm if not x.approved]
         for station in temp_stations:
             populate_derived_fields_temp_station(station)
         for station in perm_stations:
@@ -25,10 +31,11 @@ class AdminApprovalHandler(BaseHandler):
         self.render("adminapproval.html", temp_stations=temp_stations, perm_stations=perm_stations)
 
     @tornado.web.authenticated
-    def post(self):
+    async def post(self):
         """Handle the administrator clicking Approve or Delete. This supports two 'actions' depending on whether the
          Approve or Delete button was clicked. Approve sets the "approved" flag to True and Delete deletes the station."""
 
+        executor = tornado.ioloop.IOLoop.current()
         self.set_header("Content-Type", "application/json")
 
         station_type = self.get_argument("type")
@@ -42,16 +49,24 @@ class AdminApprovalHandler(BaseHandler):
             ok = False
             station = None
             if station_type == "perm":
-                ok = self.application.db.update_permanent_station(station_id, approved=True)
-                station = self.application.db.get_permanent_station(station_id)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.update_permanent_station(
+                                                        station_id, approved=True))
+                station = await executor.run_in_executor(None,
+                                                         lambda: self.application.db.get_permanent_station(
+                                                             station_id))
             elif station_type == "temp":
-                ok = self.application.db.update_temporary_station(station_id, approved=True)
-                station = self.application.db.get_temporary_station(station_id)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.update_temporary_station(
+                                                        station_id, approved=True))
+                station = await executor.run_in_executor(None,
+                                                         lambda: self.application.db.get_temporary_station(
+                                                             station_id))
             if ok:
                 # Update OK, refresh the page and email the owner.
                 self.set_status(200)
                 self.write(json.dumps({"message": "Station approved.", "redirect_url": "/admin/approval"}))
-                notify_owner_station_approved(self.application.db, station)
+                executor.run_in_executor(None, lambda: notify_owner_station_approved(self.application.db, station))
                 return
             else:
                 self.set_status(500)
@@ -64,16 +79,24 @@ class AdminApprovalHandler(BaseHandler):
             ok = False
             station = None
             if station_type == "perm":
-                station = self.application.db.get_permanent_station(station_id)
-                ok = self.application.db.delete_permanent_station(station_id)
+                station = await executor.run_in_executor(None,
+                                                         lambda: self.application.db.get_permanent_station(
+                                                             station_id))
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.delete_permanent_station(
+                                                        station_id))
             elif station_type == "temp":
-                station = self.application.db.get_temporary_station(station_id)
-                ok = self.application.db.delete_temporary_station(station_id)
+                station = await executor.run_in_executor(None,
+                                                         lambda: self.application.db.get_temporary_station(
+                                                             station_id))
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.delete_temporary_station(
+                                                        station_id))
             if ok:
                 # Update OK, refresh the page and email the owner.
                 self.set_status(200)
                 self.write(json.dumps({"message": "Station deleted.", "redirect_url": "/admin/approval"}))
-                notify_owner_station_deleted(self.application.db, station)
+                executor.run_in_executor(None, lambda: notify_owner_station_deleted(self.application.db, station))
                 return
             else:
                 self.set_status(500)

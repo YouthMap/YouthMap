@@ -9,30 +9,34 @@ class AdminConfigHandler(BaseHandler):
     """Handler for admin site config editing page"""
 
     @tornado.web.authenticated
-    def get(self):
+    async def get(self):
         """Get the HTML page containing the form"""
 
         # Deny access if we are not a super-admin
-        user = self.application.db.get_user(self.current_user)
+        executor = tornado.ioloop.IOLoop.current()
+        user = await executor.run_in_executor(None,
+                                              lambda: self.application.db.get_user(self.current_user))
         if not user.super_admin:
             self.write("You do not have permission to access this page.")
             return
 
         # Get data we need to include in the template
-        config = self.application.db.get_config()
+        config = await executor.run_in_executor(None, lambda: self.application.db.get_config())
 
         # Render the template
         self.render("adminconfig.html", config=config)
 
     @tornado.web.authenticated
-    def post(self):
+    async def post(self):
         """Handles POST requests for the config page. Unlike most other pages, the 'action' is irrelevant here as config
         can only ever be updated, never created or deleted."""
 
         self.set_header("Content-Type", "application/json")
+        executor = tornado.ioloop.IOLoop.current()
 
         # Deny access if we are not a super-admin
-        user = self.application.db.get_user(self.current_user)
+        user = await executor.run_in_executor(None,
+                                              lambda: self.application.db.get_user(self.current_user))
         if not user.super_admin:
             self.set_status(400)
             self.write(json.dumps({"message": "You do not have permission to access this page."}))
@@ -66,11 +70,12 @@ class AdminConfigHandler(BaseHandler):
             return
 
         # Process the update
-        ok = self.application.db.update_config(base_url=base_url, enable_mail=enable_mail, mail_sender=mail_sender,
-                                               mail_username=mail_username, mail_password=mail_password,
-                                               mail_server_host=mail_server_host, mail_server_port=mail_server_port,
-                                               enable_captcha=enable_captcha, recaptcha_site_key=recaptcha_site_key,
-                                               recaptcha_secret_key=recaptcha_secret_key)
+        ok = await executor.run_in_executor(None, lambda: self.application.db.update_config(
+            base_url=base_url, enable_mail=enable_mail, mail_sender=mail_sender,
+            mail_username=mail_username, mail_password=mail_password,
+            mail_server_host=mail_server_host, mail_server_port=mail_server_port,
+            enable_captcha=enable_captcha, recaptcha_site_key=recaptcha_site_key,
+            recaptcha_secret_key=recaptcha_secret_key))
         if ok:
             # Update OK
             self.set_status(200)

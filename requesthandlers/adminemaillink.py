@@ -10,7 +10,7 @@ from requesthandlers.base import BaseHandler
 class AdminEmailLinkHandler(BaseHandler):
 
     @tornado.web.authenticated
-    def get(self):
+    async def get(self):
         """Handler for buttons in emails sent to the site administrators. These allow changing the approval status or
         deleting stations. The GET request takes three arguments: action, station_type (perm or temp) and id. The user must
         be authenticated, so when they click the link in their email it will open a browser window, and if they're not
@@ -32,7 +32,7 @@ class AdminEmailLinkHandler(BaseHandler):
         self.render("adminemaillink.html", action=action, station_type=station_type, station_id=station_id)
 
     @tornado.web.authenticated
-    def post(self):
+    async def post(self):
         """POST handler to confirm the user's desire. Because visitors to this page may have been clicking links
         from emails that are old, and because there can be several administrators reacting to emails at the same time, the
         POST handler performs a number of checks that most pages don't - e.g. when approving a station, it checks that it is
@@ -40,6 +40,7 @@ class AdminEmailLinkHandler(BaseHandler):
         administrators have done the same thing."""
 
         self.set_header("Content-Type", "application/json")
+        executor = tornado.ioloop.IOLoop.current()
 
         # Get params
         action = self.get_argument("action", None)
@@ -56,9 +57,13 @@ class AdminEmailLinkHandler(BaseHandler):
         station_id = int(station_id)
         station = None
         if station_type == "perm":
-            station = self.application.db.get_permanent_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_permanent_station(
+                                                         station_id))
         elif station_type == "temp":
-            station = self.application.db.get_temporary_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_temporary_station(
+                                                         station_id))
         if not station:
             if action == "delete":
                 self.set_status(409)
@@ -81,14 +86,18 @@ class AdminEmailLinkHandler(BaseHandler):
 
             ok = False
             if station_type == "perm":
-                ok = self.application.db.update_permanent_station(station_id, approved=True)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.update_permanent_station(
+                                                        station_id, approved=True))
             elif station_type == "temp":
-                ok = self.application.db.update_temporary_station(station_id, approved=True)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.update_temporary_station(
+                                                        station_id, approved=True))
             if ok:
                 # Show success page and email the station owner
                 self.set_status(200)
                 self.write(json.dumps({"message": "You have successfully approved this station."}))
-                notify_owner_station_approved(self.application.db, station)
+                executor.run_in_executor(None, lambda: notify_owner_station_approved(self.application.db, station))
                 return
             else:
                 self.set_status(500)
@@ -105,14 +114,19 @@ class AdminEmailLinkHandler(BaseHandler):
 
             ok = False
             if station_type == "perm":
-                ok = self.application.db.update_permanent_station(station_id, approved=False)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.update_permanent_station(
+                                                        station_id, approved=False))
             elif station_type == "temp":
-                ok = self.application.db.update_temporary_station(station_id, approved=False)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.update_temporary_station(
+                                                        station_id, approved=False))
             if ok:
                 # Show success page and email the station owner
                 self.set_status(200)
                 self.write(json.dumps({"message": "You have successfully revoked the approved state of this station."}))
-                notify_owner_station_approval_revoked(self.application.db, station)
+                executor.run_in_executor(None,
+                                         lambda: notify_owner_station_approval_revoked(self.application.db, station))
                 return
             else:
                 self.set_status(500)
@@ -123,14 +137,18 @@ class AdminEmailLinkHandler(BaseHandler):
         if action == "delete":
             ok = False
             if station_type == "perm":
-                ok = self.application.db.delete_permanent_station(station_id)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.delete_permanent_station(
+                                                        station_id))
             elif station_type == "temp":
-                ok = self.application.db.delete_temporary_station(station_id)
+                ok = await executor.run_in_executor(None,
+                                                    lambda: self.application.db.delete_temporary_station(
+                                                        station_id))
             if ok:
                 # Show success page and email the station owner
                 self.set_status(200)
                 self.write(json.dumps({"message": "You have successfully deleted the station."}))
-                notify_owner_station_deleted(self.application.db, station)
+                executor.run_in_executor(None, lambda: notify_owner_station_deleted(self.application.db, station))
                 return
             else:
                 self.set_status(500)

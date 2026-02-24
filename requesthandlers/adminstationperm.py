@@ -14,7 +14,7 @@ class AdminStationPermHandler(BaseHandler):
     """Handler for admin permanent station editing page"""
 
     @tornado.web.authenticated
-    def get(self, slug):
+    async def get(self, slug):
         """The slug here is the permanent station ID, so e.g. the URL can be /admin/station/temp/1 to edit permanent
         station 1. A special slug of 'new' is also allowed, which sets up the form to create a permanent station rather
         than to edit one."""
@@ -23,10 +23,14 @@ class AdminStationPermHandler(BaseHandler):
         creating_new = (slug == "new")
 
         # Get data we need to include in the template
-        station = self.application.db.get_permanent_station(station_id) if not creating_new else None
+        executor = tornado.ioloop.IOLoop.current()
+        station = await executor.run_in_executor(None,
+                                                 lambda: self.application.db.get_permanent_station(
+                                                     station_id)) if not creating_new else None
         if station:
             populate_derived_fields_perm_station(station)
-        all_perm_station_types = self.application.db.get_all_permanent_station_types()
+        all_perm_station_types = await executor.run_in_executor(None,
+                                                                lambda: self.application.db.get_all_permanent_station_types())
 
         # Render the template
         if station or creating_new:
@@ -36,7 +40,7 @@ class AdminStationPermHandler(BaseHandler):
             self.write("Station not found.")
 
     @tornado.web.authenticated
-    def post(self, slug):
+    async def post(self, slug):
         """Handles POST requests for permanent station editing page. This supports three 'actions' depending on whether
         the Update or Delete button was clicked for an existing station, or the Create button was clicked for a new
         station, and provides the updated data to insert back into the database. The slug here is the permanent station
@@ -44,6 +48,7 @@ class AdminStationPermHandler(BaseHandler):
         allowed, which sets up the form to create a permanent station rather than to edit one."""
 
         self.set_header("Content-Type", "application/json")
+        executor = tornado.ioloop.IOLoop.current()
 
         station_id = int(slug) if slug != "new" else None
 
@@ -53,8 +58,12 @@ class AdminStationPermHandler(BaseHandler):
         # Check for Delete action
         if action == "Delete":
             # Process the delete action
-            station = self.application.db.get_permanent_station(station_id)
-            ok = self.application.db.delete_permanent_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_permanent_station(
+                                                         station_id))
+            ok = await executor.run_in_executor(None,
+                                                lambda: self.application.db.delete_permanent_station(
+                                                    station_id))
             if ok:
                 # Delete OK
                 self.set_status(200)
@@ -62,7 +71,7 @@ class AdminStationPermHandler(BaseHandler):
                                        "redirect_url": "/admin/stations"}))
 
                 # Email the owner to let them know
-                notify_owner_station_deleted(self.application.db, station)
+                executor.run_in_executor(None, lambda: notify_owner_station_deleted(self.application.db, station))
                 return
             else:
                 self.set_status(500)
@@ -106,20 +115,26 @@ class AdminStationPermHandler(BaseHandler):
             approved = True if self.get_argument("approved", None) else False
 
             # Check for approval changes to email the owner
-            station = self.application.db.get_permanent_station(station_id)
+            station = await executor.run_in_executor(None,
+                                                     lambda: self.application.db.get_permanent_station(
+                                                         station_id))
             approval_happened = approved and not station.approved
             approval_revoked = station.approved and not approved
 
             # Process the update
-            ok = self.application.db.update_permanent_station(station_id, callsign=callsign, club_name=club_name,
-                                                              type_id=type_id,
-                                                              latitude_degrees=latitude_degrees,
-                                                              longitude_degrees=longitude_degrees,
-                                                              meeting_when=meeting_when, meeting_where=meeting_where,
-                                                              notes=notes, website_url=website_url, qrz_url=qrz_url,
-                                                              social_media_url=social_media_url, email=email,
-                                                              phone_number=phone_number, approved=approved,
-                                                              edit_password=edit_password)
+            ok = await executor.run_in_executor(None,
+                                                lambda: self.application.db.update_permanent_station(
+                                                    station_id, callsign=callsign, club_name=club_name,
+                                                    type_id=type_id,
+                                                    latitude_degrees=latitude_degrees,
+                                                    longitude_degrees=longitude_degrees,
+                                                    meeting_when=meeting_when,
+                                                    meeting_where=meeting_where,
+                                                    notes=notes, website_url=website_url,
+                                                    qrz_url=qrz_url,
+                                                    social_media_url=social_media_url, email=email,
+                                                    phone_number=phone_number, approved=approved,
+                                                    edit_password=edit_password))
 
             if ok:
                 # Update OK
@@ -129,9 +144,10 @@ class AdminStationPermHandler(BaseHandler):
 
                 # Email the station owner if the approval status changed.
                 if approval_happened:
-                    notify_owner_station_approved(self.application.db, station)
+                    executor.run_in_executor(None, lambda: notify_owner_station_approved(self.application.db, station))
                 elif approval_revoked:
-                    notify_owner_station_approval_revoked(self.application.db, station)
+                    executor.run_in_executor(None, lambda: notify_owner_station_approval_revoked(self.application.db,
+                                                                                                 station))
                 return
             else:
                 self.set_status(500)
@@ -173,16 +189,20 @@ class AdminStationPermHandler(BaseHandler):
             approved = True if self.get_argument("approved", None) else False
 
             # Process the create action
-            new_station_id = self.application.db.add_permanent_station(callsign=callsign, club_name=club_name,
-                                                                       type_id=type_id,
-                                                                       latitude_degrees=latitude_degrees,
-                                                                       longitude_degrees=longitude_degrees,
-                                                                       meeting_when=meeting_when,
-                                                                       meeting_where=meeting_where,
-                                                                       notes=notes, website_url=website_url,
-                                                                       qrz_url=qrz_url,
-                                                                       social_media_url=social_media_url, email=email,
-                                                                       phone_number=phone_number, approved=approved)
+            new_station_id = await executor.run_in_executor(None,
+                                                            lambda: self.application.db.add_permanent_station(
+                                                                callsign=callsign, club_name=club_name,
+                                                                type_id=type_id,
+                                                                latitude_degrees=latitude_degrees,
+                                                                longitude_degrees=longitude_degrees,
+                                                                meeting_when=meeting_when,
+                                                                meeting_where=meeting_where,
+                                                                notes=notes, website_url=website_url,
+                                                                qrz_url=qrz_url,
+                                                                social_media_url=social_media_url,
+                                                                email=email,
+                                                                phone_number=phone_number,
+                                                                approved=approved))
 
             if new_station_id:
                 # Create OK

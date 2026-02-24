@@ -1,3 +1,5 @@
+import tornado
+
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station, to_json_sanitized
 from requesthandlers.base import BaseHandler
 
@@ -8,10 +10,12 @@ class MapHandler(BaseHandler):
     to the frontend anyway, the only difference is that the HTML selects under "Map settings" are preconfigured to
     display either just a certain event, or just a certain permanent station type, depending on what the slug was."""
 
-    def get(self, slug=None):
+    async def get(self, slug=None):
         # Work out whether we have a slug and which event or permanent station type it corresponds to
-        all_perm_station_types = self.application.db.get_all_permanent_station_types()
-        all_events = self.application.db.get_all_events()
+        executor = tornado.ioloop.IOLoop.current()
+        all_perm_station_types = await executor.run_in_executor(None,
+                                                                lambda: self.application.db.get_all_permanent_station_types())
+        all_events = await executor.run_in_executor(None, lambda: self.application.db.get_all_events())
         preselect_type = None
         preselect_event = None
         if slug:
@@ -26,11 +30,14 @@ class MapHandler(BaseHandler):
                 return
 
         # Get other data we need to include in the template. Convert to JSON here so we can load it straight up in JS.
-        temp_stations_json = to_json_sanitized(self.get_temporary_stations_js())
-        perm_stations_json = to_json_sanitized(self.get_permanent_stations_js())
-        all_bands = self.application.db.get_all_bands()
-        all_modes = self.application.db.get_all_modes()
-        all_events_json = to_json_sanitized(self.get_events_js())
+        temp_stations_json = to_json_sanitized(
+            await executor.run_in_executor(None, lambda: self.get_temporary_stations_js()))
+        perm_stations_json = to_json_sanitized(
+            await executor.run_in_executor(None, lambda: self.get_permanent_stations_js()))
+        all_bands = await executor.run_in_executor(None, lambda: self.application.db.get_all_bands())
+        all_modes = await executor.run_in_executor(None, lambda: self.application.db.get_all_modes())
+        all_events_json = to_json_sanitized(
+            await executor.run_in_executor(None, lambda: self.get_events_js()))
 
         # Render the template
         self.render("map.html", temp_stations_json=temp_stations_json, perm_stations_json=perm_stations_json,
