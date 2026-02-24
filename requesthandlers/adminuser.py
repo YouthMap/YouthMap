@@ -55,27 +55,36 @@ class AdminUserHandler(BaseHandler):
 
         self.set_header("Content-Type", "application/json")
 
-        # Bail out if the user is a non-super-admin and is editing a user that's not their own (or trying to create a
-        # new one)
-        user_id = int(slug) if (slug != "me" and slug != "new") else self.current_user
-        is_me = user_id == self.current_user
-        current_user = self.application.db.get_user(self.current_user)
-        if not is_me and not current_user.super_admin:
-            self.set_status(401)
-            self.write(json.dumps({"message": "You are not permitted to update a user account other than your own."}))
-            return
-
         # Get the action we have been asked to do
         action = self.get_argument("action")
+
+        # Check which user we are, and which user we are editing
+        current_user = self.application.db.get_user(self.current_user)
+        editing_user_id = 0
+        if slug != "new":
+            editing_user_id = current_user.id if (slug == "me") else int(slug)
+        editing_self = editing_user_id == current_user.id
+
+        # Bail out if the user is a non-super-admin and is editing a user that's not their own (or trying to create a
+        # new one)
+        if not current_user.super_admin:
+            if slug == "new" or action == "Create":
+                self.set_status(401)
+                self.write(json.dumps({"message": "You are not permitted to create user accounts."}))
+                return
+            elif not editing_self:
+                self.set_status(401)
+                self.write(json.dumps({"message": "You are not permitted to update a user account other than your own."}))
+                return
 
         # Check for Delete action
         if action == "Delete":
             # Process the delete action
-            ok = self.application.db.delete_user(user_id)
+            ok = self.application.db.delete_user(editing_user_id)
             if ok:
                 # Delete OK. If you were deleting yourself, go back to the home page, otherwise it was an admin
                 # deleting somebody else, so go back to the user management page.
-                if is_me:
+                if editing_self:
                     self.set_status(200)
                     self.write(json.dumps(
                         {"message": "Your account has been deleted. Returning you to the home page...",
@@ -112,14 +121,14 @@ class AdminUserHandler(BaseHandler):
             # Check for a change that would change the current user's own super-admin status. Adding it when they don't
             # have it is privilege escalation, and removing it when they have it could leave the site with no
             # super-admins, so bail out.
-            if is_me and ((current_user.super_admin and not super_admin)
+            if editing_self and ((current_user.super_admin and not super_admin)
                           or (not current_user.super_admin and super_admin)):
                 self.set_status(401)
                 self.write(json.dumps({"message": "Changing your own super-admin status is not allowed."}))
                 return
 
             # Catch a uniqueness violation before it happens, so we can explicitly warn the user about this
-            other_users = [u for u in self.application.db.get_all_users() if u.id != user_id]
+            other_users = [u for u in self.application.db.get_all_users() if u.id != editing_user_id]
             if any(u.username.lower() == username.lower() for u in other_users):
                 self.set_status(400)
                 self.write(json.dumps({
@@ -127,7 +136,7 @@ class AdminUserHandler(BaseHandler):
                 return
 
             # Process the update
-            ok = self.application.db.update_user(user_id, username=username, password=password, email=email,
+            ok = self.application.db.update_user(editing_user_id, username=username, password=password, email=email,
                                                  super_admin=super_admin)
             if ok:
                 # Update OK
