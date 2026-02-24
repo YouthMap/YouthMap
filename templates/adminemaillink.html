@@ -2,18 +2,23 @@
 {% block content %}
 
 <!--suppress HtmlUnknownAttribute, HtmlUnknownTarget , HtmlUnknownAnchorTarget -->
-{% if success %}
-<div class="alert alert-success mb-5" role="alert">
-    <p class="mb-0">{{ message }}</p>
-</div>
-{% else %}
-<div class="alert alert-danger mb-5" role="alert">
-    <p class="mb-0">{{ message }}</p>
-</div>
-{% end %}
+<form method="post" id="form">
+    <p>Are you sure you want to {{action}} this station?</p>
 
+    <input type="hidden" id="station_type" class="form-control" name="station_type" value="{{ station_type }}"/>
+    <input type="hidden" id="station_id" class="form-control" name="id" value="{{ station_id }}"/>
 
-<ul class="nav flex-row">
+    {% module xsrf_form_html() %}
+
+    <div class="mt-4 ms-5">
+        <input type="submit" class="btn btn-{{ 'primary' if action != 'delete' else 'danger' }}" name="action" onclick="submitForm('{{action}}')" value="Yes">
+        <a href="/admin" class="btn btn-secondary" role="button">No</a>
+    </div>
+
+    {% module Template("widgets/form-result.html") %}
+</form>
+
+<ul class="nav flex-row mt-5">
     <li class="nav-item">
         <a class="nav-link" href="/admin/stations">&laquo; Go to station list</a>
     </li>
@@ -22,4 +27,5 @@
     </li>
 </ul>
 
+<script src="/static/js/form-post-handler.js?v=1771969990"></script>
 {% end %}
