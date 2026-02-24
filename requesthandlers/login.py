@@ -50,6 +50,11 @@ class LoginHandler(BaseHandler):
         password = self.get_argument("password")
         next_url = self.get_argument("next", "/admin")
 
+        # Ensure next_url is relative and is not sending people off-site to a clone. If it looks dodgy, just replace it
+        # with our own admin page
+        if not next_url.startswith("/") or "://" in next_url:
+            next_url = "/admin"
+
         # Check that the username and password match a known user
         user_id = self.application.db.verify_user(username, password)
 
