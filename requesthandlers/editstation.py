@@ -73,7 +73,6 @@ class EditStationHandler(BaseHandler):
 
         station_id = int(station_id_slug)
         user_edit_password = self.get_argument("user_edit_password")
-        edit_password_good = False
 
         # Check the edit password
         station = None
