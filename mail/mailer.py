@@ -1,3 +1,4 @@
+import html
 import logging
 import smtplib
 from datetime import datetime
@@ -16,10 +17,10 @@ def notify_user_account_created(db, email, username, password):
       <body>
         <p>An account has been created for you at Youth Map. Your credentials are as follows:</p>
 
-        <p>Username: <strong>{username}</strong></p>
-        <p>Password: <strong style="font-family: monospace;">{password}</strong></p>
+        <p>Username: <strong>{html.escape(username)}</strong></p>
+        <p>Password: <strong style="font-family: monospace;">{html.escape(password)}</strong></p>
         
-        <p><a href="{site_base_url}/login">Click here to log in</a>. Please change this automatically-generated password to a new password of your choice immediately on first login.</p>
+        <p><a href="{html.escape(site_base_url)}/login">Click here to log in</a>. Please change this automatically-generated password to a new password of your choice immediately on first login.</p>
         
         <p>If you did not expect to receive this email, or to be set up with an account on this website, please ignore this email or contact the administrators (TODO) to notify them of the error.
       </body>
@@ -27,6 +28,7 @@ def notify_user_account_created(db, email, username, password):
     """
 
     return send_mail(db, email, subject, html_content)
+
 
 def notify_admins_user_added_station(db, new_station):
     """Send mail to all administrators, letting them know that a user has created a new station which is now awaiting
@@ -42,9 +44,9 @@ def notify_admins_user_added_station(db, new_station):
 
         {get_station_details_for_email(new_station)}
 
-        <p><br/><a href="{site_base_url}/admin/emaillink?action=approve&station_type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
-        <a href="{site_base_url}/admin/station/{station_type}/{new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Review</a>
-        <a href="{site_base_url}/admin/emaillink?action=delete&station_type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
+        <p><br/><a href="{html.escape(site_base_url)}/admin/emaillink?action=approve&station_type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
+        <a href="{html.escape(site_base_url)}/admin/station/{station_type}/{new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Review</a>
+        <a href="{html.escape(site_base_url)}/admin/emaillink?action=delete&station_type={station_type}&id={new_station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
       </body>
     </html>
     """
@@ -95,9 +97,9 @@ def notify_admins_user_updated_approved_station(db, station):
         
         {get_station_details_for_email(station)}
         
-        <p><br/><a href="{site_base_url}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em;">Review</a>
-        <a href="{site_base_url}/admin/emaillink?action=unapprove&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Unapprove</a>
-        <a href="{site_base_url}/admin/emaillink?action=delete&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
+        <p><br/><a href="{html.escape(site_base_url)}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em;">Review</a>
+        <a href="{html.escape(site_base_url)}/admin/emaillink?action=unapprove&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Unapprove</a>
+        <a href="{html.escape(site_base_url)}/admin/emaillink?action=delete&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
       </body>
     </html>
     """
@@ -119,9 +121,9 @@ def notify_admins_user_updated_unapproved_station(db, station):
         
         {get_station_details_for_email(station)}
         
-        <p><br/><a href="{site_base_url}/admin/emaillink?action=approve&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
-        <a href="{site_base_url}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Review</a>
-        <a href="{site_base_url}/admin/emaillink?action=delete&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
+        <p><br/><a href="{html.escape(site_base_url)}/admin/emaillink?action=approve&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
+        <a href="{html.escape(site_base_url)}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Review</a>
+        <a href="{html.escape(site_base_url)}/admin/emaillink?action=delete&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
       </body>
     </html>
     """
@@ -139,7 +141,7 @@ def notify_owner_station_created(db, station):
           <body>
             <p>Your station has been created on Youth Map, and the details you submitted are below. Please note that before this station is made visible on the map, it requires approval by a site administrator. We'll send another email when that happens.</p>
             <p>In the mean time, if you need to edit your station, you will require the "edit password". The password for this station is:</p>
-            <p style="font-size: 2em; font-family=monospace">{station.edit_password}</p>
+            <p style="font-size: 2em; font-family=monospace">{html.escape(station.edit_password)}</p>
             <p>Station details follow. Thanks for adding your station to Youth Map!</p>
     
             {get_station_details_for_email(station)}
@@ -248,18 +250,18 @@ def get_station_details_for_email(station):
     created a station" and "user updated a station" so has been extracted into a separate method."""
 
     return f"""\
-        <p>Callsign: <strong>{station.callsign}</strong></p>
-        <p>Name: <strong>{station.club_name}</strong></p>
-        {("<p>Event: <strong>" + station.event.name + "</strong></p>") if hasattr(station, "event") and station.event else ""}
-        {("<p>Type: <strong>" + station.type.name + "</strong></p>") if hasattr(station, "type") else ""}
-        {("<p>Meeting: " + station.meeting_when + "</p>") if hasattr(station, "meeting_when") else ""}
-        {("<p>Meeting: " + station.meeting_where + "</p>") if hasattr(station, "meeting_where") else ""}
-        {("<p>Notes: " + station.notes + "</p>") if station.notes else ""}
-        {("<p>Email: " + station.email + "</p>") if station.email else ""}
-        {("<p>Phone: " + station.phone_number + "</p>") if station.phone_number else ""}
-        {("<p>Website: <a href='" + station.website_url + "'>" + station.website_url + "</a></p>") if station.website_url else ""}
-        {("<p>Social media: <a href='" + station.social_media_url + "'>" + station.social_media_url + "</a></p>") if station.social_media_url else ""}
-        {("<p>QRZ page: <a href='" + station.qrz_url + "'>" + station.qrz_url + "</a></p>") if station.qrz_url else ""}
+        <p>Callsign: <strong>{html.escape(station.callsign)}</strong></p>
+        <p>Name: <strong>{html.escape(station.club_name)}</strong></p>
+        {("<p>Event: <strong>" + html.escape(station.event.name) + "</strong></p>") if hasattr(station, "event") and station.event else ""}
+        {("<p>Type: <strong>" + html.escape(station.type.name) + "</strong></p>") if hasattr(station, "type") else ""}
+        {("<p>Meeting: " + html.escape(station.meeting_when) + "</p>") if hasattr(station, "meeting_when") else ""}
+        {("<p>Meeting: " + html.escape(station.meeting_where) + "</p>") if hasattr(station, "meeting_where") else ""}
+        {("<p>Notes: " + html.escape(station.notes) + "</p>") if station.notes else ""}
+        {("<p>Email: " + html.escape(station.email) + "</p>") if station.email else ""}
+        {("<p>Phone: " + html.escape(station.phone_number) + "</p>") if station.phone_number else ""}
+        {("<p>Website: <a href='" + html.escape(station.website_url) + "'>" + html.escape(station.website_url) + "</a></p>") if station.website_url else ""}
+        {("<p>Social media: <a href='" + html.escape(station.social_media_url) + "'>" + html.escape(station.social_media_url) + "</a></p>") if station.social_media_url else ""}
+        {("<p>QRZ page: <a href='" + html.escape(station.qrz_url) + "'>" + html.escape(station.qrz_url) + "</a></p>") if station.qrz_url else ""}
     """
 
 
