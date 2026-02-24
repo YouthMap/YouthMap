@@ -62,6 +62,9 @@
                 </button>
             </div>
         </div>
+
+        {% module xsrf_form_html() %}
+
         <div class="row mt-4">
             <div class="col-sm-12">
                 <input type="submit" id="submitButton" class="btn btn-primary" name="action" onclick="submitForm('Next')" value="Next" disabled>

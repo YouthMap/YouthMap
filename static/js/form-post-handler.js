@@ -57,7 +57,15 @@ function submitFormInner(action, recaptchaToken) {
                 }
             })
             .fail(function(xhr) {
-                response = JSON.parse(xhr.responseText);
+                // Hopefully we should have a proper JSON structure here that we designed and deliberately sent. However
+                // if the web server throws some error before producing the JSON, we might just get some text, so show
+                // that instead.
+                try {
+                    response = JSON.parse(xhr.responseText);
+                } catch (error) {
+                    response = {"message": xhr.responseText};
+                }
+
                 $("#form-success").hide();
                 $("#form-progress").hide();
                 if ("message" in response) {

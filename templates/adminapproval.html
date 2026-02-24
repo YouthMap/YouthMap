@@ -19,6 +19,8 @@
             </div>
             <div class="col-sm-3">
                 <form method="post">
+                    {% module xsrf_form_html() %}
+
                     <a href="/view/station/temp/{{ s.id }}" class="btn btn-outline-primary" role="button">View</a>
                     <a href="/admin/station/temp/{{ s.id }}" class="btn btn-outline-primary" role="button">Edit</a>
                     <input type="submit" class="btn btn-success" name="action"
