@@ -1,4 +1,5 @@
 import json
+import secrets
 from datetime import datetime
 from time import sleep
 
@@ -75,16 +76,21 @@ class EditStationHandler(BaseHandler):
         edit_password_good = False
 
         # Check the edit password
+        station = None
         if perm_or_temp_slug == "perm":
             station = self.application.db.get_permanent_station(station_id)
-            edit_password_good = station.edit_password == user_edit_password
         elif perm_or_temp_slug == "temp":
             station = self.application.db.get_temporary_station(station_id)
-            edit_password_good = station.edit_password == user_edit_password
 
-        if not edit_password_good:
-            self.set_status(401)
-            self.write(json.dumps({"message": "The password you provided was incorrect."}))
+        if station:
+            edit_password_good = secrets.compare_digest(station.edit_password, user_edit_password)
+            if not edit_password_good:
+                self.set_status(401)
+                self.write(json.dumps({"message": "The password you provided was incorrect."}))
+                return
+        else:
+            self.set_status(400)
+            self.write(json.dumps({"message": "The URL slug does not match a known station."}))
             return
 
         # Get the action we have been asked to do

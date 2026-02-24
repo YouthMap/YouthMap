@@ -1,4 +1,5 @@
 import json
+import secrets
 from time import sleep
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station, verify_recaptcha
@@ -29,12 +30,12 @@ class ViewStationHandler(BaseHandler):
             station = self.application.db.get_permanent_station(station_id)
             if station:
                 populate_derived_fields_perm_station(station)
-                edit_password_good = station.edit_password == user_edit_password
+                edit_password_good = secrets.compare_digest(station.edit_password, user_edit_password)
         elif perm_or_temp_slug == "temp":
             station = self.application.db.get_temporary_station(station_id)
             if station:
                 populate_derived_fields_temp_station(station)
-                edit_password_good = station.edit_password == user_edit_password
+                edit_password_good = secrets.compare_digest(station.edit_password, user_edit_password)
         enable_captcha = self.application.db.get_config().enable_captcha
         recaptcha_site_key = self.application.db.get_config().recaptcha_site_key
 
