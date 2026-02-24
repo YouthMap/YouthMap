@@ -3,7 +3,8 @@ import json
 import tornado
 
 from core.utils import populate_derived_fields_perm_station
-from core.validation import validate_callsign, validate_free_text, validate_url, validate_phone, validate_email_address
+from core.validation import validate_callsign, validate_free_text, validate_url, validate_phone, validate_email_address, \
+    validate_latitude, validate_longitude
 from mail.mailer import notify_owner_station_approved, notify_owner_station_approval_revoked, \
     notify_owner_station_deleted
 from requesthandlers.base import BaseHandler
@@ -74,6 +75,8 @@ class AdminStationPermHandler(BaseHandler):
             # Get and validate request arguments
             callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
             club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            latitude_degrees, err_lat = validate_latitude(float(self.get_argument("latitude_degrees")))
+            longitude_degrees, err_lon = validate_longitude(float(self.get_argument("longitude_degrees")))
             notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
             meeting_when, err_when = validate_free_text(self.get_argument("meeting_when", "") or "", "Meeting times",
                                                         max_length=1000)
@@ -90,7 +93,7 @@ class AdminStationPermHandler(BaseHandler):
 
             err = next((x for x in
                         [err_callsign, err_club, err_notes, err_when, err_where, err_website, err_qrz, err_social,
-                         err_email, err_phone, err_pw] if x is not None), None)
+                         err_email, err_phone, err_pw, err_lat, err_lon] if x is not None), None)
             if err:
                 self.set_status(400)
                 self.write(json.dumps({"message": err}))
@@ -100,8 +103,6 @@ class AdminStationPermHandler(BaseHandler):
             type_id = 0
             if self.get_argument("type", None):
                 type_id = int(self.get_argument("type"))
-            latitude_degrees = float(self.get_argument("latitude_degrees"))
-            longitude_degrees = float(self.get_argument("longitude_degrees"))
             approved = True if self.get_argument("approved", None) else False
 
             # Check for approval changes to email the owner
@@ -143,6 +144,8 @@ class AdminStationPermHandler(BaseHandler):
             # Get and validate request arguments
             callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
             club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            latitude_degrees, err_lat = validate_latitude(float(self.get_argument("latitude_degrees")))
+            longitude_degrees, err_lon = validate_longitude(float(self.get_argument("longitude_degrees")))
             notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
             meeting_when, err_when = validate_free_text(self.get_argument("meeting_when", "") or "", "Meeting times",
                                                         max_length=200)
@@ -157,7 +160,7 @@ class AdminStationPermHandler(BaseHandler):
 
             err = next((x for x in
                         [err_callsign, err_club, err_notes, err_when, err_where, err_website, err_qrz, err_social,
-                         err_email, err_phone] if x is not None), None)
+                         err_email, err_phone, err_lat, err_lon] if x is not None), None)
             if err:
                 self.set_status(400)
                 self.write(json.dumps({"message": err}))
@@ -167,8 +170,6 @@ class AdminStationPermHandler(BaseHandler):
             type_id = 0
             if self.get_argument("type", None):
                 type_id = int(self.get_argument("type"))
-            latitude_degrees = float(self.get_argument("latitude_degrees"))
-            longitude_degrees = float(self.get_argument("longitude_degrees"))
             approved = True if self.get_argument("approved", None) else False
 
             # Process the create action

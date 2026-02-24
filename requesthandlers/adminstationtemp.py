@@ -5,7 +5,8 @@ import tornado
 
 from core.utils import get_default_event_end_time, get_default_event_start_time, populate_derived_fields_temp_station, \
     humanize_start_end, to_json_sanitized
-from core.validation import validate_callsign, validate_free_text, validate_url, validate_phone, validate_email_address
+from core.validation import validate_callsign, validate_free_text, validate_url, validate_phone, validate_email_address, \
+    validate_latitude, validate_longitude
 from mail.mailer import notify_owner_station_approved, notify_owner_station_approval_revoked, \
     notify_owner_station_deleted
 from requesthandlers.base import BaseHandler
@@ -84,6 +85,8 @@ class AdminStationTempHandler(BaseHandler):
             # Get and validate request arguments
             callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
             club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            latitude_degrees, err_lat = validate_latitude(float(self.get_argument("latitude_degrees")))
+            longitude_degrees, err_lon = validate_longitude(float(self.get_argument("longitude_degrees")))
             notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
             website_url, err_website = validate_url(self.get_argument("website_url", "") or "", "Website")
             qrz_url, err_qrz = validate_url(self.get_argument("qrz_url", "") or "", "QRZ page")
@@ -96,7 +99,7 @@ class AdminStationTempHandler(BaseHandler):
 
             err = next((x for x in
                         [err_callsign, err_club, err_notes, err_website, err_qrz, err_social, err_email, err_phone,
-                         err_pw] if x is not None), None)
+                         err_pw, err_lat, err_lon] if x is not None), None)
             if err:
                 self.set_status(400)
                 self.write(json.dumps({"message": err}))
@@ -108,8 +111,6 @@ class AdminStationTempHandler(BaseHandler):
                 event_id = int(self.get_argument("event", None))
             start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
             end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
-            latitude_degrees = float(self.get_argument("latitude_degrees"))
-            longitude_degrees = float(self.get_argument("longitude_degrees"))
             band_ids = []
             if self.get_argument("bands[]", None):
                 band_ids = [int(x) for x in self.request.arguments["bands[]"]]
@@ -188,6 +189,8 @@ class AdminStationTempHandler(BaseHandler):
             # Get and validate request arguments
             callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
             club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            latitude_degrees, err_lat = validate_latitude(float(self.get_argument("latitude_degrees")))
+            longitude_degrees, err_lon = validate_longitude(float(self.get_argument("longitude_degrees")))
             notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
             website_url, err_website = validate_url(self.get_argument("website_url", "") or "", "Website")
             qrz_url, err_qrz = validate_url(self.get_argument("qrz_url", "") or "", "QRZ page")
@@ -197,8 +200,8 @@ class AdminStationTempHandler(BaseHandler):
             phone_number, err_phone = validate_phone(self.get_argument("phone_number", "") or "")
 
             err = next((x for x in
-                        [err_callsign, err_club, err_notes, err_website, err_qrz, err_social, err_email, err_phone] if
-                        x is not None), None)
+                        [err_callsign, err_club, err_notes, err_website, err_qrz, err_social, err_email, err_phone,
+                         err_lat, err_lon] if x is not None), None)
             if err:
                 self.set_status(400)
                 self.write(json.dumps({"message": err}))
@@ -210,8 +213,6 @@ class AdminStationTempHandler(BaseHandler):
                 event_id = int(self.get_argument("event", None))
             start_time = datetime.strptime(self.get_argument("start_time"), "%Y-%m-%dT%H:%M")
             end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
-            latitude_degrees = float(self.get_argument("latitude_degrees"))
-            longitude_degrees = float(self.get_argument("longitude_degrees"))
             band_ids = []
             if self.get_argument("bands[]", None):
                 band_ids = [int(x) for x in self.request.arguments["bands[]"]]

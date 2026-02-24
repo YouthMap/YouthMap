@@ -5,7 +5,7 @@ from time import sleep
 
 from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station, verify_recaptcha
 from core.validation import validate_callsign, validate_free_text, validate_phone, validate_url, \
-    validate_email_address
+    validate_email_address, validate_latitude, validate_longitude
 from mail.mailer import notify_admins_user_updated_station, notify_admins_user_deleted_station
 from requesthandlers.base import BaseHandler
 
@@ -101,6 +101,8 @@ class EditStationHandler(BaseHandler):
             # point, so get and validate the arguments for both if they exist.
             callsign, err_callsign = validate_callsign(self.get_argument("callsign"))
             club_name, err_club = validate_free_text(self.get_argument("club_name"), "Club Name", max_length=200)
+            latitude_degrees, err_lat = validate_latitude(float(self.get_argument("latitude_degrees")))
+            longitude_degrees, err_lon = validate_longitude(float(self.get_argument("longitude_degrees")))
             notes, err_notes = validate_free_text(self.get_argument("notes", "") or "", "Notes", max_length=5000)
             meeting_when, err_when = validate_free_text(self.get_argument("meeting_when", "") or "", "Meeting times",
                                                         max_length=1000)
@@ -114,7 +116,7 @@ class EditStationHandler(BaseHandler):
             phone_number, err_phone = validate_phone(self.get_argument("phone_number", "") or "")
 
             check_field_validity_errors = [err_callsign, err_club, err_notes, err_website, err_qrz, err_social,
-                         err_email, err_phone]
+                         err_email, err_phone, err_lat, err_lon]
             if perm_or_temp_slug == "perm":
                 check_field_validity_errors.extend([err_when, err_where])
             err = next((x for x in check_field_validity_errors if x is not None), None)
@@ -136,8 +138,6 @@ class EditStationHandler(BaseHandler):
             end_time = None
             if self.get_argument("end_time", None):
                 end_time = datetime.strptime(self.get_argument("end_time"), "%Y-%m-%dT%H:%M")
-            latitude_degrees = float(self.get_argument("latitude_degrees"))
-            longitude_degrees = float(self.get_argument("longitude_degrees"))
             band_ids = []
             if self.get_argument("bands[]", None):
                 band_ids = [int(x) for x in self.request.arguments["bands[]"]]

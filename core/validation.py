@@ -90,3 +90,21 @@ def validate_url_slug(value: str):
     if not URL_SLUG_REGEX.match(value):
         return None, "URL slug must contain only lowercase letters, digits, and hyphens."
     return value, None
+
+
+def validate_latitude(value: float):
+    """Validate a latitude, in degres. Returns (value, None) on success or (None, error_message) on failure."""
+
+    if -90 <= value <= 90:
+        return value, None
+    else:
+        return None, "Latitude must be between -90 and 90 degrees."
+
+
+def validate_longitude(value: float):
+    """Validate a longitude, in degres. Returns (value, None) on success or (None, error_message) on failure."""
+
+    if -180 <= value <= 180:
+        return value, None
+    else:
+        return None, "Longitude must be between -180 and 180 degrees."
