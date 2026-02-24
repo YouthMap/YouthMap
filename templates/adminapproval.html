@@ -18,13 +18,16 @@
                 {{ s.event.name if s.event else "Event Station" }}
             </div>
             <div class="col-sm-3">
-                <form method="post">
+                <form method="post" id="temp{{ s.id }}">
                     {% module xsrf_form_html() %}
+
+                    <input type="hidden" class="form-control" name="type" value="temp"/>
+                    <input type="hidden" class="form-control" name="id" value="{{ s.id }}"/>
 
                     <a href="/view/station/temp/{{ s.id }}" class="btn btn-outline-primary" role="button">View</a>
                     <a href="/admin/station/temp/{{ s.id }}" class="btn btn-outline-primary" role="button">Edit</a>
                     <input type="submit" class="btn btn-success" name="action"
-                           onclick="submitForm('Approve', 'temp', {{ s.id }})"
+                           onclick="submitForm('Approve', 'temp{{ s.id }}')"
                            value="Approve">
                     <button type="button" class="btn btn-danger my-2 my-sm-0" data-bs-toggle="modal"
                             data-bs-target="#deleteModalTemp{{ s.id }}">Deny
@@ -45,7 +48,7 @@
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
                                     </button>
                                     <input type="submit" class="btn btn-danger" name="action" data-bs-dismiss="modal"
-                                           onclick="submitForm('Delete', 'temp', {{ s.id }})" value="Deny">
+                                           onclick="submitForm('Delete', 'temp{{ s.id }}')" value="Deny">
                                 </div>
                             </div>
                         </div>
@@ -64,11 +67,16 @@
                 {{ s.type.name }}
             </div>
             <div class="col-sm-3">
-                <form method="post">
+                <form method="post" id="perm{{ s.id }}">
+                    {% module xsrf_form_html() %}
+
+                    <input type="hidden" class="form-control" name="type" value="perm"/>
+                    <input type="hidden" class="form-control" name="id" value="{{ s.id }}"/>
+
                     <a href="/view/station/perm/{{ s.id }}" class="btn btn-outline-primary" role="button">View</a>
                     <a href="/admin/station/perm/{{ s.id }}" class="btn btn-outline-primary" role="button">Edit</a>
                     <input type="submit" class="btn btn-success" name="action"
-                           onclick="submitForm('Approve', 'perm', {{ s.id }})"
+                           onclick="submitForm('Approve', 'perm{{ s.id }}')"
                            value="Approve">
                     <button type="button" class="btn btn-danger my-2 my-sm-0" data-bs-toggle="modal"
                             data-bs-target="#deleteModalPerm{{ s.id }}">Deny
@@ -89,7 +97,7 @@
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel
                                     </button>
                                     <input type="submit" class="btn btn-danger" name="action" data-bs-dismiss="modal"
-                                           onclick="submitForm('Deny', 'perm', {{ s.id }})" value="Deny">
+                                           onclick="submitForm('Delete', 'perm{{ s.id }}')" value="Deny">
                                 </div>
                             </div>
                         </div>
@@ -117,9 +125,9 @@
     // Minimal form of the standard "submit form" method. Here there are many forms to a page so the standard approach
     // doesn't work. Since there is no user-entered content to submit there should be no chance of failure; just reload
     // the page on success and show an alert on the rare chance that a failure occurred.
-    function submitForm(action, type, id) {
+    function submitForm(action, formID) {
         event.preventDefault();
-        var formData = "action=" + action + "&type=" + type + "&id=" + id;
+        var formData = "action=" + action + "&" + $("#" + formID).serialize();
 
         // Perform the post request
         $.post(window.location.href, formData)
