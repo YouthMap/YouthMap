@@ -5,6 +5,8 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from database.models import PermanentStation
+
 
 def notify_user_account_created(db, email, username, password):
     """Send mail to the email address associated with a user, to let them know that their account has been created, and
@@ -19,9 +21,9 @@ def notify_user_account_created(db, email, username, password):
 
         <p>Username: <strong>{html.escape(username)}</strong></p>
         <p>Password: <strong style="font-family: monospace;">{html.escape(password)}</strong></p>
-        
+
         <p><a href="{html.escape(site_base_url)}/login">Click here to log in</a>. Please change this automatically-generated password to a new password of your choice immediately on first login.</p>
-        
+
         <p>If you did not expect to receive this email, or to be set up with an account on this website, please ignore this email or contact the administrators (TODO) to notify them of the error.
       </body>
     </html>
@@ -35,7 +37,7 @@ def notify_admins_user_added_station(db, new_station):
     their approval."""
 
     site_base_url = db.get_config().base_url
-    station_type = "perm" if hasattr(new_station, "type") else "temp"
+    station_type = "perm" if isinstance(new_station, PermanentStation) else "temp"
     subject = "[Youth Map] New station awaiting approval"
     html_content = f"""\
     <html>
@@ -64,7 +66,7 @@ def notify_admins_user_deleted_station(db, station):
         <p>A station has been deleted from Youth Map by a user. There is nothing required from you at this point, this is just for your information. The details of the deleted station were as follows.</p>
 
         {get_station_details_for_email(station)}
-        
+
       </body>
     </html>
     """
@@ -88,15 +90,15 @@ def notify_admins_user_updated_approved_station(db, station):
     approved and visible, but has been shown to admins as a check to prevent griefing."""
 
     site_base_url = db.get_config().base_url
-    station_type = "perm" if hasattr(station, "type") else "temp"
+    station_type = "perm" if isinstance(station, PermanentStation) else "temp"
     subject = "[Youth Map] Information updated for approved station"
     html_content = f"""\
     <html>
       <body>
         <p>An existing station has been updated by a user. It is still approved and live in the system. Please review the details below ensure that it has not been maliciously edited. Please note that this email has been sent to all administrators of the site.</p>
-        
+
         {get_station_details_for_email(station)}
-        
+
         <p><br/><a href="{html.escape(site_base_url)}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em;">Review</a>
         <a href="{html.escape(site_base_url)}/admin/emaillink?action=unapprove&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Unapprove</a>
         <a href="{html.escape(site_base_url)}/admin/emaillink?action=delete&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
@@ -112,15 +114,15 @@ def notify_admins_user_updated_unapproved_station(db, station):
     the approval queue, but now has new details."""
 
     site_base_url = db.get_config().base_url
-    station_type = "perm" if hasattr(station, "type") else "temp"
+    station_type = "perm" if isinstance(station, PermanentStation) else "temp"
     subject = "[Youth Map] Information updated for station in approval queue"
     html_content = f"""\
     <html>
       <body>
         <p>A station in the approval queue has been updated by a user. It is still waiting for admin approval, we are just updating you to show the new information. Please review the details below and either approve or delete the station. Please note that this email has been sent to all administrators of the site.</p>
-        
+
         {get_station_details_for_email(station)}
-        
+
         <p><br/><a href="{html.escape(site_base_url)}/admin/emaillink?action=approve&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: green; padding: 0.4em; border-radius: 0.3em;">Approve</a>
         <a href="{html.escape(site_base_url)}/admin/station/{station_type}/{station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: #0d6efd; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Review</a>
         <a href="{html.escape(site_base_url)}/admin/emaillink?action=delete&station_type={station_type}&id={station.id}" style="font-size: 1.2em; color: white; text-decoration: none; background-color: red; padding: 0.4em; border-radius: 0.3em; margin-left: 0.5em;">Delete</a></p>
@@ -143,7 +145,7 @@ def notify_owner_station_created(db, station):
             <p>In the mean time, if you need to edit your station, you will require the "edit password". The password for this station is:</p>
             <p style="font-size: 2em; font-family=monospace">{html.escape(station.edit_password)}</p>
             <p>Station details follow. Thanks for adding your station to Youth Map!</p>
-    
+
             {get_station_details_for_email(station)}
           </body>
         </html>
@@ -162,7 +164,7 @@ def notify_owner_station_approved(db, station):
         <html>
           <body>
             <p>We are pleased to say that an administrator has approved your station (details below). It is now publicly visible on the Youth Map website. If you need to edit anything, locate your station on the map and edit it using the password you were given at account creation.</p>
-    
+
             {get_station_details_for_email(station)}
           </body>
         </html>
@@ -182,7 +184,7 @@ def notify_owner_station_approval_revoked(db, station):
         <html>
           <body>
             <p>An administrator has revoked the approval of your station (details below). It is now hidden from visitors to website. This could have been due to inaccurate information or an edit that looked malicious. Please contact the administrators of the site (TODO) if you require clarification.</p>
-    
+
             {get_station_details_for_email(station)}
           </body>
         </html>
@@ -197,7 +199,7 @@ def notify_owner_station_deleted(db, station):
     whether the station is an expired temporary station or not, so first we check that, then delegate to another
     function as necessary."""
 
-    station_type = "perm" if hasattr(station, "type") else "temp"
+    station_type = "perm" if isinstance(station, PermanentStation) else "temp"
     if station_type == "temp" and station.end_time <= datetime.now():
         return notify_owner_station_deleted_past(db, station)
     else:
@@ -215,7 +217,7 @@ def notify_owner_station_deleted_current(db, station):
         <html>
           <body>
             <p>An administrator has made the decision to delete your station (details below). This could have been due to inaccurate information or an edit that looked malicious. Please contact the administrators of the site (TODO) if you require clarification.</p>
-    
+
             {get_station_details_for_email(station)}
           </body>
         </html>
@@ -235,7 +237,7 @@ def notify_owner_station_deleted_past(db, station):
         <html>
           <body>
             <p>An administrator has deleted the following station, which was for an event or time that has now completed. Thank you for advertising your station through Youth Map, and we hope you will list future event stations here again soon.</p>
-    
+
             {get_station_details_for_email(station)}
           </body>
         </html>
@@ -253,7 +255,7 @@ def get_station_details_for_email(station):
         <p>Callsign: <strong>{html.escape(station.callsign)}</strong></p>
         <p>Name: <strong>{html.escape(station.club_name)}</strong></p>
         {("<p>Event: <strong>" + html.escape(station.event.name) + "</strong></p>") if hasattr(station, "event") and station.event else ""}
-        {("<p>Type: <strong>" + html.escape(station.type.name) + "</strong></p>") if hasattr(station, "type") else ""}
+        {("<p>Type: <strong>" + html.escape(station.type.name) + "</strong></p>") if isinstance(station, PermanentStation) and station.type else ""}
         {("<p>Meeting: " + html.escape(station.meeting_when) + "</p>") if hasattr(station, "meeting_when") else ""}
         {("<p>Meeting: " + html.escape(station.meeting_where) + "</p>") if hasattr(station, "meeting_where") else ""}
         {("<p>Notes: " + html.escape(station.notes) + "</p>") if station.notes else ""}
@@ -270,7 +272,7 @@ def send_mail_to_all_admins(db, subject, html_content):
     will be ignored.) The first parameter provided must be the database object, which we need to use to look up SMTP
     config and administrator emails. The second and third parameters are the subject line and content of the mail."""
 
-    recipients = [x.email for x in db.get_all_users()]
+    recipients = [x.email for x in db.get_all_users() if x.email]
     return send_mail(db, recipients, subject, html_content)
 
 
@@ -302,8 +304,8 @@ def send_mail(db, recipients, subject, html_content):
                 logging.info("Sent mail.")
                 return True
 
-        except Exception as e:
-            logging.error("Failed to send mail", e)
+        except Exception:
+            logging.exception("Failed to send mail")
             return False
 
     else:

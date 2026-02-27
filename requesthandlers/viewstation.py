@@ -89,12 +89,12 @@ class ViewStationHandler(BaseHandler):
             station = await executor.run_in_executor(None,
                                                      lambda: self.application.db.get_permanent_station(
                                                          station_id))
-            edit_password_good = station.edit_password == user_edit_password
+            edit_password_good = secrets.compare_digest(station.edit_password, user_edit_password)
         elif perm_or_temp_slug == "temp":
             station = await executor.run_in_executor(None,
                                                      lambda: self.application.db.get_temporary_station(
                                                          station_id))
-            edit_password_good = station.edit_password == user_edit_password
+            edit_password_good = secrets.compare_digest(station.edit_password, user_edit_password)
 
         if not edit_password_good:
             self.set_status(401)

@@ -64,8 +64,8 @@ class DatabaseOperations:
 
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when updating config", e)
+        except IntegrityError:
+            logging.exception("Error when updating config")
             session.rollback()
             return False
         finally:
@@ -91,8 +91,8 @@ class DatabaseOperations:
             session.add(user)
             session.commit()
             return user.id
-        except IntegrityError as e:
-            logging.error("Error when adding user", e)
+        except IntegrityError:
+            logging.exception("Error when adding user")
             session.rollback()
             return None
         finally:
@@ -139,8 +139,8 @@ class DatabaseOperations:
 
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when updating user", e)
+        except IntegrityError:
+            logging.exception("Error when updating user")
             session.rollback()
             return False
         finally:
@@ -161,8 +161,8 @@ class DatabaseOperations:
             session.delete(user)
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when deleting user", e)
+        except IntegrityError:
+            logging.exception("Error when deleting user")
             session.rollback()
             return False
         finally:
@@ -172,23 +172,19 @@ class DatabaseOperations:
         """Verify user credentials. If successful, the user ID is returned. Otherwise, None is returned. Usernames are
         not case sensitive."""
 
-        session = self.SessionLocal()
-        try:
-            # Find the user matching the username (if there is one)
-            matching_users = [u for u in self.get_all_users() if u.username.lower() == username.lower()]
-            user = matching_users[0] if len(matching_users) > 0 else None
-            if not user:
-                return None
-
-            # Get the stored salt for the user, and hash the provided password with it
-            password_hash = hash_password(password, user.salt)
-
-            # If the hashes match, the password was correct and we can log in
-            if password_hash == user.password_hash:
-                return user.id
+        # Find the user matching the username (if there is one)
+        matching_users = [u for u in self.get_all_users() if u.username.lower() == username.lower()]
+        user = matching_users[0] if len(matching_users) > 0 else None
+        if not user:
             return None
-        finally:
-            session.close()
+
+        # Get the stored salt for the user, and hash the provided password with it
+        password_hash = hash_password(password, user.salt)
+
+        # If the hashes match, the password was correct and we can log in
+        if secrets.compare_digest(password_hash, user.password_hash):
+            return user.id
+        return None
 
     def is_insecure_user_present(self):
         """Returns true if the users table contains an entry with username 'admin' and password 'password'. Used to
@@ -214,8 +210,8 @@ class DatabaseOperations:
             session.add(new_user_session)
             session.commit()
             return user_session_token
-        except IntegrityError as e:
-            logging.error("Error when creating session", e)
+        except IntegrityError:
+            logging.exception("Error when creating session")
             session.rollback()
             return None
         finally:
@@ -244,8 +240,8 @@ class DatabaseOperations:
                 session.delete(user_session)
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when clearing up expired sessions", e)
+        except IntegrityError:
+            logging.exception("Error when clearing up expired sessions")
             session.rollback()
             return False
         finally:
@@ -289,8 +285,8 @@ class DatabaseOperations:
             session.add(event)
             session.commit()
             return event.id
-        except IntegrityError as e:
-            logging.error("Error when adding event", e)
+        except IntegrityError:
+            logging.exception("Error when adding event")
             session.rollback()
             return None
         finally:
@@ -356,8 +352,8 @@ class DatabaseOperations:
 
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when updating event", e)
+        except IntegrityError:
+            logging.exception("Error when updating event")
             session.rollback()
             return False
         finally:
@@ -377,8 +373,8 @@ class DatabaseOperations:
             session.delete(event)
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when deleting event", e)
+        except IntegrityError:
+            logging.exception("Error when deleting event")
             session.rollback()
             return False
         finally:
@@ -394,8 +390,8 @@ class DatabaseOperations:
                 session.delete(event)
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when clearing up expired events", e)
+        except IntegrityError:
+            logging.exception("Error when clearing up expired events")
             session.rollback()
             return False
         finally:
@@ -445,8 +441,8 @@ class DatabaseOperations:
             session.add(station)
             session.commit()
             return station.id
-        except IntegrityError as e:
-            logging.error("Error when adding temporary station", e)
+        except IntegrityError:
+            logging.exception("Error when adding temporary station")
             session.rollback()
             return None
         finally:
@@ -543,8 +539,8 @@ class DatabaseOperations:
 
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when updating temporary station", e)
+        except IntegrityError:
+            logging.exception("Error when updating temporary station")
             session.rollback()
             return False
         finally:
@@ -562,8 +558,8 @@ class DatabaseOperations:
             session.delete(station)
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when deleting temporary station", e)
+        except IntegrityError:
+            logging.exception("Error when deleting temporary station")
             session.rollback()
             return False
         finally:
@@ -579,8 +575,8 @@ class DatabaseOperations:
                 session.delete(ts)
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when clearing up expired temporary stations", e)
+        except IntegrityError:
+            logging.exception("Error when clearing up expired temporary stations")
             session.rollback()
             return False
         finally:
@@ -621,8 +617,8 @@ class DatabaseOperations:
             session.add(station)
             session.commit()
             return station.id
-        except IntegrityError as e:
-            logging.error("Error when adding permanent station", e)
+        except IntegrityError:
+            logging.exception("Error when adding permanent station")
             session.rollback()
             return None
         finally:
@@ -703,8 +699,8 @@ class DatabaseOperations:
 
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when updating permanent station", e)
+        except IntegrityError:
+            logging.exception("Error when updating permanent station")
             session.rollback()
             return False
         finally:
@@ -722,8 +718,8 @@ class DatabaseOperations:
             session.delete(station)
             session.commit()
             return True
-        except IntegrityError as e:
-            logging.error("Error when deleting permanent station", e)
+        except IntegrityError:
+            logging.exception("Error when deleting permanent station")
             session.rollback()
             return False
         finally:

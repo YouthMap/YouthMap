@@ -156,7 +156,7 @@ class CreateStationHandler(BaseHandler):
                 mode_ids = [int(x) for x in self.request.arguments["modes[]"]]
 
             # Check lat/lon were supplied and other fields are consistent with what the user could reasonably select
-            if not latitude_degrees or not latitude_degrees:
+            if not latitude_degrees or not longitude_degrees:
                 self.set_status(400)
                 self.write(json.dumps({
                     "message": "A location was not provided. Please contact the administrators (TODO) for help."}))

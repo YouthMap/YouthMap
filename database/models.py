@@ -62,6 +62,7 @@ class User(Base):
             salt = secrets.token_hex(32)
             password_hash = hash_password("password", salt)
             session.add(cls(username="admin", password_hash=password_hash, salt=salt, super_admin=True))
+        session.commit()
 
 
 class UserSession(Base):
@@ -72,8 +73,8 @@ class UserSession(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     session_token = Column(String, unique=True, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    created_at = Column(DateTime, default=datetime.now())
-    expires_at = Column(DateTime, default=datetime.now() + timedelta(hours=24))
+    created_at = Column(DateTime, default=datetime.now)
+    expires_at = Column(DateTime, default=lambda: datetime.now() + timedelta(hours=24))
 
     # Link the sessions with the users, so we can find the user that owns this session.
     user = relationship('User', back_populates='sessions')

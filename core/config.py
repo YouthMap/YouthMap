@@ -10,7 +10,8 @@ if not os.path.isfile("config.yml"):
     exit()
 
 # Load config
-config = yaml.safe_load(open("config.yml"))
+with open("config.yml") as f:
+    config = yaml.safe_load(f)
 logging.info("Loaded config.")
 
 HTTP_PORT = config["http-port"]

@@ -68,7 +68,7 @@ def validate_url(value: str, field_name: str = "URL"):
     if value == "":
         return value, None
     if contains_html(value):
-        return None, f"The {field_name}'field must not contain HTML."
+        return None, f"The {field_name} field must not contain HTML."
     try:
         parsed = urlparse(value)
         if parsed.scheme not in ALLOWED_URL_SCHEMES:

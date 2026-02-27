@@ -25,7 +25,7 @@ class AdminStationsHandler(BaseHandler):
                                                                 lambda: self.application.db.get_all_permanent_station_types())
         perm_stations_by_type = {}
         for station_type in all_perm_station_types:
-            perm_stations_by_type[station_type.name] = [x for x in perm_stations if x.type.name == station_type.name]
+            perm_stations_by_type[station_type.name] = [x for x in perm_stations if x.type and x.type.name == station_type.name]
 
         # Render the template
         self.render("adminstations.html", temp_stations_by_type=temp_stations_by_type, perm_stations_by_type=perm_stations_by_type)

@@ -23,6 +23,7 @@ class CreateStationTypeHandler(BaseHandler):
         # Check lat/lon were supplied
         if not lat or not lon:
             self.write("Location not provided, user did not get to this page via normal means.")
+            return
 
         # Render the template.
         self.render("createstationtype.html", latitude_degrees=lat, longitude_degrees=lon,

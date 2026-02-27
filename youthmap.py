@@ -82,9 +82,15 @@ class YouthMap(tornado.web.Application):
             (r"/([^/]+)", MapHandler)
         ]
 
+        cookie_secret = os.environ.get("COOKIE_SECRET")
+        if not cookie_secret:
+            logging.warning("COOKIE_SECRET environment variable is not set. A random secret will be used, "
+                            "which will invalidate all sessions on every server restart.")
+            cookie_secret = secrets.token_hex(32)
+
         settings = {
             "template_path": "templates",
-            "cookie_secret": os.environ.get("COOKIE_SECRET", secrets.token_hex(32)),
+            "cookie_secret": cookie_secret,
             "login_url": "/login",
             "xsrf_cookies": True,
             "debug": True  # todo set false
