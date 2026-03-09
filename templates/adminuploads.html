@@ -1,0 +1,174 @@
+{% extends "base-std.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownTarget -->
+<h2 class="mb-5">Manage Uploads</h2>
+
+<div class="card mx-auto bg-body-tertiary mb-4" style="max-width: 40rem;">
+    <div class="card-header">
+        <h5 class="mb-0 card-title">Upload Image</h5>
+    </div>
+    <div class="card-body">
+        <form id="upload-form" enctype="multipart/form-data">
+            {% module xsrf_form_html() %}
+            <div class="row mb-3">
+                <div class="col">
+                    <input type="file" id="file" name="file" class="form-control" accept=".png" required>
+                    <div class="form-text">Only .png image files are allowed.</div>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
+            </div>
+            <div id="upload-progress" class="form-result row mb-1 mt-4 mx-1" style="display:none;">
+                <div class="alert alert-primary mb-0" role="alert">
+                    <p class="alert-primary mb-0">
+                        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label=""><use xlink:href="#info-fill"/></svg>
+                        Please wait...
+                    </p>
+                </div>
+            </div>
+            <div id="upload-success" class="form-result row mb-1 mt-4 mx-1" style="display:none;">
+                <div class="alert alert-success mb-0" role="alert">
+                    <p class="alert-success mb-0">
+                        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
+                        <span id="upload-success-text"></span>
+                    </p>
+                </div>
+            </div>
+            <div id="upload-error" class="form-result row mb-1 mt-4 mx-1" style="display:none;">
+                <div class="alert alert-danger mb-0" role="alert">
+                    <p class="alert-danger mb-0">
+                        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Error:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                        <span id="upload-error-text"></span>
+                    </p>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mx-auto bg-body-tertiary" style="max-width: 40rem;">
+    <div class="card-header">
+        <h5 class="mb-0 card-title">Uploaded Images</h5>
+    </div>
+    <div class="card-body">
+        {% if files %}
+        <div class="row row-cols-2 row-cols-md-3 g-3" id="image-gallery">
+            {% for filename in files %}
+            <div class="col" id="img-{{ filename }}">
+                <div class="card h-100">
+                    <div class="card-img-top p-2 d-flex align-items-center justify-content-center" style="height: 90px; background: #f8f9fa;">
+                        <img src="/upload/{{ filename }}" style="max-height: 80px; max-width: 100%; object-fit: contain;" alt="{{ filename }}">
+                    </div>
+                    <div class="card-body p-2">
+                        <p class="card-text small text-truncate mb-0" title="{{ filename }}">{{ filename }}</p>
+                    </div>
+                    <div class="card-footer p-2">
+                        <button class="btn btn-danger btn-sm w-100" onclick="deleteFile('{{ filename }}')">Delete</button>
+                    </div>
+                </div>
+            </div>
+            {% end %}
+        </div>
+        {% else %}
+        <p class="card-text text-muted">No images uploaded yet.</p>
+        {% end %}
+    </div>
+    <div class="card-footer text-muted">
+        <ul class="nav flex-row">
+            <li class="nav-item">
+                <a class="nav-link" href="/admin">&laquo; Back to dashboard</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div id="delete-progress" style="display:none; position:fixed; bottom:1.5rem; right:1.5rem; z-index:1050;">
+    <div class="alert alert-primary shadow mb-0" role="alert">
+        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label=""><use xlink:href="#info-fill"/></svg>
+        Please wait...
+    </div>
+</div>
+<div id="delete-error" style="display:none; position:fixed; bottom:1.5rem; right:1.5rem; z-index:1050;">
+    <div class="alert alert-danger shadow mb-0" role="alert">
+        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Error:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+        <span id="delete-error-text"></span>
+    </div>
+</div>
+
+<script>
+    var uploadForm = document.getElementById('upload-form');
+
+    uploadForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        document.getElementById('upload-progress').style.display = '';
+        document.getElementById('upload-success').style.display = 'none';
+        document.getElementById('upload-error').style.display = 'none';
+
+        var formData = new FormData(uploadForm);
+        formData.append('action', 'Upload');
+
+        fetch(window.location.href, {method: 'POST', body: formData})
+            .then(function (r) {
+                return r.json();
+            })
+            .then(function (data) {
+                document.getElementById('upload-progress').style.display = 'none';
+                if (data.message) {
+                    document.getElementById('upload-success').style.display = '';
+                    document.getElementById('upload-success-text').textContent = data.message;
+                }
+                if (data.redirect_url) {
+                    setTimeout(function () {
+                        window.location.href = data.redirect_url;
+                    }, data.message ? 2000 : 0);
+                }
+            })
+            .catch(function () {
+                document.getElementById('upload-progress').style.display = 'none';
+                document.getElementById('upload-error').style.display = '';
+                document.getElementById('upload-error-text').textContent = 'Upload failed. Please try again.';
+            });
+    });
+
+    function deleteFile(filename) {
+        if (!confirm('Delete "' + filename + '"?')) return;
+
+        document.getElementById('delete-progress').style.display = '';
+        document.getElementById('delete-error').style.display = 'none';
+
+        var xsrfToken = uploadForm.querySelector('input[name="_xsrf"]').value;
+        var formData = new FormData();
+        formData.append('action', 'Delete');
+        formData.append('filename', filename);
+        formData.append('_xsrf', xsrfToken);
+
+        fetch(window.location.href, {method: 'POST', body: formData})
+            .then(function (r) {
+                return r.json();
+            })
+            .then(function (data) {
+                document.getElementById('delete-progress').style.display = 'none';
+                var el = document.getElementById('img-' + filename);
+                if (el) el.remove();
+                var gallery = document.getElementById('image-gallery');
+                if (gallery && gallery.children.length === 0) {
+                    gallery.insertAdjacentHTML('afterend', '<p class="card-text text-muted">No images uploaded yet.</p>');
+                    gallery.remove();
+                }
+            })
+            .catch(function () {
+                document.getElementById('delete-progress').style.display = 'none';
+                document.getElementById('delete-error').style.display = '';
+                document.getElementById('delete-error-text').textContent = 'Delete failed. Please try again.';
+                setTimeout(function () {
+                    document.getElementById('delete-error').style.display = 'none';
+                }, 3000);
+            });
+    }
+</script>
+
+{% end %}
