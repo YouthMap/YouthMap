@@ -20,4 +20,5 @@ class BaseHandler(tornado.web.RequestHandler):
         config = self.application.db.get_config()
         kwargs.setdefault('baseurl', config.base_url if config else '')
         kwargs.setdefault('current_path', self.request.path)
+        kwargs.setdefault('current_user', self.current_user)
         super().render(template_name, **kwargs)
