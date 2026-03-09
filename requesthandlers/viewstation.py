@@ -4,7 +4,8 @@ import secrets
 
 import tornado
 
-from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station, verify_recaptcha
+from core.utils import populate_derived_fields_temp_station, populate_derived_fields_perm_station, verify_recaptcha, \
+    render_markdown_sanitized
 from mail.mailer import notify_admins_user_deleted_station
 from requesthandlers.base import BaseHandler
 
@@ -51,7 +52,10 @@ class ViewStationHandler(BaseHandler):
 
         # Render the template.
         if station:
-            self.render("viewstation.html", type=perm_or_temp_slug, station=station,
+            # Specially bring out the notes and convert Markdown to HTML, pass that separately to the template.
+            notes_html = render_markdown_sanitized(station.notes) if station.notes else ""
+
+            self.render("viewstation.html", type=perm_or_temp_slug, station=station, notes_html=notes_html,
                     user_edit_password=user_edit_password if edit_password_good else None, emailed=emailed,
                     enable_captcha=enable_captcha, recaptcha_site_key=recaptcha_site_key)
         else:

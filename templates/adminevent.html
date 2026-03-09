@@ -107,6 +107,9 @@
                 <div class="col-sm-8">
                     <textarea id="notes_template" class="form-control" name="notes_template"
                               rows="5">{{ '' if creating_new else event.notes_template }}</textarea>
+                    <small class="form-text text-muted"><a
+                            href="https://www.markdownguide.org/basic-syntax/">Markdown</a> formatting is supported. Do
+                        not include HTML.</small>
                 </div>
             </div>
             <div class="row mb-2">
@@ -221,7 +224,7 @@
     });
 {% end %}
 </script>
-<script src="/static/js/form-post-handler.js?v=1773078799"></script>
-<script src="/static/js/image-color-extractor.js?v=1773078799"></script>
+<script src="/static/js/form-post-handler.js?v=1773092278"></script>
+<script src="/static/js/image-color-extractor.js?v=1773092278"></script>
 
 {% end %}

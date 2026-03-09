@@ -124,6 +124,8 @@
                         </div>
                         <div class="col-sm-8">
                             <textarea id="notes" class="form-control" name="notes" rows="5">{{ (event.notes_template if event and event.notes_template else '') if creating_new else station.notes }}</textarea>
+                            <small class="form-text text-muted"><a href="https://www.markdownguide.org/basic-syntax/">Markdown</a>
+                                formatting is supported. Do not include HTML.</small>
                         </div>
                     </div>
                     <div class="row mb-2">
@@ -326,8 +328,8 @@
         constrainFields();
     });
 </script>
-<script type="module" src="/static/js/map-editstation.js?v=1773078799"></script>
-<script src="/static/js/form-post-handler.js?v=1773078799"></script>
-<script src="/static/js/password-generator.js?v=1773078799"></script>
+<script type="module" src="/static/js/map-editstation.js?v=1773092278"></script>
+<script src="/static/js/form-post-handler.js?v=1773092278"></script>
+<script src="/static/js/password-generator.js?v=1773092278"></script>
 
 {% end %}

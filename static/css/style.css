@@ -71,6 +71,14 @@ div#map {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
+/* VIEWS */
+.station-notes > *:last-child {
+    margin-bottom: 0;
+}
+.station-notes > *:first-child {
+    margin-top: 0;
+}
+
 /* FORMS */
 div.form-result {
     display: none;

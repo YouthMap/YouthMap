@@ -7,8 +7,14 @@ from datetime import datetime, timedelta
 from os import listdir
 from os.path import isfile, join
 
+import nh3
 import pytz
 import requests
+from markdown import markdown
+
+_MARKDOWN_ALLOWED_TAGS = {"p", "strong", "em", "b", "i", "h1", "h2", "h3", "h4", "h5", "h6",
+                          "ul", "ol", "li", "code", "pre", "blockquote", "br", "a", "hr"}
+_MARKDOWN_ALLOWED_ATTRIBUTES = {"a": {"href", "title"}}
 
 from core.config import UPLOAD_DIR
 
@@ -141,6 +147,14 @@ def hash_password(password, salt):
         salt.encode('utf-8'),
         100000
     ).hex()
+
+
+def render_markdown_sanitized(md):
+    """Convert markdown text to HTML, and sanitise it. Only a safe subset of HTML tags is permitted
+    in the output, and link URLs are restricted to http and https schemes to prevent "javascript:"."""
+
+    return nh3.clean(markdown(md), tags=_MARKDOWN_ALLOWED_TAGS, attributes=_MARKDOWN_ALLOWED_ATTRIBUTES,
+                     url_schemes={"http", "https"})
 
 
 def to_json_sanitized(o):

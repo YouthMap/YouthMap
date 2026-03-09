@@ -147,13 +147,13 @@
                 </div>
                 {% end %}
 
-                {% if station.notes and station.notes != "" %}
+                {% if notes_html %}
                 <div class="row mb-2">
                     <div class="col-sm-4">
                         Notes:
                     </div>
-                    <div class="col-sm-8">
-                        {{ station.notes }}
+                    <div class="col-sm-8 station-notes">
+                        {% raw notes_html %}
                     </div>
                 </div>
                 {% end %}
@@ -274,11 +274,11 @@
     let color = "{{ station.color }}";
     let icon = "{{ station.icon }}";
 </script>
-<script type="module" src="/static/js/map-viewstation.js?v=1773078799"></script>
+<script type="module" src="/static/js/map-viewstation.js?v=1773092278"></script>
 {% if enable_captcha %}
 <script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}"></script>
 <script>captchaOnThisPage = true; recaptchaSiteKey = "{{ recaptcha_site_key }}";</script>
 {% end %}
-<script src="/static/js/form-post-handler.js?v=1773078799"></script>
+<script src="/static/js/form-post-handler.js?v=1773092278"></script>
 
 {% end %}
