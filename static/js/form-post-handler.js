@@ -35,15 +35,15 @@ function submitFormInner(action, recaptchaToken) {
     }
 
     if (ok) {
-        // Prepare the form data to send
-        var formData = "action=" + action + "&"
+        // Prepare the form data to send. FormData handles both regular and file inputs.
+        var formData = new FormData(document.getElementById("form"));
+        formData.append("action", action);
         if (recaptchaToken) {
-            formData = formData + "recaptcha_token=" + recaptchaToken + "&"
+            formData.append("recaptcha_token", recaptchaToken);
         }
-        formData = formData + $("#form").serialize();
 
         // Perform the post request
-        $.post(window.location.href, formData)
+        $.ajax({ url: window.location.href, type: 'POST', data: formData, processData: false, contentType: false })
             .done(function(response) {
                 $("#form-error").hide();
                 $("#form-progress").hide();

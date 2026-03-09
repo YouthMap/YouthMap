@@ -8,50 +8,29 @@
         <h5 class="mb-0 card-title">Upload Image</h5>
     </div>
     <div class="card-body">
-        <form id="upload-form" enctype="multipart/form-data">
+        <form id="form" enctype="multipart/form-data">
             {% module xsrf_form_html() %}
             <div class="row mb-3">
                 <div class="col">
                     <input type="file" id="file" name="file" class="form-control" accept=".png" required>
-                    <div class="form-text">Only .png image files are allowed.</div>
+                    <div class="form-text">Only .png image files are currently allowed.</div>
                 </div>
             </div>
             <div class="row mb-2">
                 <div class="col">
-                    <button type="submit" class="btn btn-primary">Upload</button>
+                    <input type="submit" class="btn btn-primary" name="action" onclick="submitForm('Upload')"
+                                   value="Upload">
                 </div>
             </div>
-            <div id="upload-progress" class="form-result row mb-1 mt-4 mx-1" style="display:none;">
-                <div class="alert alert-primary mb-0" role="alert">
-                    <p class="alert-primary mb-0">
-                        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label=""><use xlink:href="#info-fill"/></svg>
-                        Please wait...
-                    </p>
-                </div>
-            </div>
-            <div id="upload-success" class="form-result row mb-1 mt-4 mx-1" style="display:none;">
-                <div class="alert alert-success mb-0" role="alert">
-                    <p class="alert-success mb-0">
-                        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Success:"><use xlink:href="#check-circle-fill"/></svg>
-                        <span id="upload-success-text"></span>
-                    </p>
-                </div>
-            </div>
-            <div id="upload-error" class="form-result row mb-1 mt-4 mx-1" style="display:none;">
-                <div class="alert alert-danger mb-0" role="alert">
-                    <p class="alert-danger mb-0">
-                        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Error:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-                        <span id="upload-error-text"></span>
-                    </p>
-                </div>
-            </div>
+
+            {% module Template("widgets/form-result.html") %}
         </form>
     </div>
 </div>
 
 <div class="card mx-auto bg-body-tertiary" style="max-width: 40rem;">
     <div class="card-header">
-        <h5 class="mb-0 card-title">Uploaded Images</h5>
+        <h5 class="mb-0 card-title">Manage Uploads</h5>
     </div>
     <div class="card-body">
         {% if files %}
@@ -66,7 +45,28 @@
                         <p class="card-text small text-truncate mb-0" title="{{ filename }}">{{ filename }}</p>
                     </div>
                     <div class="card-footer p-2">
-                        <button class="btn btn-danger btn-sm w-100" onclick="deleteFile('{{ filename }}')">Delete</button>
+                        <button class="btn btn-danger btn-sm w-100" data-bs-toggle="modal"
+                            data-bs-target="#deleteModal{{ filename.replace('.png', '') }}">Delete</button>
+                    </div>
+
+                    <div class="modal fade" id="deleteModal{{ filename.replace('.png', '') }}" tabindex="-1"
+                         aria-labelledby="deleteModalTitle{{ filename.replace('.png', '') }}"
+                         aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5" id="deleteModalTitle{{ filename.replace('.png', '') }}">Delete file?</h1>
+                                </div>
+                                <div class="modal-body">
+                                    Are you sure you want to delete this file?
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                    <input type="submit" class="btn btn-danger" name="action" data-bs-dismiss="modal"
+                                           onclick="deleteFile('{{ filename }}')" value="Delete">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -85,89 +85,28 @@
     </div>
 </div>
 
-<div id="delete-progress" style="display:none; position:fixed; bottom:1.5rem; right:1.5rem; z-index:1050;">
-    <div class="alert alert-primary shadow mb-0" role="alert">
-        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label=""><use xlink:href="#info-fill"/></svg>
-        Please wait...
-    </div>
-</div>
-<div id="delete-error" style="display:none; position:fixed; bottom:1.5rem; right:1.5rem; z-index:1050;">
-    <div class="alert alert-danger shadow mb-0" role="alert">
-        <svg class="bi flex-shrink-0 me-2 alert-icon" role="img" aria-label="Error:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-        <span id="delete-error-text"></span>
-    </div>
-</div>
-
 <script>
-    var uploadForm = document.getElementById('upload-form');
-
-    uploadForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        document.getElementById('upload-progress').style.display = '';
-        document.getElementById('upload-success').style.display = 'none';
-        document.getElementById('upload-error').style.display = 'none';
-
-        var formData = new FormData(uploadForm);
-        formData.append('action', 'Upload');
-
-        fetch(window.location.href, {method: 'POST', body: formData})
-            .then(function (r) {
-                return r.json();
-            })
-            .then(function (data) {
-                document.getElementById('upload-progress').style.display = 'none';
-                if (data.message) {
-                    document.getElementById('upload-success').style.display = '';
-                    document.getElementById('upload-success-text').textContent = data.message;
-                }
-                if (data.redirect_url) {
-                    setTimeout(function () {
-                        window.location.href = data.redirect_url;
-                    }, data.message ? 2000 : 0);
-                }
-            })
-            .catch(function () {
-                document.getElementById('upload-progress').style.display = 'none';
-                document.getElementById('upload-error').style.display = '';
-                document.getElementById('upload-error-text').textContent = 'Upload failed. Please try again.';
-            });
-    });
-
+    // Alertnative form of the standard "submit form" method, used here only for deletions. Just like on the approvals page,
+    // there are many forms to a page here so the standard approach doesn't work. Since there is no user-entered content
+    // to submit there should be no chance of failure; just reload the page on success and show an alert on the rare
+    // chance that a failure occurred.
     function deleteFile(filename) {
-        if (!confirm('Delete "' + filename + '"?')) return;
+        var formData = "action=Delete&filename=" + filename + "&_xsrf=" + $("#form")[0].querySelector('input[name="_xsrf"]').value;
 
-        document.getElementById('delete-progress').style.display = '';
-        document.getElementById('delete-error').style.display = 'none';
-
-        var xsrfToken = uploadForm.querySelector('input[name="_xsrf"]').value;
-        var formData = new FormData();
-        formData.append('action', 'Delete');
-        formData.append('filename', filename);
-        formData.append('_xsrf', xsrfToken);
-
-        fetch(window.location.href, {method: 'POST', body: formData})
-            .then(function (r) {
-                return r.json();
+        // Perform the post request
+        $.post(window.location.href, formData)
+            .done(function(response) {
+                window.location.reload();
             })
-            .then(function (data) {
-                document.getElementById('delete-progress').style.display = 'none';
-                var el = document.getElementById('img-' + filename);
-                if (el) el.remove();
-                var gallery = document.getElementById('image-gallery');
-                if (gallery && gallery.children.length === 0) {
-                    gallery.insertAdjacentHTML('afterend', '<p class="card-text text-muted">No images uploaded yet.</p>');
-                    gallery.remove();
+            .fail(function(xhr) {
+                response = JSON.parse(xhr.responseText);
+                if ("message" in response) {
+                    alert(response["message"]);
                 }
-            })
-            .catch(function () {
-                document.getElementById('delete-progress').style.display = 'none';
-                document.getElementById('delete-error').style.display = '';
-                document.getElementById('delete-error-text').textContent = 'Delete failed. Please try again.';
-                setTimeout(function () {
-                    document.getElementById('delete-error').style.display = 'none';
-                }, 3000);
+                window.location.reload();
             });
+        return false;
     }
 </script>
-
+<script src="/static/js/form-post-handler.js?v=1773078138"></script>
 {% end %}

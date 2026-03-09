@@ -61,9 +61,13 @@ class AdminUploadsHandler(BaseHandler):
                 return
 
             # Run out of problems, so should be OK to delete
-            os.remove(filepath)
-            self.set_status(200)
-            self.write(json.dumps({"message": "File deleted."}))
+            try:
+                os.remove(filepath)
+                self.set_status(200)
+                self.write(json.dumps({"message": "File deleted."}))
+            except Exception:
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to delete file."}))
 
         elif action == "Upload":
             # Handle the upload action, taking the provided file and writing it to the appropriate directory provided it
@@ -79,17 +83,20 @@ class AdminUploadsHandler(BaseHandler):
             basename = os.path.basename(original_name)
             if not re.match(r'^[a-zA-Z0-9_\-]+\.png$', basename):
                 self.set_status(400)
-                self.write(json.dumps(
-                    {
-                        "message": "Invalid filename. Use only letters, numbers, hyphens, and underscores, with a .png extension."}))
+                self.write(json.dumps({
+                    "message": "Invalid filename. Use only letters, numbers, hyphens, and underscores, with a .png extension."}))
                 return
 
             # Good to go with saving the file
             filepath = os.path.join(UPLOAD_DIR, basename)
-            with open(filepath, 'wb') as f:
-                f.write(file_info["body"])
-            self.set_status(200)
-            self.write(json.dumps({"message": "File uploaded successfully.", "redirect_url": "/admin/uploads"}))
+            try:
+                with open(filepath, 'wb') as f:
+                    f.write(file_info["body"])
+                self.set_status(200)
+                self.write(json.dumps({"message": "File uploaded successfully.", "redirect_url": "/admin/uploads"}))
+            except Exception:
+                self.set_status(500)
+                self.write(json.dumps({"message": "Failed to upload file."}))
 
         else:
             self.set_status(400)
