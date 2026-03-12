@@ -1,0 +1,35 @@
+{% extends "base-std.html" %}
+{% block content %}
+
+<!--suppress HtmlUnknownTarget -->
+<h2 class="mb-5">Pending Stations</h2>
+
+<p>This page shows the list of stations which have been submitted, but have not yet been approved by an administrator,
+and therefore are not yet visible on the map. If your station is not yet approved, and you need to edit it, please find
+it in this list, open the page, and enter your "Edit password" to make changes.</p>
+
+<div class="card mx-auto mt-5 bg-body-tertiary" style="max-width: 40rem;">
+    <div class="card-header">
+        <h5 class="mb-0 card-title">Stations Awaiting Approval</h5>
+    </div>
+    <div class="card-body">
+        {% if len(temp_stations) == 0 and len(perm_stations) == 0 %}
+        <p class="mb-0">There are no stations currently awaiting approval.</p>
+        {% else %}
+        <ul class="mb-0">
+            {% for s in temp_stations %}
+            <li>
+                <a href="/view/station/temp/{{ s.id }}">{{ s.callsign }} {{ s.club_name }}{% if s.event %} at {{ s.event.name }}{% end %}</a>
+            </li>
+            {% end %}
+            {% for s in perm_stations %}
+            <li>
+                <a href="/view/station/perm/{{ s.id }}">{{ s.callsign }} {{ s.club_name }}</a>
+            </li>
+            {% end %}
+        </ul>
+        {% end %}
+    </div>
+</div>
+
+{% end %}

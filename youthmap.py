@@ -28,6 +28,7 @@ from requesthandlers.editstation import EditStationHandler
 from requesthandlers.login import LoginHandler
 from requesthandlers.logout import LogoutHandler
 from requesthandlers.map import MapHandler
+from requesthandlers.pendingstations import PendingStationsHandler
 from requesthandlers.viewstation import ViewStationHandler
 
 
@@ -56,6 +57,7 @@ class YouthMap(tornado.web.Application):
             (r"/edit/station/(perm|temp)/([^/]+)", EditStationHandler),
             (r"/create/station/type", CreateStationTypeHandler),
             (r"/create/station/(perm|temp)", CreateStationHandler),
+            (r"/pending", PendingStationsHandler),
             # Authentication-related pages
             (r"/login", LoginHandler),
             (r"/logout", LogoutHandler),
