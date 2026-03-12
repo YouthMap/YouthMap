@@ -24,12 +24,18 @@ TEMP_STATION_NO_EVENT_ICON = "radio.png"
 
 def get_color_for_perm_station(s):
     """For a given permanent station, look up what colour it should have. This is based on its type."""
-    return s.type.color
+    if s.type:
+        return s.type.color
+    else:
+        return "#000000"
 
 
 def get_icon_for_perm_station(s):
     """For a given permanent station, look up what icon it should have. This is based on its type."""
-    return s.type.icon
+    if s.type:
+        return s.type.icon
+    else:
+        return "invalid.png"
 
 
 def get_color_for_temp_station(s):
