@@ -24,7 +24,7 @@ def notify_user_account_created(db, email, username, password):
 
         <p><a href="{html.escape(site_base_url)}/login">Click here to log in</a>. Please change this automatically-generated password to a new password of your choice immediately on first login.</p>
 
-        <p>If you did not expect to receive this email, or to be set up with an account on this website, please ignore this email or contact the administrators (TODO) to notify them of the error.
+        <p>If you did not expect to receive this email, or to be set up with an account on this website, please ignore this email or <a href="/contact">contact the administrators of the site</a> to notify them of the error.
       </body>
     </html>
     """
@@ -183,7 +183,7 @@ def notify_owner_station_approval_revoked(db, station):
         html_content = f"""\
         <html>
           <body>
-            <p>An administrator has revoked the approval of your station (details below). It is now hidden from visitors to website. This could have been due to inaccurate information or an edit that looked malicious. Please contact the administrators of the site (TODO) if you require clarification.</p>
+            <p>An administrator has revoked the approval of your station (details below). It is now hidden from visitors to website. This could have been due to inaccurate information or an edit that looked malicious. Please <a href="/contact">contact the administrators of the site</a> if you require clarification.</p>
 
             {get_station_details_for_email(station)}
           </body>
@@ -216,7 +216,7 @@ def notify_owner_station_deleted_current(db, station):
         html_content = f"""\
         <html>
           <body>
-            <p>An administrator has made the decision to delete your station (details below). This could have been due to inaccurate information or an edit that looked malicious. Please contact the administrators of the site (TODO) if you require clarification.</p>
+            <p>An administrator has made the decision to delete your station (details below). This could have been due to inaccurate information or an edit that looked malicious. Please <a href="/contact">contact the administrators of the site</a> if you require clarification.</p>
 
             {get_station_details_for_email(station)}
           </body>
@@ -245,6 +245,26 @@ def notify_owner_station_deleted_past(db, station):
 
         return send_mail(db, [station.email], subject, html_content)
     return False
+
+
+def notify_admins_contact_message(db, name, email, message):
+    """Send mail to all administrators with a message submitted via the contact form."""
+
+    subject = "[Youth Map] Contact form message"
+    html_content = f"""\
+    <html>
+      <body>
+        <p>A visitor has submitted a message via the contact form on Youth Map. Please note that this email has been sent to all administrators of the site.</p>
+
+        {("<p>Name/callsign: <strong>" + html.escape(name) + "</strong></p>") if name else ""}
+        {("<p>Email: <strong>" + html.escape(email) + "</strong></p>") if email else ""}
+        <p>Message:</p>
+        <p>{html.escape(message)}</p>
+      </body>
+    </html>
+    """
+
+    return send_mail_to_all_admins(db, subject, html_content)
 
 
 def get_station_details_for_email(station):

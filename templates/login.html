@@ -38,9 +38,11 @@
                 <button type="submit" class="btn btn-primary" onclick="submitForm('')">Login</button>
             </div>
 
+            {% if enable_captcha %}
             <div class="form-text opacity-50">This site is protected by reCAPTCHA and the Google
                 <a href="https://policies.google.com/privacy">Privacy Policy</a> and
                 <a href="https://policies.google.com/terms">Terms of Service</a> apply.</div>
+            {% end %}
 
             {% module Template("widgets/form-result.html") %}
         </form>
@@ -51,6 +53,6 @@
 <script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}"></script>
 <script>captchaOnThisPage = true; recaptchaSiteKey = "{{ recaptcha_site_key }}";</script>
 {% end %}
-<script src="/static/js/form-post-handler.js?v=1773348554"></script>
+<script src="/static/js/form-post-handler.js?v=1773422778"></script>
 
 {% end %}

@@ -211,7 +211,7 @@ class EditStationHandler(BaseHandler):
             else:
                 self.set_status(500)
                 self.write(json.dumps(
-                    {"message": "Failed to update the station. Please contact the administrators (TODO) for help."}))
+                    {"message": "Failed to update the station. Please <a href='/contact' class='alert-link'>contact the administrators of the site</a> for help."}))
                 return
 
         # Check for Delete action
@@ -246,7 +246,7 @@ class EditStationHandler(BaseHandler):
             else:
                 self.set_status(500)
                 self.write(json.dumps(
-                    {"message": "Failed to delete the station. Please contact the administrators (TODO) for help."}))
+                    {"message": "Failed to delete the station. Please <a href='/contact' class='alert-link'>contact the administrators of the site</a> for help."}))
                 return
 
         else:

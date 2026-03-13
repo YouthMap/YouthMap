@@ -25,6 +25,7 @@ from requesthandlers.adminusers import AdminUsersHandler
 from requesthandlers.createstation import CreateStationHandler
 from requesthandlers.createstationtype import CreateStationTypeHandler
 from requesthandlers.editstation import EditStationHandler
+from requesthandlers.contact import ContactHandler
 from requesthandlers.login import LoginHandler
 from requesthandlers.logout import LogoutHandler
 from requesthandlers.map import MapHandler
@@ -58,6 +59,8 @@ class YouthMap(tornado.web.Application):
             (r"/create/station/type", CreateStationTypeHandler),
             (r"/create/station/(perm|temp)", CreateStationHandler),
             (r"/pending", PendingStationsHandler),
+            # Contact page
+            (r"/contact", ContactHandler),
             # Authentication-related pages
             (r"/login", LoginHandler),
             (r"/logout", LogoutHandler),

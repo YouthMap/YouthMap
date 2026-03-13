@@ -6,6 +6,7 @@ import tornado.testing
 import tornado.web
 
 from requesthandlers.admin import AdminHandler
+from requesthandlers.contact import ContactHandler
 from requesthandlers.login import LoginHandler
 from requesthandlers.logout import LogoutHandler
 from requesthandlers.map import MapHandler
@@ -25,6 +26,7 @@ def make_app(db):
             (r"/", MapHandler),
             (r"/view/station/(perm|temp)/([^/]+)", ViewStationHandler),
             (r"/pending", PendingStationsHandler),
+            (r"/contact", ContactHandler),
             (r"/login", LoginHandler),
             (r"/logout", LogoutHandler),
             (r"/admin", AdminHandler),
@@ -275,3 +277,85 @@ class TestAdminHandler(tornado.testing.AsyncHTTPTestCase):
         response = self.fetch("/admin", follow_redirects=False)
         self.assertEqual(response.code, 302)
         self.assertIn("/login", response.headers.get("Location", ""))
+
+
+# ---------------------------------------------------------------------------
+# Contact handler
+# ---------------------------------------------------------------------------
+
+class TestContactHandler(tornado.testing.AsyncHTTPTestCase):
+    def get_app(self):
+        return make_app(make_test_db())
+
+    def _post(self, body):
+        return self.fetch(
+            "/contact",
+            method="POST",
+            body=body,
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        )
+
+    def test_get_returns_200(self):
+        response = self.fetch("/contact")
+        self.assertEqual(response.code, 200)
+
+    def test_get_contains_form(self):
+        response = self.fetch("/contact")
+        self.assertIn(b"<form", response.body)
+
+    def test_get_has_name_email_message_fields(self):
+        response = self.fetch("/contact")
+        self.assertIn(b'name="name"', response.body)
+        self.assertIn(b'name="email"', response.body)
+        self.assertIn(b'name="message"', response.body)
+
+    def test_post_with_message_returns_200(self):
+        response = self._post("message=Hello+administrators")
+        self.assertEqual(response.code, 200)
+        import json
+        data = json.loads(response.body)
+        self.assertIn("message", data)
+
+    def test_post_with_all_fields_returns_200(self):
+        response = self._post("name=G1ABC&email=test%40example.com&message=Hello")
+        self.assertEqual(response.code, 200)
+        import json
+        data = json.loads(response.body)
+        self.assertIn("message", data)
+
+    def test_post_without_message_returns_400(self):
+        response = self._post("name=G1ABC&email=test%40example.com&message=")
+        self.assertEqual(response.code, 400)
+        import json
+        data = json.loads(response.body)
+        self.assertIn("message", data)
+
+    def test_post_with_invalid_email_returns_400(self):
+        response = self._post("message=Hello&email=not-an-email")
+        self.assertEqual(response.code, 400)
+        import json
+        data = json.loads(response.body)
+        self.assertIn("message", data)
+
+    def test_post_with_html_in_message_returns_400(self):
+        response = self._post("message=%3Cscript%3Ealert(1)%3C%2Fscript%3E")
+        self.assertEqual(response.code, 400)
+        import json
+        data = json.loads(response.body)
+        self.assertIn("message", data)
+
+    def test_post_with_html_in_name_returns_400(self):
+        response = self._post("name=%3Cb%3Ebold%3C%2Fb%3E&message=Hello")
+        self.assertEqual(response.code, 400)
+        import json
+        data = json.loads(response.body)
+        self.assertIn("message", data)
+
+    def test_post_response_is_json(self):
+        response = self._post("message=Hello")
+        self.assertEqual(response.headers.get("Content-Type"), "application/json")
+
+    def test_post_optional_fields_absent_succeeds(self):
+        # name and email are optional — only message is required
+        response = self._post("message=Just+a+message+with+no+name+or+email")
+        self.assertEqual(response.code, 200)

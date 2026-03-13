@@ -159,14 +159,14 @@ class CreateStationHandler(BaseHandler):
             if not latitude_degrees or not longitude_degrees:
                 self.set_status(400)
                 self.write(json.dumps({
-                    "message": "A location was not provided. Please contact the administrators (TODO) for help."}))
+                    "message": "A location was not provided. Please <a href='/contact' class='alert-link'>contact the administrators of the site</a> for help."}))
                 return
             if perm_or_temp_slug == "temp" and event_id > 0:
                 event = await executor.run_in_executor(None, lambda: self.application.db.get_event(event_id))
                 if not event or not event.public or event.end_time <= datetime.now():
                     self.set_status(400)
                     self.write(json.dumps({
-                        "message": "Event ID was provided for a non-existent or non-public event, or one that has already finished. Please contact the administrators (TODO) for help."}))
+                        "message": "Event ID was provided for a non-existent or non-public event, or one that has already finished. Please <a href='/contact' class='alert-link'>contact the administrators of the site</a> for help."}))
                     return
             if perm_or_temp_slug == "perm":
                 perm_type = await executor.run_in_executor(None, lambda: self.application.db.get_permanent_station_type(
@@ -174,7 +174,7 @@ class CreateStationHandler(BaseHandler):
                 if not perm_type:
                     self.set_status(400)
                     self.write(json.dumps({
-                        "message": "Type ID was provided for a non-existent type. Please contact the administrators (TODO) for help."}))
+                        "message": "Type ID was provided for a non-existent type. Please <a href='/contact' class='alert-link'>contact the administrators of the site</a> for help."}))
                     return
 
             # Check for sensible times
@@ -273,7 +273,7 @@ class CreateStationHandler(BaseHandler):
             else:
                 self.set_status(500)
                 self.write(json.dumps(
-                    {"message": "Failed to create the station. Please contact the administrators (TODO) for help."}))
+                    {"message": "Failed to create the station. Please <a href='/contact' class='alert-link'>contact the administrators of the site</a> for help."}))
                 return
 
         else:

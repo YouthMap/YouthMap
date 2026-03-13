@@ -1,0 +1,49 @@
+{% extends "base-std.html" %}
+{% block content %}
+
+<h2 class="mb-5">Contact the Site Administrators</h2>
+
+<div class="card bg-body-tertiary mx-auto" style="max-width: 36rem;">
+    <div class="card-header">
+        <h5 class="mb-0 card-title">Send a Message</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" id="form">
+            <div class="mb-3">
+                <label class="form-label" for="name">Name or callsign (optional)</label>
+                <input type="text" class="form-control" id="name" name="name">
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="email">Email address (optional)</label>
+                <input type="text" class="form-control" id="email" name="email">
+                <div class="form-text text-muted">If you provide an email address, the administrators may use it to reply to you.</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="message">Message</label>
+                <textarea class="form-control" id="message" name="message" rows="6" required></textarea>
+            </div>
+
+            {% module xsrf_form_html() %}
+
+            <div class="mb-2">
+                <button type="submit" class="btn btn-primary" onclick="submitForm('')">Send</button>
+            </div>
+
+            {% if enable_captcha %}
+            <div class="form-text opacity-50">This site is protected by reCAPTCHA and the Google
+                <a href="https://policies.google.com/privacy">Privacy Policy</a> and
+                <a href="https://policies.google.com/terms">Terms of Service</a> apply.</div>
+            {% end %}
+
+            {% module Template("widgets/form-result.html") %}
+        </form>
+    </div>
+</div>
+
+{% if enable_captcha %}
+<script src="https://www.google.com/recaptcha/api.js?render={{ recaptcha_site_key }}"></script>
+<script>captchaOnThisPage = true; recaptchaSiteKey = "{{ recaptcha_site_key }}";</script>
+{% end %}
+<script src="/static/js/form-post-handler.js?v=1773422778"></script>
+
+{% end %}
