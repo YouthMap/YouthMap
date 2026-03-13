@@ -2,6 +2,8 @@
 
 Youth Map is designed to run in a single place on the web, to facilitate coordination between Amateur Radio youth groups. You should not need to run your own copy. However, if you do (and for reference for the team running the "official" copy), instructions on how to set up Youth Map on a web server are included here.
 
+### Download, install and run
+
 To download and set up Youth Map on a Debian server, run the following commands. Other operating systems will likely be similar.
 
 *Note:* Replace the string `##tagname##` with the tagged version of Youth Map that you want to run. Skip this line entirely to use the latest development code from the `main` branch.
@@ -15,6 +17,16 @@ source .venv/bin/activate
 pip install -r requirements.txt
 deactivate
 ```
+
+As for *where* in your filesystem to run Youth Map from, and thus where to run those commands, that's up to you. The following instructions assume you have created a new user called `youthmap` to run the site as, and installed it from `/home/youthmap`. You should not run Youth Map as `root` or a user with `sudo` privileges, as this increases the risk of exploit.
+
+The `data/` directory within the Youth Map application directory must be writable by the user that runs the Python process, as the application stores its database and uploaded files there. If you are running Youth Map as a dedicated user (e.g. `youthmap` as described above), ensure that user owns this directory:
+
+```bash
+sudo chown youthmap data/
+```
+
+The rest of the structure needs to be readable by the user that Youth Map runs as, but not necessarily writeable.
 
 To run the software this time and any future times you want to run it directly from the command line:
 
@@ -98,3 +110,31 @@ If you haven't already done so, set up a DNS entry to make sure requests for you
 You should now be able to access the web interface by going to the domain from your browser, using HTTP.
 
 Once that's working, [install certbot](https://certbot.eff.org/instructions?ws=nginx&os=snap) onto your server. Run it as root, and when prompted pick your domain name from the list. After a few seconds, it should successfully provision a certificate and modify your nginx config files automatically. You should then be able to access the site via HTTPS.
+
+### Serving static files directly from nginx
+
+The configuration above proxies every request through to the Youth Map application, including requests for static files (CSS, JavaScript, images, etc.) under the `/static/` path. Since these files never change at runtime, it is more efficient to have nginx serve them directly from disk, bypassing the application entirely. To do this, add a `location /static/` block before the catch-all `location /` block, pointing nginx at the `static` directory inside your Youth Map installation:
+
+```nginx
+server {
+    server_name youthmap.com;
+
+    # Wellknown area for Lets Encrypt
+    location /.well-known/ {
+        alias /var/www/html/.well-known/;
+    }
+
+    # Serve static assets directly without going through the application
+    location /static/ {
+        alias /home/youthmap/youthmap/static/;
+    }
+
+    location / {
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_pass http://127.0.0.1:8080;
+    }
+}
+```
+
+Adjust the path on the `alias` line to match the directory in which you have installed Youth Map. After editing the file, test and reload nginx as before (`nginx -t` then `sudo systemctl reload nginx`).
