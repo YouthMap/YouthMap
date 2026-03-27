@@ -153,6 +153,8 @@ efficient to have nginx serve them directly from disk, bypassing the application
 `location /static/` block before the catch-all `location /` block, pointing nginx at the `static` directory inside your
 Youth Map installation:
 
+TODO fix static
+
 ```nginx
 server {
     server_name youthmap.com;
