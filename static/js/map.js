@@ -246,7 +246,9 @@ $(document).ready(function() {
     filtersUpdated(markersLayer);
 
     // Zoom to fit the markers
-    map.fitBounds(markersLayer.getBounds().pad(0.5));
+    if (markersLayer.getLayers().length >= 2) {
+        map.fitBounds(markersLayer.getBounds().pad(0.5));
+    }
 
     // Add click handler to the button that lets you add a station to the map
     $("button#addStationGetStarted").click(function(){ placingMarker = true; });
