@@ -153,7 +153,16 @@ efficient to have nginx serve them directly from disk, bypassing the application
 `location /static/` block before the catch-all `location /` block, pointing nginx at the `static` directory inside your
 Youth Map installation:
 
-TODO fix static
+Note that nginx's worker process (typically `www-data`) must be able to traverse every directory in the path to the
+static files. Home directories on Linux default to `700` (owner-only access), so if Youth Map is installed under
+`/home/youthmap/`, nginx will give a 403 error for the static files. You can work around this by granting world-execute
+permission on the home directory:
+
+```bash
+sudo chmod o+x /home/youthmap
+```
+
+Consider the implications of this in terms of any other users on the machine and what they have access to.
 
 ```nginx
 server {
